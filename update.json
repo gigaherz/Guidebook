@@ -1,0 +1,9 @@
+{
+  "homepage": "https://github.com/gigaherz/Guidebook",
+  "promos": {
+    "1.19.2-latest": "0.1"
+  },
+  "1.10.2": {
+    "0.1": "First release"
+  }
+}

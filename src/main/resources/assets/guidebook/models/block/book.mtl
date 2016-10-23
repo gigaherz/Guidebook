@@ -1,0 +1,7 @@
+# Rhino
+newmtl New material 001
+Kd 0.4510 0.3412 0.2627
+map_Kd guidebook:paper
+
+newmtl Default
+map_Kd guidebook:paper

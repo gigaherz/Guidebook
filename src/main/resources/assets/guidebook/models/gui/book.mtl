@@ -1,0 +1,13 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 18.02.2016 01:24:16
+
+newmtl New_material_001
+Kd 0.4510 0.3412 0.2627
+map_Kd guidebook:paper
+
+newmtl Default
+map_Kd guidebook:paper
+
+newmtl New_material_002
+Kd 0.9843 0.8000 0.2510
+map_Kd guidebook:paper

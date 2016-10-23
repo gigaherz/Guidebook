@@ -1,0 +1,103 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
+repositories {
+    maven {
+        url 'http://dogforce-games.com/maven'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
+
+version = "0.7.11-alpha"
+group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "Guidebook-1.10.2"
+
+minecraft {
+    version = "1.10.2-12.18.2.2107"
+    runDir = "run"
+
+    mappings = "snapshot_20161023"
+
+    replace "@VERSION@", project.version
+    replaceIn "GuidebookMod.java"
+}
+
+jar {
+    classifier = 'slim'
+}
+
+shadowJar {
+    classifier = ''
+    dependencies {
+        include(dependency(':Commons:'))
+    }
+    relocate 'gigaherz.common', 'gigaherz.survivalist.shadow.common'
+}
+
+reobf {
+    shadowJar { mappingType = 'SEARGE' }
+}
+
+tasks.build.dependsOn reobfShadowJar
+
+artifacts {
+    archives shadowJar
+    archives sourceJar
+}
+
+dependencies {
+    deobfCompile "gigaherz.commons:Commons:1.10.2-0.2"
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar
+        }
+    }
+
+    repositories {
+        maven {
+            url "$projectDir/../CommonMaven"
+        }
+    }
+}
+

@@ -1,0 +1,112 @@
+<book>
+<chapter>
+  <page>
+    <!--
+    'p' tags draw text, and increment the vertical offset.
+    They do NOT behave exactly like in html.
+    The space attribute changes the default spacing added after the paragraph.
+    -->
+    <p color="#606060">This book is a work in progress.</p>
+  </page>
+  <page>
+    <!--
+    'space' tags increment the vertical offset without drawing text.
+    The 'height' attribute specifies how much.
+    The % refers to a % of the page's height, while integer values refer to pixels.
+    -->
+    <space height="33%" />
+    <p space="0" align="center">Welcome</p>
+    <p space="0" align="center">to</p>
+    <p space="0" align="center">Guidebook</p>
+    <p space="6" align="center">__________</p>
+    <p align="center">by Gigaherz</p>
+  </page>
+  <page>
+    <title>Index</title>
+    <link ref="basic"  >1. Getting Started</link>
+    <link ref="spells" >2. Chapters and Pages</link>
+    <link ref="rings"  >3. Images and Links</link>
+    <link ref="staves" >4. Item Stacks</link>
+    <link ref="rituals">5. Recipes (UPCOMING)</link>
+    <link ref="rituals">5. Templates (UPCOMING)</link>
+  </page>
+</chapter>
+<chapter id="basic">
+  <page>
+    <title>Getting Started</title>
+    <p space="8">In front of you is the power of raw elemental magic. In the world exist the following elements:</p>
+    <!--
+    'stack' and 'image' tags are relative to the current vertical offset,
+    but they do not increment the vertical offset.
+    -->
+    <stack item="minecraft:dye" meta="0" x="4" y="-4" />
+    <p space="4" indent="22">Fire</p>
+    <stack item="minecraft:dye" meta="1" x="4" y="-4" />
+    <p space="4" indent="22">Water</p>
+    <stack item="minecraft:dye" meta="2" x="4" y="-4" />
+    <p space="4" indent="22">Air</p>
+    <stack item="minecraft:dye" meta="3" x="4" y="-4" />
+    <p space="4" indent="22">Earth</p>
+    <stack item="minecraft:dye" meta="4" x="4" y="-4" />
+    <p space="4" indent="22">Light</p>
+    <stack item="minecraft:dye" meta="5" x="4" y="-4" />
+    <p space="4" indent="22">Darkness</p>
+    <stack item="minecraft:dye" meta="6" x="4" y="-4" />
+    <p space="4" indent="22">Life</p>
+    <stack item="minecraft:dye" meta="7" x="4" y="-4" />
+    <p space="4" indent="22">Death</p>
+  </page>
+</chapter>
+<chapter id="spells">
+  <page>
+    <title>Casting Spells</title>
+    <p>A spell is a series of elements. Each element has an effect and shape. The order of the elements matters, as their effects change depending on the position within the spell.</p>
+    <p>The first element in the spell defines its primary effect, while subsequent elements will apply modifiers to it.</p>
+  </page>
+  <page>
+    <p>The last element in the spell will dictate the shape/casting style of the spell.</p>
+    <p>Having multiple of the same element one after the other will increase the primary effect, while opposite elements will reduce or cancel this effect.</p>
+    <p>Also, a modifier effect will not be applied if the effect is cancelled by the previous element, but the shape will still apply.</p>
+  </page>
+  <page>
+    <title>Effects and Shapes</title>
+    <p>Fire causes Flames, in the shape of a Sphere around caster.</p>
+    <p>Water spawns flowing water, in the shape of a Ball thrown forward.</p>
+    <p>Air blows things away, in the shape of a Cone in front of the caster.</p>
+    <p>Earth does things, shape not decided yet.</p>
+  </page>
+  <page>
+    <p>Light protects and illuminates, the shape is a Beam.</p>
+    <p>Darkness weakens and darkens, the shape is not yet determined.</p>
+    <p>Life heals and repairs, these spells are Self-cast.</p>
+    <p>Death breaks and damages, they take the aspect of Curses.</p>
+  </page>
+</chapter>
+<chapter id="rings">
+  <page>
+    <title>Extra Storage</title>
+    <p>Gemstones can store elemental essences, but you will have to continuously swap the gemstone in your wands if you rely on that.</p>
+    <p>A better way to store extra essences is by crafting a ring.</p>
+  </page>
+</chapter>
+<chapter id="staves">
+  <page>
+    <title>Improved Casting</title>
+    <p>Wands are a perfectly good tool, but they are limited in how much essence they can contain.</p>
+    <p>Wands can be upgraded into staves, which will double the effective essence amounts in the gemstone, allowing the caster to reach higher spell tiers.</p>
+  </page>
+</chapter>
+<chapter id="rituals">
+  <page>
+    <title>Rituals</title>
+    <p>You believe there may be some way to perform complex interactions by making use of structures built in the world.</p>
+    <p>Sadly, the specifics of the method escape you. Maybe at a later date, it will be possible.</p>
+  </page>
+</chapter>
+<chapter id="recipes">
+  <page>
+    <title>Recipes</title>
+    <p>CONTENT UPCOMING</p>
+  </page>
+</chapter>
+</book>

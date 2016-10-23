@@ -1,0 +1,7 @@
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
+package gigaherz.guidebook;
+
+import mcp.MethodsReturnNonnullByDefault;
+
+import javax.annotation.ParametersAreNonnullByDefault;

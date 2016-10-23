@@ -1,0 +1,16 @@
+[
+{
+  "modid": "guidebook",
+  "name": "Guidebook",
+  "description": "Books that guide",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/gigaherz/Guidebook",
+  "updateUrl": "",
+  "authorList": ["gigaherz"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

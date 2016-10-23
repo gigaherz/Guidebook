@@ -1,0 +1,42 @@
+{
+  "forge_marker": 1,
+  "variants": {
+    "inventory": [{
+      "model": "guidebook:book.obj",
+      "transform": {
+        "gui": {
+          "rotation": [{"x": 30}, {"y": 245}],
+          "translation": [ 0, 0.085, 0],
+          "scale": 0.8
+        },
+        "ground": {
+          "translation": [ 0, 0.1875, 0],
+          "scale": 0.25
+        },
+        "fixed": {
+          "scale": 0.5
+        },
+        "thirdperson_righthand": {
+          "rotation": [ {"x":75}, {"y":225}],
+          "translation": [ 0, 0.15625, 0],
+          "scale": 0.375
+        },
+        "thirdperson_lefthand": {
+          "rotation": [ {"x":75}, {"y":45}],
+          "translation": [ 0, 0.15625, 0],
+          "scale": 0.375
+        },
+        "firstperson_righthand": {
+          "rotation": [ {"y":225} ],
+          "translation": [ 0, 0.2, 0],
+          "scale": 0.40
+        },
+        "firstperson_lefthand": {
+          "rotation": [ {"y":45} ],
+          "translation": [ 0, 0.2, 0],
+          "scale": 0.40
+        }
+      }
+    }]
+  }
+}
