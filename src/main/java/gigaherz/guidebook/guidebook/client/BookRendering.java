@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.common.client.StackRenderingHelper;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.IBookGraphics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -15,7 +16,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
-public class NavigationInfo
+public class BookRendering implements IBookGraphics
 {
     public static final int DEFAULT_BOOK_WIDTH = 276;
     public static final int DEFAULT_BOOK_HEIGHT = 198;
@@ -45,7 +46,7 @@ public class NavigationInfo
 
     private float scalingFactor;
 
-    NavigationInfo(BookDocument book, GuiGuidebook gui)
+    BookRendering(BookDocument book, GuiGuidebook gui)
     {
         this.book = book;
         this.gui = gui;
@@ -82,6 +83,7 @@ public class NavigationInfo
         this.scaledHeight = MathHelper.ceiling_double_int(scaledHeightD);
     }
 
+    @Override
     public void setScalingFactor()
     {
         float fontSize = book.getFontSize();
@@ -119,36 +121,43 @@ public class NavigationInfo
         this.pageHeight = this.bookHeight - this.verticalMargin;
     }
 
+    @Override
     public float getScalingFactor()
     {
         return scalingFactor;
     }
 
+    @Override
     public boolean canGoBack()
     {
         return (currentPair > 0 || currentChapter > 0);
     }
 
+    @Override
     public boolean canGoNextPage()
     {
         return (currentPair + 1 < book.getChapter(currentChapter).pagePairs || currentChapter + 1 < book.chapterCount());
     }
 
+    @Override
     public boolean canGoPrevPage()
     {
         return (currentPair > 0 || currentChapter > 0);
     }
 
+    @Override
     public boolean canGoNextChapter()
     {
         return (currentChapter + 1 < book.chapterCount());
     }
 
+    @Override
     public boolean canGoPrevChapter()
     {
         return (currentChapter > 0);
     }
 
+    @Override
     public void navigateTo(final BookDocument.PageRef target)
     {
         pushHistory();
@@ -158,6 +167,7 @@ public class NavigationInfo
         currentPair = Math.max(0, Math.min(book.getChapter(currentChapter).pagePairs - 1, target.page / 2));
     }
 
+    @Override
     public void nextPage()
     {
         if (currentPair + 1 < book.getChapter(currentChapter).pagePairs)
@@ -173,6 +183,7 @@ public class NavigationInfo
         }
     }
 
+    @Override
     public void prevPage()
     {
         if (currentPair > 0)
@@ -188,6 +199,7 @@ public class NavigationInfo
         }
     }
 
+    @Override
     public void nextChapter()
     {
         if (currentChapter + 1 < book.chapterCount())
@@ -198,6 +210,7 @@ public class NavigationInfo
         }
     }
 
+    @Override
     public void prevChapter()
     {
         if (currentChapter > 0)
@@ -208,6 +221,7 @@ public class NavigationInfo
         }
     }
 
+    @Override
     public void navigateBack()
     {
         if (history.size() > 0)
@@ -235,6 +249,7 @@ public class NavigationInfo
         return height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(s);
     }
 
+    @Override
     public int addStringWrapping(int left, int top, String s, int color, int align)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
@@ -252,6 +267,7 @@ public class NavigationInfo
         return fontRenderer.splitStringWidth(s, pageWidth);
     }
 
+    @Override
     public boolean mouseClicked(int mouseButton)
     {
         Minecraft mc = Minecraft.getMinecraft();
@@ -297,6 +313,7 @@ public class NavigationInfo
         return false;
     }
 
+    @Override
     public boolean mouseHover(int mouseX, int mouseY)
     {
         BookDocument.ChapterData ch = book.getChapter(currentChapter);
@@ -339,6 +356,7 @@ public class NavigationInfo
         return false;
     }
 
+    @Override
     public void drawCurrentPages()
     {
         int guiWidth = gui.width;
@@ -384,26 +402,31 @@ public class NavigationInfo
         }
     }
 
+    @Override
     public BookDocument getBook()
     {
         return book;
     }
 
+    @Override
     public int getPageWidth()
     {
         return pageWidth;
     }
 
+    @Override
     public int getPageHeight()
     {
         return pageHeight;
     }
 
+    @Override
     public void drawItemStack(int left, int top, ItemStack stack, int color)
     {
         StackRenderingHelper.renderItemStack(gui.getMesher(), gui.getRenderEngine(), left, top, stack, color);
     }
 
+    @Override
     public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th)
     {
         if (w == 0 || h == 0)
@@ -429,15 +452,17 @@ public class NavigationInfo
         Gui.drawModalRectWithCustomSizedTexture(x, y, tx, ty, w, h, sw, sh);
     }
 
-    public Rectangle getStringBounds(NavigationInfo nav, String text, int left, int top)
+    @Override
+    public Rectangle getStringBounds(String text, int left, int top)
     {
-        FontRenderer fontRenderer = nav.gui.getFontRenderer();
+        FontRenderer fontRenderer = gui.getFontRenderer();
 
-        int height = fontRenderer.splitStringWidth(text, nav.getPageWidth());
-        int width = height > fontRenderer.FONT_HEIGHT ? nav.getPageWidth() : fontRenderer.getStringWidth(text);
+        int height = fontRenderer.splitStringWidth(text, pageWidth);
+        int width = height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(text);
         return new Rectangle(left, top, width, height);
     }
 
+    @Override
     public void drawTooltip(ItemStack stack, int x, int y)
     {
         gui.drawTooltip(stack, x, y);

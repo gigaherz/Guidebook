@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.IBookGraphics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -33,7 +33,7 @@ public class GuiGuidebook extends GuiScreen
     private ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
     private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
 
-    private NavigationInfo book;
+    private IBookGraphics book;
     private AnimatedBookBackground background;
     public static boolean useNaturalArrows = false;
 
@@ -51,17 +51,17 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void initGui()
     {
-        book = new NavigationInfo(BookRegistry.get(bookLocation), this);
+        book = new BookRendering(BookRegistry.get(bookLocation), this);
         background = new AnimatedBookBackground(this);
 
         this.buttonList.clear();
 
         int btnId = 0;
 
-        int left = (this.width - NavigationInfo.DEFAULT_BOOK_WIDTH) / 2;
-        int right = left + NavigationInfo.DEFAULT_BOOK_WIDTH;
-        int top = (this.height - NavigationInfo.DEFAULT_BOOK_HEIGHT) / 2 - 9;
-        int bottom = top + NavigationInfo.DEFAULT_BOOK_HEIGHT;
+        int left = (this.width - BookRendering.DEFAULT_BOOK_WIDTH) / 2;
+        int right = left + BookRendering.DEFAULT_BOOK_WIDTH;
+        int top = (this.height - BookRendering.DEFAULT_BOOK_HEIGHT) / 2 - 9;
+        int bottom = top + BookRendering.DEFAULT_BOOK_HEIGHT;
         this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left - 9, top - 5, 2));
         this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
         if (useNaturalArrows)
@@ -164,12 +164,12 @@ public class GuiGuidebook extends GuiScreen
         book.setScalingFactor();
 
         float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
-        int scaledBookHeight = (int) (NavigationInfo.DEFAULT_BOOK_HEIGHT * bookScale);
+        int scaledBookHeight = (int) (BookRendering.DEFAULT_BOOK_HEIGHT * bookScale);
 
-        int left = (int) ((this.width - NavigationInfo.DEFAULT_BOOK_WIDTH * bookScale) / 2);
-        int right = (int) (left + NavigationInfo.DEFAULT_BOOK_WIDTH * bookScale);
-        int top = (int) ((this.height - NavigationInfo.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
-        int bottom = (int) (top + NavigationInfo.DEFAULT_BOOK_HEIGHT * bookScale);
+        int left = (int) ((this.width - BookRendering.DEFAULT_BOOK_WIDTH * bookScale) / 2);
+        int right = (int) (left + BookRendering.DEFAULT_BOOK_WIDTH * bookScale);
+        int top = (int) ((this.height - BookRendering.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
+        int bottom = (int) (top + BookRendering.DEFAULT_BOOK_HEIGHT * bookScale);
         buttonBack.xPosition = left - 9;
         buttonBack.yPosition = top - 5;
         buttonClose.xPosition = right - 6;

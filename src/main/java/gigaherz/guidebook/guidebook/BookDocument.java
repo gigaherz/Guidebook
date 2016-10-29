@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.client.NavigationInfo;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -650,7 +649,7 @@ public class BookDocument
 
     public interface IPageElement
     {
-        int apply(NavigationInfo nav, int left, int top);
+        int apply(IBookGraphics nav, int left, int top);
 
         default void findTextures(Set<ResourceLocation> textures)  {}
     }
@@ -662,12 +661,12 @@ public class BookDocument
 
     public interface IClickablePageElement extends IBoundedPageElement
     {
-        void click(NavigationInfo nav);
+        void click(IBookGraphics nav);
     }
 
     public interface IHoverPageElement extends IBoundedPageElement
     {
-        void mouseOver(NavigationInfo info, int x, int y);
+        void mouseOver(IBookGraphics info, int x, int y);
     }
 
     private class Paragraph implements IPageElement
@@ -687,7 +686,7 @@ public class BookDocument
         }
 
         @Override
-        public int apply(NavigationInfo nav, int left, int top)
+        public int apply(IBookGraphics nav, int left, int top)
         {
             String textWithFormat = text;
             if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
@@ -719,15 +718,15 @@ public class BookDocument
         }
 
         @Override
-        public void click(NavigationInfo nav)
+        public void click(IBookGraphics nav)
         {
             nav.navigateTo(target);
         }
 
         @Override
-        public int apply(NavigationInfo nav, int left, int top)
+        public int apply(IBookGraphics nav, int left, int top)
         {
-            bounds = nav.getStringBounds(nav, text, left, top);
+            bounds = nav.getStringBounds(text, left, top);
 
             return nav.addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
         }
@@ -743,7 +742,7 @@ public class BookDocument
         }
 
         @Override
-        public int apply(NavigationInfo nav, int left, int top)
+        public int apply(IBookGraphics nav, int left, int top)
         {
             return asPercent ? nav.getPageHeight() * space / 100 : space;
         }
@@ -762,7 +761,7 @@ public class BookDocument
         }
 
         @Override
-        public int apply(NavigationInfo nav, int left, int top)
+        public int apply(IBookGraphics nav, int left, int top)
         {
             left +=x;
             top += y;
@@ -775,7 +774,7 @@ public class BookDocument
         }
 
         @Override
-        public void mouseOver(NavigationInfo nav, int x, int y)
+        public void mouseOver(IBookGraphics nav, int x, int y)
         {
             nav.drawTooltip(stack, x, y);
         }
@@ -804,13 +803,13 @@ public class BookDocument
         }
 
         @Override
-        public int apply(NavigationInfo nav, int left, int top)
+        public int apply(IBookGraphics nav, int left, int top)
         {
             drawImage(nav, left, top);
             return 0;
         }
 
-        private void drawImage(NavigationInfo nav, int left, int top)
+        private void drawImage(IBookGraphics nav, int left, int top)
         {
             nav.drawImage(textureLocation, left+x, top+y, tx, ty, w, h, tw, th);
         }
