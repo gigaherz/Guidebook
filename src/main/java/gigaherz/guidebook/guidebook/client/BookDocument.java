@@ -24,6 +24,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.Loader;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 import org.w3c.dom.Document;
@@ -106,8 +107,8 @@ public class BookDocument
 
     private List<ChapterData> chapters = Lists.newArrayList();
 
-    private Map<String, Integer> chaptersByName = Maps.newHashMap();
-    private Map<String, PageRef> pagesByName = Maps.newHashMap();
+    private final Map<String, Integer> chaptersByName = Maps.newHashMap();
+    private final Map<String, PageRef> pagesByName = Maps.newHashMap();
 
     private int totalPairs = 0;
 
@@ -354,47 +355,90 @@ public class BookDocument
         history.push(new PageRef(currentChapter, currentPair * 2));
     }
 
-    public boolean mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
+    public boolean mouseClicked(GuiGuidebook gui, int mouseButton)
     {
+        Minecraft mc = Minecraft.getMinecraft();
+        int dw = hasScale ? sr2.scaledWidth : gui.width;
+        int dh = hasScale ? sr2.scaledHeight : gui.height;
+        int mouseX = Mouse.getX() * dw / mc.displayWidth;
+        int mouseY = dh - Mouse.getY() * dh / mc.displayHeight;
+
         if (mouseButton == 0)
         {
             ChapterData ch = chapters.get(currentChapter);
             PageData pg = ch.pages.get(currentPair * 2);
-            for (IPageElement e : pg.elements)
-            {
-                if (e instanceof Link)
-                {
-                    Link l = (Link) e;
-                    Rectangle b = l.getBounds();
-                    if (mouseX >= b.getX() && mouseX <= (b.getX() + b.getWidth()) &&
-                            mouseY >= b.getY() && mouseY <= (b.getY() + b.getHeight()))
-                    {
-                        l.click();
-                        return true;
-                    }
-                }
-            }
+            if (mouseClickPage(mouseX, mouseY, pg))
+                return true;
 
             if (currentPair * 2 + 1 < ch.pages.size())
             {
                 pg = ch.pages.get(currentPair * 2 + 1);
-                for (IPageElement e : pg.elements)
-                {
-                    if (e instanceof Link)
-                    {
-                        Link l = (Link) e;
-                        Rectangle b = l.getBounds();
-                        if (mouseX >= b.getX() && mouseX <= (b.getX() + b.getWidth()) &&
-                                mouseY >= b.getY() && mouseY <= (b.getY() + b.getHeight()))
-                        {
-                            l.click();
-                            return true;
-                        }
-                    }
-                }
+                if (mouseClickPage(mouseX, mouseY, pg))
+                    return true;
             }
         }
 
+        return false;
+    }
+
+    private boolean mouseClickPage(int mX, int mY, PageData pg)
+    {
+        for (IPageElement e : pg.elements)
+        {
+            if (e instanceof IClickablePageElement)
+            {
+                IClickablePageElement l = (IClickablePageElement) e;
+                Rectangle b = l.getBounds();
+                if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
+                        mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
+                {
+                    l.click();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean mouseHover(GuiGuidebook gui, int mouseX, int mouseY)
+    {
+        ChapterData ch = chapters.get(currentChapter);
+        PageData pg = ch.pages.get(currentPair * 2);
+        if (mouseHoverPage(gui, mouseX, mouseY, pg))
+            return true;
+
+        if (currentPair * 2 + 1 < ch.pages.size())
+        {
+            pg = ch.pages.get(currentPair * 2 + 1);
+            if (mouseHoverPage(gui, mouseX, mouseY, pg))
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean mouseHoverPage(GuiGuidebook gui, int mouseX, int mouseY, PageData pg)
+    {
+        Minecraft mc = Minecraft.getMinecraft();
+        int dw = hasScale ? sr2.scaledWidth : gui.width;
+        int dh = hasScale ? sr2.scaledHeight : gui.height;
+        int mX = Mouse.getX() * dw / mc.displayWidth;
+        int mY = dh - Mouse.getY() * dh / mc.displayHeight;
+
+        for (IPageElement e : pg.elements)
+        {
+            if (e instanceof IHoverPageElement)
+            {
+                IHoverPageElement l = (IHoverPageElement) e;
+                Rectangle b = l.getBounds();
+                if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
+                        mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
+                {
+                    l.mouseOver(gui, mouseX, mouseY);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -522,6 +566,7 @@ public class BookDocument
             {
                 page.id = n.getTextContent();
                 pagesByName.put(page.id, new PageRef(chapter.num, page.num));
+                chapter.pagesByName.put(page.id, page.num);
             }
         }
 
@@ -957,6 +1002,10 @@ public class BookDocument
                         {
                             page = pg;
                         }
+                        else
+                        {
+                            page = chapters.get(chapter).pagesByName.get(pageName);
+                        }
                     }
                 }
                 else if (pageName != null)
@@ -976,6 +1025,7 @@ public class BookDocument
         public String id;
 
         public final List<PageData> pages = Lists.newArrayList();
+        public final Map<String, Integer> pagesByName = Maps.newHashMap();
 
         public int pagePairs;
         public int startPair;
@@ -1006,6 +1056,21 @@ public class BookDocument
         default void findTextures(Set<ResourceLocation> textures)  {}
     }
 
+    private interface IBoundedPageElement extends IPageElement
+    {
+        Rectangle getBounds();
+    }
+
+    private interface IClickablePageElement extends IBoundedPageElement
+    {
+        void click();
+    }
+
+    private interface IHoverPageElement extends IBoundedPageElement
+    {
+        void mouseOver(GuiGuidebook gui, int x, int y);
+    }
+
     private class Paragraph implements IPageElement
     {
         public final String text;
@@ -1033,7 +1098,7 @@ public class BookDocument
         }
     }
 
-    private class Link extends Paragraph
+    private class Link extends Paragraph implements IClickablePageElement
     {
         public PageRef target;
         public int colorHover = 0xFF77cc66;
@@ -1087,11 +1152,13 @@ public class BookDocument
         }
     }
 
-    private class Stack implements IPageElement
+    private class Stack implements IHoverPageElement
     {
         public ItemStack stack;
         public int x = 0;
         public int y = 0;
+
+        public Rectangle bounds;
 
         public Stack()
         {
@@ -1100,8 +1167,26 @@ public class BookDocument
         @Override
         public int apply(GuiGuidebook gui, int left, int top)
         {
-            StackRenderingHelper.renderItemStack(gui.getMesher(), gui.getRenderEngine(), left + x, top + y, stack, 0xFFFFFFFF);
+            left +=x;
+            top += y;
+            int width = 16;
+            int height = 16;
+            bounds = new Rectangle(left, top, width, height);
+
+            StackRenderingHelper.renderItemStack(gui.getMesher(), gui.getRenderEngine(), left, top, stack, 0xFFFFFFFF);
             return 0;
+        }
+
+        @Override
+        public void mouseOver(GuiGuidebook gui, int x, int y)
+        {
+            gui.drawTooltip(stack, x, y);
+        }
+
+        @Override
+        public Rectangle getBounds()
+        {
+            return bounds;
         }
     }
 

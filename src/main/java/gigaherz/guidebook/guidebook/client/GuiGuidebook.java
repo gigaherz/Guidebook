@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -33,6 +34,7 @@ public class GuiGuidebook extends GuiScreen
 
     private BookDocument book;
     private AnimatedBookBackground background;
+    public static boolean useNaturalArrows = false;
 
     public GuiGuidebook(ResourceLocation book)
     {
@@ -61,10 +63,20 @@ public class GuiGuidebook extends GuiScreen
         int bottom = top + BookDocument.DEFAULT_BOOK_HEIGHT;
         this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left - 9, top - 5, 2));
         this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
-        this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1));
-        this.buttonList.add(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 0));
-        this.buttonList.add(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5));
-        this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4));
+        if (useNaturalArrows)
+        {
+            this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1));
+            this.buttonList.add(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 0));
+            this.buttonList.add(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5));
+            this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4));
+        }
+        else
+        {
+            this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 0));
+            this.buttonList.add(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 1));
+            this.buttonList.add(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 4));
+            this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 5));
+        }
         GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
 
         updateButtonStates();
@@ -180,12 +192,22 @@ public class GuiGuidebook extends GuiScreen
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        if (background.isFullyOpen())
+        {
+            book.mouseHover(this, mouseX, mouseY);
+        }
+    }
+
+    public void drawTooltip(ItemStack stack, int x, int y)
+    {
+        renderToolTip(stack, x, y);
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
     {
-        if (book.mouseClicked(mouseX, mouseY, mouseButton))
+        if (book.mouseClicked(this, mouseButton))
             return;
 
         super.mouseClicked(mouseX, mouseY, mouseButton);
