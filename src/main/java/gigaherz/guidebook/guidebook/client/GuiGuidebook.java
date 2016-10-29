@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.BookDocument;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -32,7 +33,7 @@ public class GuiGuidebook extends GuiScreen
     private ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
     private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
 
-    private BookDocument book;
+    private NavigationInfo book;
     private AnimatedBookBackground background;
     public static boolean useNaturalArrows = false;
 
@@ -50,17 +51,17 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void initGui()
     {
-        book = BookDocument.get(bookLocation);
+        book = new NavigationInfo(BookRegistry.get(bookLocation), this);
         background = new AnimatedBookBackground(this);
 
         this.buttonList.clear();
 
         int btnId = 0;
 
-        int left = (this.width - BookDocument.DEFAULT_BOOK_WIDTH) / 2;
-        int right = left + BookDocument.DEFAULT_BOOK_WIDTH;
-        int top = (this.height - BookDocument.DEFAULT_BOOK_HEIGHT) / 2 - 9;
-        int bottom = top + BookDocument.DEFAULT_BOOK_HEIGHT;
+        int left = (this.width - NavigationInfo.DEFAULT_BOOK_WIDTH) / 2;
+        int right = left + NavigationInfo.DEFAULT_BOOK_WIDTH;
+        int top = (this.height - NavigationInfo.DEFAULT_BOOK_HEIGHT) / 2 - 9;
+        int bottom = top + NavigationInfo.DEFAULT_BOOK_HEIGHT;
         this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left - 9, top - 5, 2));
         this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
         if (useNaturalArrows)
@@ -160,13 +161,15 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
-        float bookScale = book.getScalingFactor() / book.getFontSize();
-        int scaledBookHeight = (int) (BookDocument.DEFAULT_BOOK_HEIGHT * bookScale);
+        book.setScalingFactor();
 
-        int left = (int) ((this.width - BookDocument.DEFAULT_BOOK_WIDTH * bookScale) / 2);
-        int right = (int) (left + BookDocument.DEFAULT_BOOK_WIDTH * bookScale);
-        int top = (int) ((this.height - BookDocument.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
-        int bottom = (int) (top + BookDocument.DEFAULT_BOOK_HEIGHT * bookScale);
+        float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
+        int scaledBookHeight = (int) (NavigationInfo.DEFAULT_BOOK_HEIGHT * bookScale);
+
+        int left = (int) ((this.width - NavigationInfo.DEFAULT_BOOK_WIDTH * bookScale) / 2);
+        int right = (int) (left + NavigationInfo.DEFAULT_BOOK_WIDTH * bookScale);
+        int top = (int) ((this.height - NavigationInfo.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
+        int bottom = (int) (top + NavigationInfo.DEFAULT_BOOK_HEIGHT * bookScale);
         buttonBack.xPosition = left - 9;
         buttonBack.yPosition = top - 5;
         buttonClose.xPosition = right - 6;
@@ -180,22 +183,19 @@ public class GuiGuidebook extends GuiScreen
         buttonNextChapter.xPosition = right - 23;
         buttonNextChapter.yPosition = bottom - 13;
 
+
         background.draw(partialTicks, scaledBookHeight, bookScale);
 
         if (background.isFullyOpen())
         {
-            book.drawCurrentPages(this);
-        }
-        else
-        {
-            book.setScalingFactor();
+            book.drawCurrentPages();
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         if (background.isFullyOpen())
         {
-            book.mouseHover(this, mouseX, mouseY);
+            book.mouseHover(mouseX, mouseY);
         }
     }
 
@@ -207,7 +207,7 @@ public class GuiGuidebook extends GuiScreen
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
     {
-        if (book.mouseClicked(this, mouseButton))
+        if (book.mouseClicked(mouseButton))
             return;
 
         super.mouseClicked(mouseX, mouseY, mouseButton);

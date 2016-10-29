@@ -2,7 +2,7 @@ package gigaherz.guidebook.guidebook;
 
 import gigaherz.common.ItemRegistered;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.client.BookDocument;
+import gigaherz.guidebook.guidebook.client.BookRegistry;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -65,7 +65,7 @@ public class ItemGuidebook extends ItemRegistered
     @Override
     public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems)
     {
-        BookDocument.REGISTRY.keySet().stream().map(this::of).forEach(subItems::add);
+        BookRegistry.REGISTRY.keySet().stream().map(this::of).forEach(subItems::add);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class ItemGuidebook extends ItemRegistered
             String book = tag.getString("Book");
             if (book != null)
             {
-                BookDocument bookDocument = BookDocument.get(new ResourceLocation(book));
+                BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
                 if (bookDocument != null)
                 {
                     String name = bookDocument.getBookName();

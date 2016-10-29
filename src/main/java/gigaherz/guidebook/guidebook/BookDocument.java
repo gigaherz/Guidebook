@@ -1,31 +1,18 @@
-package gigaherz.guidebook.guidebook.client;
+package gigaherz.guidebook.guidebook;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
-import gigaherz.common.client.StackRenderingHelper;
 import gigaherz.guidebook.GuidebookMod;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
+import gigaherz.guidebook.guidebook.client.NavigationInfo;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.Loader;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -34,72 +21,20 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
-import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
-
-/**
- * CLIENT ONLY!
- */
 public class BookDocument
 {
-    public static final int DEFAULT_BOOK_WIDTH = 276;
-    public static final int DEFAULT_BOOK_HEIGHT = 198;
-    private static final int DEFAULT_INNER_MARGIN = 22;
-    private static final int DEFAULT_OUTER_MARGIN = 10;
-    private static final int DEFAULT_VERTICAL_MARGIN = 18;
     private static final float DEFAULT_FONT_SIZE = 1.0f;
 
-    private int bookWidth;
-    private int bookHeight;
-    private int innerMargin;
-    private int outerMargin;
-    private int verticalMargin;
-    private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
-    private int pageHeight = bookHeight - verticalMargin;
-    private boolean hasScale;
     private float fontSize;
-    private float scalingFactor;
-    private ScaledResolution2 sr2;
-
-    public static final Map<ResourceLocation, BookDocument> REGISTRY = Maps.newHashMap();
-
-    public static void registerBook(ResourceLocation loc)
-    {
-        if (Loader.instance().hasReachedState(INITIALIZATION))
-            throw new IllegalStateException("Books must be registered before init, preferably in the BookRegistryEvent.");
-        if (REGISTRY.containsKey(loc))
-            throw new KeyAlreadyExistsException("A book with this id has already been registered.");
-        BookDocument book = new BookDocument(loc);
-        REGISTRY.put(loc, book);
-    }
-
-    @Nullable
-    public static BookDocument get(ResourceLocation loc)
-    {
-        return REGISTRY.get(loc);
-    }
-
-    public static void parseAllBooks()
-    {
-        REGISTRY.values().forEach(BookDocument::parseBook);
-    }
-
-    public static void initReloadHandler()
-    {
-        IResourceManager rm = Minecraft.getMinecraft().getResourceManager();
-        if (rm instanceof IReloadableResourceManager)
-        {
-            ((IReloadableResourceManager) rm).registerReloadListener(__ -> parseAllBooks());
-        }
-    }
 
     private final ResourceLocation bookLocation;
     private String bookName;
@@ -112,97 +47,14 @@ public class BookDocument
 
     private int totalPairs = 0;
 
-    private int currentChapter = 0;
-    private int currentPair = 0;
-
-    java.util.Stack<PageRef> history = new java.util.Stack<>();
-
-    public float getScalingFactor()
-    {
-        return scalingFactor;
-    }
-
-    public float getFontSize()
-    {
-        return fontSize;
-    }
-
-    private static class ScaledResolution2
-    {
-        final double scaledWidthD;
-        final double scaledHeightD;
-        int scaledWidth;
-        int scaledHeight;
-        int scaleFactor;
-
-        public ScaledResolution2(Minecraft minecraftClient, float scaleFactorCoef)
-        {
-            this.scaledWidth = minecraftClient.displayWidth;
-            this.scaledHeight = minecraftClient.displayHeight;
-            this.scaleFactor = 1;
-            boolean flag = minecraftClient.isUnicode();
-            int i = minecraftClient.gameSettings.guiScale;
-
-            if (i == 0)
-            {
-                i = 1000;
-            }
-
-            while (this.scaleFactor < i && this.scaledWidth / (this.scaleFactor + 1) >= 320 && this.scaledHeight / (this.scaleFactor + 1) >= 240)
-            {
-                ++this.scaleFactor;
-            }
-
-            this.scaleFactor = MathHelper.floor_double(Math.max(1, this.scaleFactor * scaleFactorCoef));
-
-            if (flag && this.scaleFactor % 2 != 0 && this.scaleFactor != 1)
-            {
-                --this.scaleFactor;
-            }
-
-            this.scaledWidthD = (double)this.scaledWidth / (double)this.scaleFactor;
-            this.scaledHeightD = (double)this.scaledHeight / (double)this.scaleFactor;
-            this.scaledWidth = MathHelper.ceiling_double_int(this.scaledWidthD);
-            this.scaledHeight = MathHelper.ceiling_double_int(this.scaledHeightD);
-        }
-    }
-
-    public void setScalingFactor()
-    {
-        if (MathHelper.epsilonEquals(fontSize, 1.0f))
-        {
-            this.hasScale = false;
-            this.scalingFactor = 1.0f;
-            this.sr2 = null;
-
-            this.bookWidth = DEFAULT_BOOK_WIDTH;
-            this.bookHeight = DEFAULT_BOOK_HEIGHT;
-            this.innerMargin = DEFAULT_INNER_MARGIN;
-            this.outerMargin = DEFAULT_OUTER_MARGIN;
-            this.verticalMargin = DEFAULT_VERTICAL_MARGIN;
-        }
-        else
-        {
-            ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-            sr2 = new ScaledResolution2(Minecraft.getMinecraft(), fontSize);
-
-            this.hasScale = true;
-            this.scalingFactor = sr.getScaledHeight() / (float)sr2.scaledHeight;
-
-            this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
-            this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
-            this.innerMargin = (int) (DEFAULT_INNER_MARGIN / fontSize);
-            this.outerMargin = (int) (DEFAULT_OUTER_MARGIN / fontSize);
-            this.verticalMargin = (int) (DEFAULT_VERTICAL_MARGIN / fontSize);
-        }
-
-        this.pageWidth = this.bookWidth / 2 - this.innerMargin - this.outerMargin;
-        this.pageHeight = this.bookHeight - this.verticalMargin;
-    }
-
-    private BookDocument(ResourceLocation bookLocation)
+    public BookDocument(ResourceLocation bookLocation)
     {
         this.bookLocation = bookLocation;
+    }
+
+    public ResourceLocation getBookLocation()
+    {
+        return bookLocation;
     }
 
     @Nullable
@@ -217,19 +69,24 @@ public class BookDocument
         return bookCover;
     }
 
+    public ChapterData getChapter(int i)
+    {
+        return chapters.get(i);
+    }
+
+    public int getTotalPairCount()
+    {
+        return totalPairs;
+    }
+
+    public float getFontSize()
+    {
+        return fontSize;
+    }
+
     public int chapterCount()
     {
         return chapters.size();
-    }
-
-    public int getBookWidth()
-    {
-        return bookWidth;
-    }
-
-    public int getBookHeight()
-    {
-        return bookHeight;
     }
 
     public void findTextures(Set<ResourceLocation> textures)
@@ -250,199 +107,7 @@ public class BookDocument
         }
     }
 
-    public boolean canGoBack()
-    {
-        return (currentPair > 0 || currentChapter > 0);
-    }
-
-    public boolean canGoNextPage()
-    {
-        return (currentPair + 1 < chapters.get(currentChapter).pagePairs || currentChapter + 1 < chapters.size());
-    }
-
-    public boolean canGoPrevPage()
-    {
-        return (currentPair > 0 || currentChapter > 0);
-    }
-
-    public boolean canGoNextChapter()
-    {
-        return (currentChapter + 1 < chapters.size());
-    }
-
-    public boolean canGoPrevChapter()
-    {
-        return (currentChapter > 0);
-    }
-
-    public void navigateTo(final PageRef target)
-    {
-        pushHistory();
-
-        target.resolve();
-        currentChapter = Math.max(0, Math.min(chapters.size() - 1, target.chapter));
-        currentPair = Math.max(0, Math.min(chapters.get(currentChapter).pagePairs - 1, target.page / 2));
-    }
-
-    public void nextPage()
-    {
-        if (currentPair + 1 < chapters.get(currentChapter).pagePairs)
-        {
-            pushHistory();
-            currentPair++;
-        }
-        else if (currentChapter + 1 < chapters.size())
-        {
-            pushHistory();
-            currentPair = 0;
-            currentChapter++;
-        }
-    }
-
-    public void prevPage()
-    {
-        if (currentPair > 0)
-        {
-            pushHistory();
-            currentPair--;
-        }
-        else if (currentChapter > 0)
-        {
-            pushHistory();
-            currentChapter--;
-            currentPair = chapters.get(currentChapter).pagePairs - 1;
-        }
-    }
-
-    public void nextChapter()
-    {
-        if (currentChapter + 1 < chapters.size())
-        {
-            pushHistory();
-            currentPair = 0;
-            currentChapter++;
-        }
-    }
-
-    public void prevChapter()
-    {
-        if (currentChapter > 0)
-        {
-            pushHistory();
-            currentPair = 0;
-            currentChapter--;
-        }
-    }
-
-    public void navigateBack()
-    {
-        if (history.size() > 0)
-        {
-            PageRef target = history.pop();
-            target.resolve();
-            currentChapter = target.chapter;
-            currentPair = target.page / 2;
-        }
-        else
-        {
-            currentChapter = 0;
-            currentPair = 0;
-        }
-    }
-
-    private void pushHistory()
-    {
-        history.push(new PageRef(currentChapter, currentPair * 2));
-    }
-
-    public boolean mouseClicked(GuiGuidebook gui, int mouseButton)
-    {
-        Minecraft mc = Minecraft.getMinecraft();
-        int dw = hasScale ? sr2.scaledWidth : gui.width;
-        int dh = hasScale ? sr2.scaledHeight : gui.height;
-        int mouseX = Mouse.getX() * dw / mc.displayWidth;
-        int mouseY = dh - Mouse.getY() * dh / mc.displayHeight;
-
-        if (mouseButton == 0)
-        {
-            ChapterData ch = chapters.get(currentChapter);
-            PageData pg = ch.pages.get(currentPair * 2);
-            if (mouseClickPage(mouseX, mouseY, pg))
-                return true;
-
-            if (currentPair * 2 + 1 < ch.pages.size())
-            {
-                pg = ch.pages.get(currentPair * 2 + 1);
-                if (mouseClickPage(mouseX, mouseY, pg))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean mouseClickPage(int mX, int mY, PageData pg)
-    {
-        for (IPageElement e : pg.elements)
-        {
-            if (e instanceof IClickablePageElement)
-            {
-                IClickablePageElement l = (IClickablePageElement) e;
-                Rectangle b = l.getBounds();
-                if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
-                        mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
-                {
-                    l.click();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean mouseHover(GuiGuidebook gui, int mouseX, int mouseY)
-    {
-        ChapterData ch = chapters.get(currentChapter);
-        PageData pg = ch.pages.get(currentPair * 2);
-        if (mouseHoverPage(gui, mouseX, mouseY, pg))
-            return true;
-
-        if (currentPair * 2 + 1 < ch.pages.size())
-        {
-            pg = ch.pages.get(currentPair * 2 + 1);
-            if (mouseHoverPage(gui, mouseX, mouseY, pg))
-                return true;
-        }
-
-        return false;
-    }
-
-    private boolean mouseHoverPage(GuiGuidebook gui, int mouseX, int mouseY, PageData pg)
-    {
-        Minecraft mc = Minecraft.getMinecraft();
-        int dw = hasScale ? sr2.scaledWidth : gui.width;
-        int dh = hasScale ? sr2.scaledHeight : gui.height;
-        int mX = Mouse.getX() * dw / mc.displayWidth;
-        int mY = dh - Mouse.getY() * dh / mc.displayHeight;
-
-        for (IPageElement e : pg.elements)
-        {
-            if (e instanceof IHoverPageElement)
-            {
-                IHoverPageElement l = (IHoverPageElement) e;
-                Rectangle b = l.getBounds();
-                if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
-                        mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
-                {
-                    l.mouseOver(gui, mouseX, mouseY);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public void parseBook()
+    public void parseBook(InputStream stream)
     {
         try
         {
@@ -450,17 +115,12 @@ public class BookDocument
             bookName = "";
             bookCover = null;
             totalPairs = 0;
-            currentChapter = 0;
-            currentPair = 0;
             chaptersByName.clear();
             pagesByName.clear();
-            history.clear();
-
-            IResource res = Minecraft.getMinecraft().getResourceManager().getResource(bookLocation);
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(res.getInputStream());
+            Document doc = dBuilder.parse(stream);
 
             doc.getDocumentElement().normalize();
 
@@ -505,15 +165,20 @@ public class BookDocument
         }
         catch (IOException | ParserConfigurationException | SAXException e)
         {
-            ChapterData ch = new ChapterData(0);
-            chapters.add(ch);
-
-            PageData pg = new PageData(0);
-            ch.pages.add(pg);
-
-            pg.elements.add(new Paragraph("Error loading book:"));
-            pg.elements.add(new Paragraph(TextFormatting.RED + e.toString()));
+            initializeWithLoadError(e);
         }
+    }
+
+    public void initializeWithLoadError(Exception e)
+    {
+        ChapterData ch = new ChapterData(0);
+        chapters.add(ch);
+
+        PageData pg = new PageData(0);
+        ch.pages.add(pg);
+
+        pg.elements.add(new Paragraph("Error loading book:"));
+        pg.elements.add(new Paragraph(TextFormatting.RED + e.toString()));
     }
 
     private void parseChapter(Node chapterItem)
@@ -706,7 +371,6 @@ public class BookDocument
         if (attr != null)
         {
             i.textureLocation = new ResourceLocation(attr.getTextContent());
-            i.textureLocationExpanded = new ResourceLocation(i.textureLocation.getResourceDomain(), "textures/" + i.textureLocation.getResourcePath() + ".png");
         }
     }
 
@@ -887,77 +551,7 @@ public class BookDocument
         }
     }
 
-    public void drawCurrentPages(GuiGuidebook gui)
-    {
-        setScalingFactor();
-
-        int guiWidth = gui.width;
-        int guiHeight = gui.height;
-
-        if(hasScale)
-        {
-            GlStateManager.pushMatrix();
-            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
-
-            guiWidth = sr2.scaledWidth;
-            guiHeight = sr2.scaledHeight;
-        }
-
-        int left = guiWidth / 2 - pageWidth - innerMargin;
-        int right = guiWidth / 2 + innerMargin;
-        int top = (guiHeight - pageHeight) / 2 - 9;
-        int bottom = top + pageHeight - 3;
-
-        drawPage(gui, left, top, currentPair * 2);
-        drawPage(gui, right, top, currentPair * 2 + 1);
-
-        String cnt = "" + ((chapters.get(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (totalPairs * 2);
-        addStringWrapping(gui, left, bottom, cnt, 0xFF000000, 1);
-
-        if (hasScale)
-        {
-            GlStateManager.popMatrix();
-        }
-    }
-
-    private void drawPage(GuiGuidebook gui, int left, int top, int page)
-    {
-        ChapterData ch = chapters.get(currentChapter);
-        if (page >= ch.pages.size())
-            return;
-
-        PageData pg = ch.pages.get(page);
-
-        for (IPageElement e : pg.elements)
-        {
-            top += e.apply(gui, left, top);
-        }
-    }
-
-    private int addStringWrapping(GuiGuidebook gui, int left, int top, String s, int color, int align)
-    {
-        FontRenderer fontRenderer = gui.getFontRenderer();
-
-        if (align == 1)
-        {
-            left += (pageWidth - getSplitWidth(fontRenderer, s)) / 2;
-        }
-        else if (align == 2)
-        {
-            left += pageWidth - getSplitWidth(fontRenderer, s);
-        }
-
-        fontRenderer.drawSplitString(s, left, top, pageWidth, color);
-        return fontRenderer.splitStringWidth(s, pageWidth);
-    }
-
-    private int getSplitWidth(FontRenderer fontRenderer, String s)
-    {
-        int height = fontRenderer.splitStringWidth(s, pageWidth);
-        return height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(s);
-    }
-
-    private class PageRef
+    public class PageRef
     {
         public int chapter;
         public int page;
@@ -966,7 +560,7 @@ public class BookDocument
         public String chapterName;
         public String pageName;
 
-        private PageRef(int chapter, int page)
+        public PageRef(int chapter, int page)
         {
             this.chapter = chapter;
             this.page = page;
@@ -1019,7 +613,7 @@ public class BookDocument
         }
     }
 
-    private class ChapterData
+    public class ChapterData
     {
         public final int num;
         public String id;
@@ -1034,9 +628,14 @@ public class BookDocument
         {
             this.num = num;
         }
+
+        public int pairCount()
+        {
+            return pagePairs;
+        }
     }
 
-    private class PageData
+    public class PageData
     {
         public final int num;
         public String id;
@@ -1049,9 +648,9 @@ public class BookDocument
         }
     }
 
-    private interface IPageElement
+    public interface IPageElement
     {
-        int apply(GuiGuidebook gui, int left, int top);
+        int apply(NavigationInfo nav, int left, int top);
 
         default void findTextures(Set<ResourceLocation> textures)  {}
     }
@@ -1061,14 +660,14 @@ public class BookDocument
         Rectangle getBounds();
     }
 
-    private interface IClickablePageElement extends IBoundedPageElement
+    public interface IClickablePageElement extends IBoundedPageElement
     {
-        void click();
+        void click(NavigationInfo nav);
     }
 
-    private interface IHoverPageElement extends IBoundedPageElement
+    public interface IHoverPageElement extends IBoundedPageElement
     {
-        void mouseOver(GuiGuidebook gui, int x, int y);
+        void mouseOver(NavigationInfo info, int x, int y);
     }
 
     private class Paragraph implements IPageElement
@@ -1088,13 +687,13 @@ public class BookDocument
         }
 
         @Override
-        public int apply(GuiGuidebook gui, int left, int top)
+        public int apply(NavigationInfo nav, int left, int top)
         {
             String textWithFormat = text;
             if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
             if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
             if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
-            return addStringWrapping(gui, left + indent, top, textWithFormat, color, alignment) + space;
+            return nav.addStringWrapping(left + indent, top, textWithFormat, color, alignment) + space;
         }
     }
 
@@ -1113,26 +712,24 @@ public class BookDocument
             color = 0xFF7766cc;
         }
 
+        @Override
         public Rectangle getBounds()
         {
             return bounds;
         }
 
-        public void click()
+        @Override
+        public void click(NavigationInfo nav)
         {
-            navigateTo(target);
+            nav.navigateTo(target);
         }
 
         @Override
-        public int apply(GuiGuidebook gui, int left, int top)
+        public int apply(NavigationInfo nav, int left, int top)
         {
-            FontRenderer fontRenderer = gui.getFontRenderer();
+            bounds = nav.getStringBounds(nav, text, left, top);
 
-            int height = fontRenderer.splitStringWidth(text, pageWidth);
-            int width = height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(text);
-            bounds = new Rectangle(left, top, width, height);
-
-            return addStringWrapping(gui, left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
+            return nav.addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
         }
     }
 
@@ -1146,9 +743,9 @@ public class BookDocument
         }
 
         @Override
-        public int apply(GuiGuidebook gui, int left, int top)
+        public int apply(NavigationInfo nav, int left, int top)
         {
-            return asPercent ? pageHeight * space / 100 : space;
+            return asPercent ? nav.getPageHeight() * space / 100 : space;
         }
     }
 
@@ -1165,7 +762,7 @@ public class BookDocument
         }
 
         @Override
-        public int apply(GuiGuidebook gui, int left, int top)
+        public int apply(NavigationInfo nav, int left, int top)
         {
             left +=x;
             top += y;
@@ -1173,14 +770,14 @@ public class BookDocument
             int height = 16;
             bounds = new Rectangle(left, top, width, height);
 
-            StackRenderingHelper.renderItemStack(gui.getMesher(), gui.getRenderEngine(), left, top, stack, 0xFFFFFFFF);
+            nav.drawItemStack(left, top, stack, 0xFFFFFFFF);
             return 0;
         }
 
         @Override
-        public void mouseOver(GuiGuidebook gui, int x, int y)
+        public void mouseOver(NavigationInfo nav, int x, int y)
         {
-            gui.drawTooltip(stack, x, y);
+            nav.drawTooltip(stack, x, y);
         }
 
         @Override
@@ -1193,7 +790,6 @@ public class BookDocument
     private class Image implements IPageElement
     {
         public ResourceLocation textureLocation;
-        public ResourceLocation textureLocationExpanded;
         public int x = 0;
         public int y = 0;
         public int w = 0;
@@ -1208,33 +804,15 @@ public class BookDocument
         }
 
         @Override
-        public int apply(GuiGuidebook gui, int left, int top)
+        public int apply(NavigationInfo nav, int left, int top)
         {
-            if (w == 0 || h == 0)
-            {
-                TextureAtlasSprite tas = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLocation.toString());
-                if (w == 0) w = tas.getIconWidth();
-                if (h == 0) h = tas.getIconHeight();
-            }
-
-            int sw = tw != 0 ? tw : w;
-            int sh = th != 0 ? th : h;
-            gui.getRenderEngine().bindTexture(textureLocationExpanded);
-
-            drawImage(left+x, top+y, tx, ty, w, h, sw, sh);
+            drawImage(nav, left, top);
             return 0;
         }
 
-        private void drawImage(int x, int y, int tx, int ty, int w, int h, int sw, int sh)
+        private void drawImage(NavigationInfo nav, int left, int top)
         {
-            GlStateManager.enableRescaleNormal();
-            GlStateManager.enableAlpha();
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
-            GlStateManager.enableBlend();
-            GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-
-            Gui.drawModalRectWithCustomSizedTexture(x, y, tx, ty, w, h, sw, sh);
+            nav.drawImage(textureLocation, left+x, top+y, tx, ty, w, h, tw, th);
         }
 
         @Override

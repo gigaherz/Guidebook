@@ -4,7 +4,8 @@ import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
-import gigaherz.guidebook.guidebook.client.BookDocument;
+import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -34,7 +35,7 @@ public class ClientProxy implements IModProxy
     {
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
-        BookDocument.parseAllBooks();
+        BookRegistry.parseAllBooks();
     }
 
     @Override
@@ -42,14 +43,14 @@ public class ClientProxy implements IModProxy
     {
         ModelHandle.init();
 
-        BookDocument.initReloadHandler();
+        BookRegistry.initReloadHandler();
     }
 
     @Override
     public void displayBook(String book)
     {
         ResourceLocation loc = new ResourceLocation(book);
-        BookDocument br = BookDocument.get(loc);
+        BookDocument br = BookRegistry.get(loc);
         if (br.chapterCount() > 0)
             Minecraft.getMinecraft().displayGuiScreen(new GuiGuidebook(loc));
     }

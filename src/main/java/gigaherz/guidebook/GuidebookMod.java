@@ -1,8 +1,8 @@
 package gigaherz.guidebook;
 
 import gigaherz.guidebook.common.IModProxy;
-import gigaherz.guidebook.guidebook.client.BookDocument;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
+import gigaherz.guidebook.guidebook.client.BookRegistry;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -52,7 +52,7 @@ public class GuidebookMod
     {
         logger = event.getModLog();
 
-        BookDocument.registerBook(new ResourceLocation("guidebook:xml/guidebook.xml"));
+        BookRegistry.registerBook(new ResourceLocation("guidebook:xml/guidebook.xml"));
 
         proxy.preInit();
     }
