@@ -49,16 +49,16 @@ public class GuiGuidebook extends GuiScreen
     public void initGui()
     {
         book = BookDocument.get(bookLocation);
-        background = new AnimatedBookBackground(this, book.getBookHeight());
+        background = new AnimatedBookBackground(this);
 
         this.buttonList.clear();
 
         int btnId = 0;
 
-        int left = (this.width - book.getBookWidth()) / 2;
-        int right = left + book.getBookWidth();
-        int top = (this.height - book.getBookHeight()) / 2 - 9;
-        int bottom = top + book.getBookHeight();
+        int left = (this.width - BookDocument.DEFAULT_BOOK_WIDTH) / 2;
+        int right = left + BookDocument.DEFAULT_BOOK_WIDTH;
+        int top = (this.height - BookDocument.DEFAULT_BOOK_HEIGHT) / 2 - 9;
+        int bottom = top + BookDocument.DEFAULT_BOOK_HEIGHT;
         this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left - 9, top - 5, 2));
         this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
         this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1));
@@ -66,7 +66,6 @@ public class GuiGuidebook extends GuiScreen
         this.buttonList.add(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5));
         this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4));
         GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
-
 
         updateButtonStates();
     }
@@ -149,11 +148,35 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
-        background.draw(partialTicks);
+        float bookScale = book.getScalingFactor() / book.getFontSize();
+        int scaledBookHeight = (int) (BookDocument.DEFAULT_BOOK_HEIGHT * bookScale);
+
+        int left = (int) ((this.width - BookDocument.DEFAULT_BOOK_WIDTH * bookScale) / 2);
+        int right = (int) (left + BookDocument.DEFAULT_BOOK_WIDTH * bookScale);
+        int top = (int) ((this.height - BookDocument.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
+        int bottom = (int) (top + BookDocument.DEFAULT_BOOK_HEIGHT * bookScale);
+        buttonBack.xPosition = left - 9;
+        buttonBack.yPosition = top - 5;
+        buttonClose.xPosition = right - 6;
+        buttonClose.yPosition = top - 6;
+        buttonPreviousPage.xPosition = left + 24;
+        buttonPreviousPage.yPosition = bottom - 13;
+        buttonNextPage.xPosition = right - 42;
+        buttonNextPage.yPosition = bottom - 13;
+        buttonPreviousChapter.xPosition = left + 2;
+        buttonPreviousChapter.yPosition = bottom - 13;
+        buttonNextChapter.xPosition = right - 23;
+        buttonNextChapter.yPosition = bottom - 13;
+
+        background.draw(partialTicks, scaledBookHeight, bookScale);
 
         if (background.isFullyOpen())
         {
             book.drawCurrentPages(this);
+        }
+        else
+        {
+            book.setScalingFactor();
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);

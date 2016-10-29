@@ -2,31 +2,27 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.common.client.StackRenderingHelper;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.Loader;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
@@ -53,13 +49,24 @@ import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
  */
 public class BookDocument
 {
-    private int bookWidth = 276;
-    private int bookHeight = 198;
-    private int innerMargin = 22;
-    private int outerMargin = 10;
-    private int verticalMargin = 18;
+    public static final int DEFAULT_BOOK_WIDTH = 276;
+    public static final int DEFAULT_BOOK_HEIGHT = 198;
+    private static final int DEFAULT_INNER_MARGIN = 22;
+    private static final int DEFAULT_OUTER_MARGIN = 10;
+    private static final int DEFAULT_VERTICAL_MARGIN = 18;
+    private static final float DEFAULT_FONT_SIZE = 1.0f;
+
+    private int bookWidth;
+    private int bookHeight;
+    private int innerMargin;
+    private int outerMargin;
+    private int verticalMargin;
     private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
     private int pageHeight = bookHeight - verticalMargin;
+    private boolean hasScale;
+    private float fontSize;
+    private float scalingFactor;
+    private ScaledResolution2 sr2;
 
     public static final Map<ResourceLocation, BookDocument> REGISTRY = Maps.newHashMap();
 
@@ -108,6 +115,89 @@ public class BookDocument
     private int currentPair = 0;
 
     java.util.Stack<PageRef> history = new java.util.Stack<>();
+
+    public float getScalingFactor()
+    {
+        return scalingFactor;
+    }
+
+    public float getFontSize()
+    {
+        return fontSize;
+    }
+
+    private static class ScaledResolution2
+    {
+        final double scaledWidthD;
+        final double scaledHeightD;
+        int scaledWidth;
+        int scaledHeight;
+        int scaleFactor;
+
+        public ScaledResolution2(Minecraft minecraftClient, float scaleFactorCoef)
+        {
+            this.scaledWidth = minecraftClient.displayWidth;
+            this.scaledHeight = minecraftClient.displayHeight;
+            this.scaleFactor = 1;
+            boolean flag = minecraftClient.isUnicode();
+            int i = minecraftClient.gameSettings.guiScale;
+
+            if (i == 0)
+            {
+                i = 1000;
+            }
+
+            while (this.scaleFactor < i && this.scaledWidth / (this.scaleFactor + 1) >= 320 && this.scaledHeight / (this.scaleFactor + 1) >= 240)
+            {
+                ++this.scaleFactor;
+            }
+
+            this.scaleFactor = MathHelper.floor_double(Math.max(1, this.scaleFactor * scaleFactorCoef));
+
+            if (flag && this.scaleFactor % 2 != 0 && this.scaleFactor != 1)
+            {
+                --this.scaleFactor;
+            }
+
+            this.scaledWidthD = (double)this.scaledWidth / (double)this.scaleFactor;
+            this.scaledHeightD = (double)this.scaledHeight / (double)this.scaleFactor;
+            this.scaledWidth = MathHelper.ceiling_double_int(this.scaledWidthD);
+            this.scaledHeight = MathHelper.ceiling_double_int(this.scaledHeightD);
+        }
+    }
+
+    public void setScalingFactor()
+    {
+        if (MathHelper.epsilonEquals(fontSize, 1.0f))
+        {
+            this.hasScale = false;
+            this.scalingFactor = 1.0f;
+            this.sr2 = null;
+
+            this.bookWidth = DEFAULT_BOOK_WIDTH;
+            this.bookHeight = DEFAULT_BOOK_HEIGHT;
+            this.innerMargin = DEFAULT_INNER_MARGIN;
+            this.outerMargin = DEFAULT_OUTER_MARGIN;
+            this.verticalMargin = DEFAULT_VERTICAL_MARGIN;
+        }
+        else
+        {
+            ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
+            sr2 = new ScaledResolution2(Minecraft.getMinecraft(), fontSize);
+
+            this.hasScale = true;
+            this.scalingFactor = sr.getScaledHeight() / (float)sr2.scaledHeight;
+
+            this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
+            this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
+            this.innerMargin = (int) (DEFAULT_INNER_MARGIN / fontSize);
+            this.outerMargin = (int) (DEFAULT_OUTER_MARGIN / fontSize);
+            this.verticalMargin = (int) (DEFAULT_VERTICAL_MARGIN / fontSize);
+        }
+
+        this.pageWidth = this.bookWidth / 2 - this.innerMargin - this.outerMargin;
+        this.pageHeight = this.bookHeight - this.verticalMargin;
+    }
 
     private BookDocument(ResourceLocation bookLocation)
     {
@@ -345,6 +435,12 @@ public class BookDocument
                 {
                     bookCover = new ResourceLocation(n.getTextContent());
                 }
+                n = rootAttributes.getNamedItem("fontSize");
+                if (n != null)
+                {
+                    Float f = Floats.tryParse(n.getTextContent());
+                    fontSize = f != null ? f : DEFAULT_FONT_SIZE;
+                }
             }
 
             NodeList chaptersList = root.getChildNodes();
@@ -447,13 +543,18 @@ public class BookDocument
             }
             else if (elementItem.getNodeName().equals("title"))
             {
-                Title title = new Title(elementItem.getTextContent());
-                page.elements.add(title);
+                Paragraph p = new Paragraph(elementItem.getTextContent());
+                p.alignment = 1;
+                p.space = 4;
+                p.underline = true;
+                p.italics = true;
+
+                page.elements.add(p);
 
                 if (elementItem.hasAttributes())
                 {
                     NamedNodeMap pageAttributes = elementItem.getAttributes();
-                    parseParagraphAttributes(title, pageAttributes);
+                    parseParagraphAttributes(p, pageAttributes);
                 }
             }
             else if (elementItem.getNodeName().equals("link"))
@@ -507,56 +608,56 @@ public class BookDocument
         }
     }
 
-    private void parseImageAttributes(Image i, NamedNodeMap pageAttributes)
+    private void parseImageAttributes(Image i, NamedNodeMap attributes)
     {
-        Node attr = pageAttributes.getNamedItem("x");
+        Node attr = attributes.getNamedItem("x");
         if (attr != null)
         {
             i.x = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("y");
+        attr = attributes.getNamedItem("y");
         if (attr != null)
         {
             i.y = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("w");
+        attr = attributes.getNamedItem("w");
         if (attr != null)
         {
             i.w = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("h");
+        attr = attributes.getNamedItem("h");
         if (attr != null)
         {
             i.h = Ints.tryParse(attr.getTextContent());
         }
-        attr = pageAttributes.getNamedItem("tx");
+        attr = attributes.getNamedItem("tx");
         if (attr != null)
         {
             i.tx = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("ty");
+        attr = attributes.getNamedItem("ty");
         if (attr != null)
         {
             i.ty = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("tw");
+        attr = attributes.getNamedItem("tw");
         if (attr != null)
         {
             i.tw = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("th");
+        attr = attributes.getNamedItem("th");
         if (attr != null)
         {
             i.th = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("src");
+        attr = attributes.getNamedItem("src");
         if (attr != null)
         {
             i.textureLocation = new ResourceLocation(attr.getTextContent());
@@ -564,25 +665,25 @@ public class BookDocument
         }
     }
 
-    private void parseStackAttributes(Stack s, NamedNodeMap pageAttributes)
+    private void parseStackAttributes(Stack s, NamedNodeMap attributes)
     {
         int meta = 0;
         int stackSize = 1;
         NBTTagCompound tag = new NBTTagCompound();
 
-        Node attr = pageAttributes.getNamedItem("meta");
+        Node attr = attributes.getNamedItem("meta");
         if (attr != null)
         {
             meta = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("count");
+        attr = attributes.getNamedItem("count");
         if (attr != null)
         {
             stackSize = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("tag");
+        attr = attributes.getNamedItem("tag");
         if (attr != null)
         {
             try
@@ -595,7 +696,7 @@ public class BookDocument
             }
         }
 
-        attr = pageAttributes.getNamedItem("item");
+        attr = attributes.getNamedItem("item");
         if (attr != null)
         {
             String itemName = attr.getTextContent();
@@ -609,22 +710,22 @@ public class BookDocument
             }
         }
 
-        attr = pageAttributes.getNamedItem("x");
+        attr = attributes.getNamedItem("x");
         if (attr != null)
         {
             s.x = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("y");
+        attr = attributes.getNamedItem("y");
         if (attr != null)
         {
             s.y = Ints.tryParse(attr.getTextContent());
         }
     }
 
-    private void parseSpaceAttributes(Space s, NamedNodeMap pageAttributes)
+    private void parseSpaceAttributes(Space s, NamedNodeMap attributes)
     {
-        Node attr = pageAttributes.getNamedItem("height");
+        Node attr = attributes.getNamedItem("height");
         if (attr != null)
         {
             String t = attr.getTextContent();
@@ -638,11 +739,11 @@ public class BookDocument
         }
     }
 
-    private void parseLinkAttributes(Link link, NamedNodeMap pageAttributes)
+    private void parseLinkAttributes(Link link, NamedNodeMap attributes)
     {
-        parseParagraphAttributes(link, pageAttributes);
+        parseParagraphAttributes(link, attributes);
 
-        Node attr = pageAttributes.getNamedItem("ref");
+        Node attr = attributes.getNamedItem("ref");
         if (attr != null)
         {
             String ref = attr.getTextContent();
@@ -659,9 +760,9 @@ public class BookDocument
         }
     }
 
-    private void parseParagraphAttributes(Paragraph p, NamedNodeMap pageAttributes)
+    private void parseParagraphAttributes(Paragraph p, NamedNodeMap attributes)
     {
-        Node attr = pageAttributes.getNamedItem("align");
+        Node attr = attributes.getNamedItem("align");
         if (attr != null)
         {
             String a = attr.getTextContent();
@@ -679,19 +780,43 @@ public class BookDocument
             }
         }
 
-        attr = pageAttributes.getNamedItem("indent");
+        attr = attributes.getNamedItem("indent");
         if (attr != null)
         {
             p.indent = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("space");
+        attr = attributes.getNamedItem("space");
         if (attr != null)
         {
             p.space = Ints.tryParse(attr.getTextContent());
         }
 
-        attr = pageAttributes.getNamedItem("color");
+        attr = attributes.getNamedItem("bold");
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if ("".equals(text) || "true".equals(text))
+                p.bold = true;
+        }
+
+        attr = attributes.getNamedItem("italics");
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if ("".equals(text) || "true".equals(text))
+                p.italics = true;
+        }
+
+        attr = attributes.getNamedItem("underline");
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if ("".equals(text) || "true".equals(text))
+                p.underline = true;
+        }
+
+        attr = attributes.getNamedItem("color");
         if (attr != null)
         {
             String c = attr.getTextContent();
@@ -719,16 +844,35 @@ public class BookDocument
 
     public void drawCurrentPages(GuiGuidebook gui)
     {
-        int left = gui.width / 2 - pageWidth - innerMargin;
-        int right = gui.width / 2 + innerMargin;
-        int top = (gui.height - pageHeight) / 2 - 9;
-        int bottom = top + pageHeight;
+        setScalingFactor();
+
+        int guiWidth = gui.width;
+        int guiHeight = gui.height;
+
+        if(hasScale)
+        {
+            GlStateManager.pushMatrix();
+            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
+
+            guiWidth = sr2.scaledWidth;
+            guiHeight = sr2.scaledHeight;
+        }
+
+        int left = guiWidth / 2 - pageWidth - innerMargin;
+        int right = guiWidth / 2 + innerMargin;
+        int top = (guiHeight - pageHeight) / 2 - 9;
+        int bottom = top + pageHeight - 3;
 
         drawPage(gui, left, top, currentPair * 2);
         drawPage(gui, right, top, currentPair * 2 + 1);
 
         String cnt = "" + ((chapters.get(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (totalPairs * 2);
         addStringWrapping(gui, left, bottom, cnt, 0xFF000000, 1);
+
+        if (hasScale)
+        {
+            GlStateManager.popMatrix();
+        }
     }
 
     private void drawPage(GuiGuidebook gui, int left, int top, int page)
@@ -751,15 +895,21 @@ public class BookDocument
 
         if (align == 1)
         {
-            left += (pageWidth - fontRenderer.getStringWidth(s)) / 2;
+            left += (pageWidth - getSplitWidth(fontRenderer, s)) / 2;
         }
         else if (align == 2)
         {
-            left += pageWidth - fontRenderer.getStringWidth(s);
+            left += pageWidth - getSplitWidth(fontRenderer, s);
         }
 
         fontRenderer.drawSplitString(s, left, top, pageWidth, color);
         return fontRenderer.splitStringWidth(s, pageWidth);
+    }
+
+    private int getSplitWidth(FontRenderer fontRenderer, String s)
+    {
+        int height = fontRenderer.splitStringWidth(s, pageWidth);
+        return height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(s);
     }
 
     private class PageRef
@@ -863,6 +1013,9 @@ public class BookDocument
         public int color = 0xFF000000;
         public int indent = 0;
         public int space = 2;
+        public boolean bold;
+        public boolean italics;
+        public boolean underline;
 
         public Paragraph(String text)
         {
@@ -872,7 +1025,11 @@ public class BookDocument
         @Override
         public int apply(GuiGuidebook gui, int left, int top)
         {
-            return addStringWrapping(gui, left + indent, top, text, color, alignment) + space;
+            String textWithFormat = text;
+            if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
+            if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
+            if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
+            return addStringWrapping(gui, left + indent, top, textWithFormat, color, alignment) + space;
         }
     }
 
@@ -886,7 +1043,8 @@ public class BookDocument
 
         public Link(String text)
         {
-            super(TextFormatting.UNDERLINE + text);
+            super(text);
+            underline = true;
             color = 0xFF7766cc;
         }
 
@@ -910,16 +1068,6 @@ public class BookDocument
             bounds = new Rectangle(left, top, width, height);
 
             return addStringWrapping(gui, left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
-        }
-    }
-
-    private class Title extends Paragraph
-    {
-        public Title(String text)
-        {
-            super(TextFormatting.ITALIC + "" + TextFormatting.UNDERLINE + text);
-            alignment = 1;
-            space = 4;
         }
     }
 

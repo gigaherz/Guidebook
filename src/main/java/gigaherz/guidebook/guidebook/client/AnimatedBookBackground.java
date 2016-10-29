@@ -28,12 +28,10 @@ public class AnimatedBookBackground
     private final ModelHandle book90 = ModelHandle.of("guidebook:gui/book90.obj").vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
     private final GuiGuidebook gui;
-    private final int bookHeight;
 
-    public AnimatedBookBackground(GuiGuidebook gui, int bookHeight)
+    public AnimatedBookBackground(GuiGuidebook gui)
     {
         this.gui = gui;
-        this.bookHeight = bookHeight;
     }
 
     public void startClosing()
@@ -63,9 +61,8 @@ public class AnimatedBookBackground
         return false;
     }
 
-    public void draw(float partialTicks)
+    public void draw(float partialTicks, int bookHeight, float scalingFactor)
     {
-
         IBakedModel modelBookA, modelBookB;
 
         float angleX;
@@ -118,8 +115,7 @@ public class AnimatedBookBackground
         GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight / 2 - 4, 50);
         GlStateManager.rotate(180, 0, 1, 0);
         GlStateManager.rotate(-130, 1, 0, 0);
-        GlStateManager.scale(2.0f, 2.0f, 2.5f);
-        GlStateManager.scale(1.08f, 1.08f, 1.08f);
+        GlStateManager.scale(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
 
         GlStateManager.rotate(angleX * 1.1f, 0, 0, 1);
 
@@ -148,7 +144,7 @@ public class AnimatedBookBackground
         GlStateManager.disableDepth();
     }
 
-    public static void renderModel(IBakedModel model)
+    private static void renderModel(IBakedModel model)
     {
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer worldrenderer = tessellator.getBuffer();
@@ -160,7 +156,7 @@ public class AnimatedBookBackground
         tessellator.draw();
     }
 
-    public static void renderModelInterpolate(IBakedModel modelA, IBakedModel modelB, float blend)
+    private static void renderModelInterpolate(IBakedModel modelA, IBakedModel modelB, float blend)
     {
         VertexFormat fmt = DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL;
         Tessellator tessellator = Tessellator.getInstance();

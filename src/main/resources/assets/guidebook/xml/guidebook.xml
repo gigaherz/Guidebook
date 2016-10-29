@@ -1,4 +1,4 @@
-<book title="Guidebook Manual" cover="guidebook:covers/default">
+<book title="Guidebook Manual" cover="guidebook:covers/default" fontSize="0.6">
   <chapter>
     <page>
       <!--
@@ -23,15 +23,16 @@
     </page>
     <page>
       <title>Index</title>
-      <link ref="basic"  >1. Getting Started</link>
-      <link ref="pages" >2. Chapters and Pages</link>
-      <link ref="images"  >3. Images and Links</link>
-      <link ref="stacks" >4. Item Stacks</link>
-      <link ref="recipes">5. Recipes (UPCOMING)</link>
-      <link ref="templates">6. Templates (UPCOMING)</link>
+      <link ref="start">1. Getting Started</link>
+      <link ref="start:pages">1.1. Chapters and Pages</link>
+      <link ref="start:text">1.2. Paragraphs and titles</link>
+      <link ref="start:images">1.3. Images and Links</link>
+      <link ref="start:stacks">1.4. Item Stacks</link>
+      <link ref="templates">2. Templates (UPCOMING)</link>
+      <link ref="templates:recipes">2.1. Recipes (UPCOMING)</link>
     </page>
   </chapter>
-  <chapter id="basic">
+  <chapter id="start">
     <page>
       <title>Getting Started</title>
       <p space="8">Book files are XML documents. At the root is the 'book' tag. This tag has two optional attributes: 'title', for the name shown in the item tooltip, and 'cover', for the resource location of a cover texture.</p>
@@ -39,15 +40,38 @@
       <p indent="16">...</p>
       <p indent="8">&lt;/book&gt;</p>
     </page>
-  </chapter>
-  <chapter id="pages">
-    <page>
+    <page id="pages">
       <title>Chapters and Pages</title>
-      <p>CONTENT UPCOMING</p>
+      <p>Books are split into chapters. At least one chapter must be present. Chapters have an optional 'id' attribute for use in links.</p>
+      <p>Chapters are split into pages. Pages can also have an 'id' attribute.</p>
+      <p indent="8">&lt;chapter id=&quot;ch1&quot;&gt;</p>
+      <p indent="16">&lt;page id=&quot;pg1&quot;&gt;</p>
+      <p indent="24">...</p>
+      <p indent="16">&lt;/page&gt;</p>
+      <p indent="8">&lt;/chapter&gt;</p>
     </page>
-  </chapter>
-  <chapter id="images">
+    <page id="text">
+      <title>Paragraphs and titles</title>
+      <p>Inside pages there can be text, alongside other page elements. The primary way of adding text is through paragraph elements 'p'.</p>
+      <p indent="12" space="8">&lt;p&gt;Text&lt;/p&gt;</p>
+      <p space="12">Text</p>
+      <p>There's many reasons to want different colors and alignments. This can be accomplished with the 'color' and 'align' attributes.</p>
+      <p indent="8" space="8">&lt;p color=&quot;#606060&quot; align=&quot;center&quot;&gt; Centered Gray Text&lt;/p&gt;</p>
+      <p color="#606060" align="center" space="12">Centered Gray Text</p>
+      <p>You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
+      <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
+      <p bold="true" italics="true">Formatted text</p>
+    </page>
     <page>
+      <p>Sometimes, you need indented text, or you want to change the separation between successive paragraphs, for this, you have 'indent' and 'space', respectively.</p>
+      <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
+      <p indent="20" space="20">Indented spaced text</p>
+      <p space="12">Text after</p>
+      <p>Finally, to avoid writing so many formatting codes. Section titles can be shortened with the 'title' tag, which has different default formattings.</p>
+      <p indent="8" space="8">&lt;title&gt;Title Here&lt;/title&gt;</p>
+      <title>Title Here</title>
+    </page>
+    <page id="images">
       <title>Images and Links</title>
       <p space="8">Blah blah blah blah:</p>
       <!--
@@ -59,9 +83,7 @@
       <image src="minecraft:items/coal" x="4" y="-4" />
       <p space="8" indent="22">Fire</p>
     </page>
-  </chapter>
-  <chapter id="stacks">
-    <page>
+    <page id="stacks">
       <title>Item Stacksd</title>
       <p>CONTENT UPCOMING</p>
     </page>
