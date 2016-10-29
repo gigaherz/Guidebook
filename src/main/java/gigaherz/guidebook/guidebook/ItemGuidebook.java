@@ -1,25 +1,19 @@
 package gigaherz.guidebook.guidebook;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import gigaherz.common.ItemRegistered;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.client.BookDocument;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.List;
-import java.util.Set;
 
 public class ItemGuidebook extends ItemRegistered
 {
@@ -59,31 +53,44 @@ public class ItemGuidebook extends ItemRegistered
         return EnumActionResult.SUCCESS;
     }
 
-    public ItemStack of(String book)
+    public ItemStack of(ResourceLocation book)
     {
         ItemStack stack = new ItemStack(this);
         NBTTagCompound tag = new NBTTagCompound();
-        tag.setString("Book", book);
+        tag.setString("Book", book.toString());
         stack.setTagCompound(tag);
-        return stack;
-    }
-
-    private final Set<String> registeredBooks = Sets.newHashSet();
-    private final List<ItemStack> registeredStacks = Lists.newArrayList();
-    public ItemStack register(String book)
-    {
-        if (registeredBooks.contains(book))
-            throw new KeyAlreadyExistsException("There's already a book registered for this resource location");
-
-        ItemStack stack = of(book);
-        registeredBooks.add(book);
-        registeredStacks.add(stack);
         return stack;
     }
 
     @Override
     public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems)
     {
-        subItems.addAll(registeredStacks);
+        BookDocument.REGISTRY.keySet().stream().map(this::of).forEach(subItems::add);
+    }
+
+    @Override
+    public String getItemStackDisplayName(ItemStack stack)
+    {
+        NBTTagCompound tag = stack.getTagCompound();
+        if(tag != null)
+        {
+            String book = tag.getString("Book");
+            if (book != null)
+            {
+                BookDocument bookDocument = BookDocument.get(new ResourceLocation(book));
+                if (bookDocument != null)
+                {
+                    String name = bookDocument.getBookName();
+                    if (name != null)
+                        return name;
+                }
+                else
+                {
+
+                }
+            }
+        }
+
+        return super.getItemStackDisplayName(stack);
     }
 }

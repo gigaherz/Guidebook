@@ -1,4 +1,4 @@
-package gigaherz.guidebook.guidebook;
+package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.common.client.ModelHandle;
 import net.minecraft.client.renderer.GlStateManager;
@@ -28,10 +28,12 @@ public class AnimatedBookBackground
     private final ModelHandle book90 = ModelHandle.of("guidebook:gui/book90.obj").vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
     private final GuiGuidebook gui;
+    private final int bookHeight;
 
-    public AnimatedBookBackground(GuiGuidebook gui)
+    public AnimatedBookBackground(GuiGuidebook gui, int bookHeight)
     {
         this.gui = gui;
+        this.bookHeight = bookHeight;
     }
 
     public void startClosing()
@@ -109,12 +111,11 @@ public class AnimatedBookBackground
 
         GlStateManager.enableDepth();
         GlStateManager.disableBlend();
-        GlStateManager.disableAlpha();
         GlStateManager.disableCull();
 
         GlStateManager.pushMatrix();
 
-        GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + BookRenderer.BOOK_HEIGHT / 2 - 4, 50);
+        GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight / 2 - 4, 50);
         GlStateManager.rotate(180, 0, 1, 0);
         GlStateManager.rotate(-130, 1, 0, 0);
         GlStateManager.scale(2.0f, 2.0f, 2.5f);
@@ -128,6 +129,7 @@ public class AnimatedBookBackground
 
         gui.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
+        GlStateManager.enableAlpha();
         if (modelBookB != null)
         {
             renderModelInterpolate(modelBookA, modelBookB, blend);
@@ -142,7 +144,6 @@ public class AnimatedBookBackground
         GlStateManager.popMatrix();
 
         GlStateManager.enableCull();
-        GlStateManager.enableAlpha();
         GlStateManager.enableBlend();
         GlStateManager.disableDepth();
     }

@@ -62,7 +62,7 @@ artifacts {
 }
 
 dependencies {
-    deobfCompile "gigaherz.commons:Commons:1.10.2-0.2"
+    deobfCompile "gigaherz.commons:Commons:1.10.2-0.3"
 }
 
 compileJava {

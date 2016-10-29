@@ -1,4 +1,4 @@
-package gigaherz.guidebook.guidebook;
+package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -7,7 +7,18 @@ import gigaherz.common.client.StackRenderingHelper;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -15,6 +26,9 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.fml.common.Loader;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -23,25 +37,65 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
+import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-class BookRenderer
+import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
+
+/**
+ * CLIENT ONLY!
+ */
+public class BookDocument
 {
-    public static final int BOOK_WIDTH = 276;
-    public static final int BOOK_HEIGHT = 198;
-    public static final int INNER_MARGIN = 22;
-    public static final int OUTER_MARGIN = 10;
-    public static final int VERTICAL_MARGIN = 18;
-    public static final int PAGE_WIDTH = BOOK_WIDTH / 2 - INNER_MARGIN - OUTER_MARGIN;
-    public static final int PAGE_HEIGHT = BOOK_HEIGHT - VERTICAL_MARGIN;
+    private int bookWidth = 276;
+    private int bookHeight = 198;
+    private int innerMargin = 22;
+    private int outerMargin = 10;
+    private int verticalMargin = 18;
+    private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
+    private int pageHeight = bookHeight - verticalMargin;
+
+    public static final Map<ResourceLocation, BookDocument> REGISTRY = Maps.newHashMap();
+
+    public static void registerBook(ResourceLocation loc)
+    {
+        if (Loader.instance().hasReachedState(INITIALIZATION))
+            throw new IllegalStateException("Books must be registered before init, preferably in the BookRegistryEvent.");
+        if (REGISTRY.containsKey(loc))
+            throw new KeyAlreadyExistsException("A book with this id has already been registered.");
+        BookDocument book = new BookDocument(loc);
+        REGISTRY.put(loc, book);
+    }
+
+    @Nullable
+    public static BookDocument get(ResourceLocation loc)
+    {
+        return REGISTRY.get(loc);
+    }
+
+    public static void parseAllBooks()
+    {
+        REGISTRY.values().forEach(BookDocument::parseBook);
+    }
+
+    public static void initReloadHandler()
+    {
+        IResourceManager rm = Minecraft.getMinecraft().getResourceManager();
+        if (rm instanceof IReloadableResourceManager)
+        {
+            ((IReloadableResourceManager) rm).registerReloadListener(__ -> parseAllBooks());
+        }
+    }
 
     private final ResourceLocation bookLocation;
-    private final GuiGuidebook gui;
+    private String bookName;
+    private ResourceLocation bookCover;
 
     private List<ChapterData> chapters = Lists.newArrayList();
 
@@ -55,10 +109,54 @@ class BookRenderer
 
     java.util.Stack<PageRef> history = new java.util.Stack<>();
 
-    BookRenderer(ResourceLocation bookLocation, GuiGuidebook gui)
+    private BookDocument(ResourceLocation bookLocation)
     {
         this.bookLocation = bookLocation;
-        this.gui = gui;
+    }
+
+    @Nullable
+    public String getBookName()
+    {
+        return bookName;
+    }
+
+    @Nullable
+    public ResourceLocation getBookCover()
+    {
+        return bookCover;
+    }
+
+    public int chapterCount()
+    {
+        return chapters.size();
+    }
+
+    public int getBookWidth()
+    {
+        return bookWidth;
+    }
+
+    public int getBookHeight()
+    {
+        return bookHeight;
+    }
+
+    public void findTextures(Set<ResourceLocation> textures)
+    {
+        if (bookCover != null)
+            textures.add(bookCover);
+
+        // TODO: Add <image> texture locations when implemented
+        for (ChapterData chapter : chapters)
+        {
+            for (PageData page : chapter.pages)
+            {
+                for (IPageElement element : page.elements)
+                {
+                    element.findTextures(textures);
+                }
+            }
+        }
     }
 
     public boolean canGoBack()
@@ -210,10 +308,20 @@ class BookRenderer
         return false;
     }
 
-    public BookRenderer parseBook()
+    public void parseBook()
     {
         try
         {
+            chapters.clear();
+            bookName = "";
+            bookCover = null;
+            totalPairs = 0;
+            currentChapter = 0;
+            currentPair = 0;
+            chaptersByName.clear();
+            pagesByName.clear();
+            history.clear();
+
             IResource res = Minecraft.getMinecraft().getResourceManager().getResource(bookLocation);
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -222,7 +330,24 @@ class BookRenderer
 
             doc.getDocumentElement().normalize();
 
-            NodeList chaptersList = doc.getChildNodes().item(0).getChildNodes();
+            Node root = doc.getChildNodes().item(0);
+
+            if(root.hasAttributes())
+            {
+                NamedNodeMap rootAttributes = root.getAttributes();
+                Node n = rootAttributes.getNamedItem("title");
+                if (n != null)
+                {
+                    bookName = n.getTextContent();
+                }
+                n = rootAttributes.getNamedItem("cover");
+                if (n != null)
+                {
+                    bookCover = new ResourceLocation(n.getTextContent());
+                }
+            }
+
+            NodeList chaptersList = root.getChildNodes();
             for (int i = 0; i < chaptersList.getLength(); i++)
             {
                 Node chapterItem = chaptersList.item(i);
@@ -249,8 +374,6 @@ class BookRenderer
             pg.elements.add(new Paragraph("Error loading book:"));
             pg.elements.add(new Paragraph(TextFormatting.RED + e.toString()));
         }
-
-        return this;
     }
 
     private void parseChapter(Node chapterItem)
@@ -369,6 +492,75 @@ class BookRenderer
                     parseStackAttributes(s, pageAttributes);
                 }
             }
+            else if (elementItem.getNodeName().equals("image"))
+            {
+                Image i = new Image();
+                page.elements.add(i);
+
+                if (elementItem.hasAttributes())
+                {
+                    NamedNodeMap pageAttributes = elementItem.getAttributes();
+
+                    parseImageAttributes(i, pageAttributes);
+                }
+            }
+        }
+    }
+
+    private void parseImageAttributes(Image i, NamedNodeMap pageAttributes)
+    {
+        Node attr = pageAttributes.getNamedItem("x");
+        if (attr != null)
+        {
+            i.x = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("y");
+        if (attr != null)
+        {
+            i.y = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("w");
+        if (attr != null)
+        {
+            i.w = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("h");
+        if (attr != null)
+        {
+            i.h = Ints.tryParse(attr.getTextContent());
+        }
+        attr = pageAttributes.getNamedItem("tx");
+        if (attr != null)
+        {
+            i.tx = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("ty");
+        if (attr != null)
+        {
+            i.ty = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("tw");
+        if (attr != null)
+        {
+            i.tw = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("th");
+        if (attr != null)
+        {
+            i.th = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = pageAttributes.getNamedItem("src");
+        if (attr != null)
+        {
+            i.textureLocation = new ResourceLocation(attr.getTextContent());
+            i.textureLocationExpanded = new ResourceLocation(i.textureLocation.getResourceDomain(), "textures/" + i.textureLocation.getResourcePath() + ".png");
         }
     }
 
@@ -525,21 +717,21 @@ class BookRenderer
         }
     }
 
-    public void drawCurrentPages()
+    public void drawCurrentPages(GuiGuidebook gui)
     {
-        int left = gui.width / 2 - PAGE_WIDTH - INNER_MARGIN;
-        int right = gui.width / 2 + INNER_MARGIN;
-        int top = (gui.height - PAGE_HEIGHT) / 2 - 9;
-        int bottom = top + PAGE_HEIGHT;
+        int left = gui.width / 2 - pageWidth - innerMargin;
+        int right = gui.width / 2 + innerMargin;
+        int top = (gui.height - pageHeight) / 2 - 9;
+        int bottom = top + pageHeight;
 
-        drawPage(left, top, currentPair * 2);
-        drawPage(right, top, currentPair * 2 + 1);
+        drawPage(gui, left, top, currentPair * 2);
+        drawPage(gui, right, top, currentPair * 2 + 1);
 
         String cnt = "" + ((chapters.get(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (totalPairs * 2);
-        addStringWrapping(left, bottom, cnt, 0xFF000000, 1);
+        addStringWrapping(gui, left, bottom, cnt, 0xFF000000, 1);
     }
 
-    private void drawPage(int left, int top, int page)
+    private void drawPage(GuiGuidebook gui, int left, int top, int page)
     {
         ChapterData ch = chapters.get(currentChapter);
         if (page >= ch.pages.size())
@@ -549,25 +741,25 @@ class BookRenderer
 
         for (IPageElement e : pg.elements)
         {
-            top += e.apply(left, top);
+            top += e.apply(gui, left, top);
         }
     }
 
-    private int addStringWrapping(int left, int top, String s, int color, int align)
+    private int addStringWrapping(GuiGuidebook gui, int left, int top, String s, int color, int align)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
         if (align == 1)
         {
-            left += (PAGE_WIDTH - fontRenderer.getStringWidth(s)) / 2;
+            left += (pageWidth - fontRenderer.getStringWidth(s)) / 2;
         }
         else if (align == 2)
         {
-            left += PAGE_WIDTH - fontRenderer.getStringWidth(s);
+            left += pageWidth - fontRenderer.getStringWidth(s);
         }
 
-        fontRenderer.drawSplitString(s, left, top, PAGE_WIDTH, color);
-        return fontRenderer.splitStringWidth(s, PAGE_WIDTH);
+        fontRenderer.drawSplitString(s, left, top, pageWidth, color);
+        return fontRenderer.splitStringWidth(s, pageWidth);
     }
 
     private class PageRef
@@ -659,7 +851,9 @@ class BookRenderer
 
     private interface IPageElement
     {
-        int apply(int left, int top);
+        int apply(GuiGuidebook gui, int left, int top);
+
+        default void findTextures(Set<ResourceLocation> textures)  {}
     }
 
     private class Paragraph implements IPageElement
@@ -676,9 +870,9 @@ class BookRenderer
         }
 
         @Override
-        public int apply(int left, int top)
+        public int apply(GuiGuidebook gui, int left, int top)
         {
-            return addStringWrapping(left + indent, top, text, color, alignment) + space;
+            return addStringWrapping(gui, left + indent, top, text, color, alignment) + space;
         }
     }
 
@@ -707,15 +901,15 @@ class BookRenderer
         }
 
         @Override
-        public int apply(int left, int top)
+        public int apply(GuiGuidebook gui, int left, int top)
         {
             FontRenderer fontRenderer = gui.getFontRenderer();
 
-            int height = fontRenderer.splitStringWidth(text, PAGE_WIDTH);
-            int width = height > fontRenderer.FONT_HEIGHT ? PAGE_WIDTH : fontRenderer.getStringWidth(text);
+            int height = fontRenderer.splitStringWidth(text, pageWidth);
+            int width = height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(text);
             bounds = new Rectangle(left, top, width, height);
 
-            return addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
+            return addStringWrapping(gui, left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
         }
     }
 
@@ -739,9 +933,9 @@ class BookRenderer
         }
 
         @Override
-        public int apply(int left, int top)
+        public int apply(GuiGuidebook gui, int left, int top)
         {
-            return asPercent ? PAGE_HEIGHT * space / 100 : space;
+            return asPercent ? pageHeight * space / 100 : space;
         }
     }
 
@@ -756,10 +950,64 @@ class BookRenderer
         }
 
         @Override
-        public int apply(int left, int top)
+        public int apply(GuiGuidebook gui, int left, int top)
         {
             StackRenderingHelper.renderItemStack(gui.getMesher(), gui.getRenderEngine(), left + x, top + y, stack, 0xFFFFFFFF);
             return 0;
+        }
+    }
+
+    private class Image implements IPageElement
+    {
+        public ResourceLocation textureLocation;
+        public ResourceLocation textureLocationExpanded;
+        public int x = 0;
+        public int y = 0;
+        public int w = 0;
+        public int h = 0;
+        public int tx = 0;
+        public int ty = 0;
+        public int tw = 0;
+        public int th = 0;
+
+        public Image()
+        {
+        }
+
+        @Override
+        public int apply(GuiGuidebook gui, int left, int top)
+        {
+            if (w == 0 || h == 0)
+            {
+                TextureAtlasSprite tas = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLocation.toString());
+                if (w == 0) w = tas.getIconWidth();
+                if (h == 0) h = tas.getIconHeight();
+            }
+
+            int sw = tw != 0 ? tw : w;
+            int sh = th != 0 ? th : h;
+            gui.getRenderEngine().bindTexture(textureLocationExpanded);
+
+            drawImage(left+x, top+y, tx, ty, w, h, sw, sh);
+            return 0;
+        }
+
+        private void drawImage(int x, int y, int tx, int ty, int w, int h, int sw, int sh)
+        {
+            GlStateManager.enableRescaleNormal();
+            GlStateManager.enableAlpha();
+            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+            GlStateManager.enableBlend();
+            GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+            Gui.drawModalRectWithCustomSizedTexture(x, y, tx, ty, w, h, sw, sh);
+        }
+
+        @Override
+        public void findTextures(Set<ResourceLocation> textures)
+        {
+            textures.add(textureLocation);
         }
     }
 }

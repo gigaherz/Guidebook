@@ -1,4 +1,4 @@
-package gigaherz.guidebook.guidebook;
+package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.Minecraft;
@@ -31,14 +31,13 @@ public class GuiGuidebook extends GuiScreen
     private ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
     private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
 
-    public GuiGuidebook(String book)
-    {
-        bookLocation = new ResourceLocation(book);
-    }
-    private BookRenderer book;
+    private BookDocument book;
     private AnimatedBookBackground background;
 
-
+    public GuiGuidebook(ResourceLocation book)
+    {
+        bookLocation = book;
+    }
 
     @Override
     public boolean doesGuiPauseGame()
@@ -49,14 +48,17 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void initGui()
     {
+        book = BookDocument.get(bookLocation);
+        background = new AnimatedBookBackground(this, book.getBookHeight());
+
         this.buttonList.clear();
 
         int btnId = 0;
 
-        int left = (this.width - BookRenderer.BOOK_WIDTH) / 2;
-        int right = left + BookRenderer.BOOK_WIDTH;
-        int top = (this.height - BookRenderer.BOOK_HEIGHT) / 2 - 9;
-        int bottom = top + BookRenderer.BOOK_HEIGHT;
+        int left = (this.width - book.getBookWidth()) / 2;
+        int right = left + book.getBookWidth();
+        int top = (this.height - book.getBookHeight()) / 2 - 9;
+        int bottom = top + book.getBookHeight();
         this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left - 9, top - 5, 2));
         this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
         this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1));
@@ -65,8 +67,6 @@ public class GuiGuidebook extends GuiScreen
         this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4));
         GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
 
-        book = new BookRenderer(bookLocation, this).parseBook();
-        background = new AnimatedBookBackground(this);
 
         updateButtonStates();
     }
@@ -153,7 +153,7 @@ public class GuiGuidebook extends GuiScreen
 
         if (background.isFullyOpen())
         {
-            book.drawCurrentPages();
+            book.drawCurrentPages(this);
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);

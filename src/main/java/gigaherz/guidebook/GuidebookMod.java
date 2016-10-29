@@ -1,11 +1,11 @@
 package gigaherz.guidebook;
 
 import gigaherz.guidebook.common.IModProxy;
+import gigaherz.guidebook.guidebook.client.BookDocument;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -48,15 +48,21 @@ public class GuidebookMod
     };
 
     @Mod.EventHandler
-    public void init(FMLPreInitializationEvent event)
+    public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
+
+        BookDocument.registerBook(new ResourceLocation("guidebook:xml/guidebook.xml"));
+
+        proxy.preInit();
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
         registerRecipes();
+
+        proxy.init();
     }
 
     @SubscribeEvent
@@ -68,7 +74,7 @@ public class GuidebookMod
 
     private void registerRecipes()
     {
-        GameRegistry.addShapelessRecipe(guidebook.register("guidebook:xml/guidebook.xml"), Items.BOOK);
+        GameRegistry.addShapelessRecipe(guidebook.of(location("xml/guidebook.xml")), Items.BOOK);
     }
 
     public static ResourceLocation location(String location)
