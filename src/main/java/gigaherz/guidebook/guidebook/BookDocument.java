@@ -25,6 +25,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,8 @@ public class BookDocument
 
     private final Map<String, Integer> chaptersByName = Maps.newHashMap();
     private final Map<String, PageRef> pagesByName = Maps.newHashMap();
+
+    private final Map<String, TemplateDefinition> templates = Maps.newHashMap();
 
     private int totalPairs = 0;
 
@@ -106,6 +109,18 @@ public class BookDocument
         }
     }
 
+    public void initializeWithLoadError(Exception e)
+    {
+        ChapterData ch = new ChapterData(0);
+        chapters.add(ch);
+
+        PageData pg = new PageData(0);
+        ch.pages.add(pg);
+
+        pg.elements.add(new Paragraph("Error loading book:"));
+        pg.elements.add(new Paragraph(TextFormatting.RED + e.toString()));
+    }
+
     public void parseBook(InputStream stream)
     {
         try
@@ -127,18 +142,18 @@ public class BookDocument
 
             if(root.hasAttributes())
             {
-                NamedNodeMap rootAttributes = root.getAttributes();
-                Node n = rootAttributes.getNamedItem("title");
+                NamedNodeMap attributes = root.getAttributes();
+                Node n = attributes.getNamedItem("title");
                 if (n != null)
                 {
                     bookName = n.getTextContent();
                 }
-                n = rootAttributes.getNamedItem("cover");
+                n = attributes.getNamedItem("cover");
                 if (n != null)
                 {
                     bookCover = new ResourceLocation(n.getTextContent());
                 }
-                n = rootAttributes.getNamedItem("fontSize");
+                n = attributes.getNamedItem("fontSize");
                 if (n != null)
                 {
                     Float f = Floats.tryParse(n.getTextContent());
@@ -151,7 +166,15 @@ public class BookDocument
             {
                 Node chapterItem = chaptersList.item(i);
 
-                parseChapter(chapterItem);
+                String nodeName = chapterItem.getNodeName();
+                if (nodeName.equals("template"))
+                {
+                    parseTemplateDefinition(chapterItem);
+                }
+                else if (nodeName.equals("chapter"))
+                {
+                    parseChapter(chapterItem);
+                }
             }
 
             int prevCount = 0;
@@ -168,32 +191,35 @@ public class BookDocument
         }
     }
 
-    public void initializeWithLoadError(Exception e)
+    private void parseTemplateDefinition(Node templateItem)
     {
-        ChapterData ch = new ChapterData(0);
-        chapters.add(ch);
+        if (!templateItem.hasAttributes())
+            return; // TODO: Throw error
 
-        PageData pg = new PageData(0);
-        ch.pages.add(pg);
+        TemplateDefinition page = new TemplateDefinition();
 
-        pg.elements.add(new Paragraph("Error loading book:"));
-        pg.elements.add(new Paragraph(TextFormatting.RED + e.toString()));
+        NamedNodeMap attributes = templateItem.getAttributes();
+        Node n = attributes.getNamedItem("id");
+        if (n == null)
+            return;
+
+        templates.put(n.getTextContent(), page);
+
+        parseChildElements(templateItem, page.elements);
+
+        attributes.removeNamedItem("id");
+        page.attributes = attributes;
     }
 
     private void parseChapter(Node chapterItem)
     {
-        if (!chapterItem.getNodeName().equals("chapter"))
-        {
-            return;
-        }
-
         ChapterData chapter = new ChapterData(chapters.size());
         chapters.add(chapter);
 
         if (chapterItem.hasAttributes())
         {
-            NamedNodeMap chapterAttributes = chapterItem.getAttributes();
-            Node n = chapterAttributes.getNamedItem("id");
+            NamedNodeMap attributes = chapterItem.getAttributes();
+            Node n = attributes.getNamedItem("id");
             if (n != null)
             {
                 chapter.id = n.getTextContent();
@@ -206,7 +232,12 @@ public class BookDocument
         {
             Node pageItem = pagesList.item(j);
 
-            parsePage(chapter, pageItem);
+            String nodeName = pageItem.getNodeName();
+
+            if (nodeName.equals("page"))
+            {
+                parsePage(chapter, pageItem);
+            }
         }
 
         chapter.pagePairs = (chapter.pages.size() + 1) / 2;
@@ -214,18 +245,13 @@ public class BookDocument
 
     private void parsePage(ChapterData chapter, Node pageItem)
     {
-        if (!pageItem.getNodeName().equals("page"))
-        {
-            return;
-        }
-
         PageData page = new PageData(chapter.pages.size());
         chapter.pages.add(page);
 
         if (pageItem.hasAttributes())
         {
-            NamedNodeMap pageAttributes = pageItem.getAttributes();
-            Node n = pageAttributes.getNamedItem("id");
+            NamedNodeMap attributes = pageItem.getAttributes();
+            Node n = attributes.getNamedItem("id");
             if (n != null)
             {
                 page.id = n.getTextContent();
@@ -234,23 +260,28 @@ public class BookDocument
             }
         }
 
+        parseChildElements(pageItem, page.elements);
+    }
+
+    private void parseChildElements(Node pageItem, List<IPageElement> elements)
+    {
         NodeList elementsList = pageItem.getChildNodes();
         for (int k = 0; k < elementsList.getLength(); k++)
         {
             Node elementItem = elementsList.item(k);
 
-            if (elementItem.getNodeName().equals("p"))
+            String nodeName = elementItem.getNodeName();
+            if (nodeName.equals("p"))
             {
                 Paragraph p = new Paragraph(elementItem.getTextContent());
-                page.elements.add(p);
+                elements.add(p);
 
                 if (elementItem.hasAttributes())
                 {
-                    NamedNodeMap pageAttributes = elementItem.getAttributes();
-                    parseParagraphAttributes(p, pageAttributes);
+                    p.parse(elementItem.getAttributes());
                 }
             }
-            else if (elementItem.getNodeName().equals("title"))
+            else if (nodeName.equals("title"))
             {
                 Paragraph p = new Paragraph(elementItem.getTextContent());
                 p.alignment = 1;
@@ -258,294 +289,84 @@ public class BookDocument
                 p.underline = true;
                 p.italics = true;
 
-                page.elements.add(p);
+                elements.add(p);
 
                 if (elementItem.hasAttributes())
                 {
-                    NamedNodeMap pageAttributes = elementItem.getAttributes();
-                    parseParagraphAttributes(p, pageAttributes);
+                    p.parse(elementItem.getAttributes());
                 }
             }
-            else if (elementItem.getNodeName().equals("link"))
+            else if (nodeName.equals("link"))
             {
                 Link link = new Link(elementItem.getTextContent());
-                page.elements.add(link);
+                elements.add(link);
 
                 if (elementItem.hasAttributes())
                 {
-                    NamedNodeMap pageAttributes = elementItem.getAttributes();
-
-                    parseLinkAttributes(link, pageAttributes);
+                    link.parse(elementItem.getAttributes());
                 }
             }
-            else if (elementItem.getNodeName().equals("space"))
+            else if (nodeName.equals("space"))
             {
                 Space s = new Space();
-                page.elements.add(s);
+                elements.add(s);
 
                 if (elementItem.hasAttributes())
                 {
-                    NamedNodeMap pageAttributes = elementItem.getAttributes();
-
-                    parseSpaceAttributes(s, pageAttributes);
+                    s.parse(elementItem.getAttributes());
                 }
             }
-            else if (elementItem.getNodeName().equals("stack"))
+            else if (nodeName.equals("stack"))
             {
                 Stack s = new Stack();
-                page.elements.add(s);
+                elements.add(s);
 
                 if (elementItem.hasAttributes())
                 {
-                    NamedNodeMap pageAttributes = elementItem.getAttributes();
-
-                    parseStackAttributes(s, pageAttributes);
+                    s.parse(elementItem.getAttributes());
                 }
             }
-            else if (elementItem.getNodeName().equals("image"))
+            else if (nodeName.equals("image"))
             {
                 Image i = new Image();
-                page.elements.add(i);
+                elements.add(i);
 
                 if (elementItem.hasAttributes())
                 {
-                    NamedNodeMap pageAttributes = elementItem.getAttributes();
-
-                    parseImageAttributes(i, pageAttributes);
+                    i.parse(elementItem.getAttributes());
                 }
             }
-        }
-    }
-
-    private void parseImageAttributes(Image i, NamedNodeMap attributes)
-    {
-        Node attr = attributes.getNamedItem("x");
-        if (attr != null)
-        {
-            i.x = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("y");
-        if (attr != null)
-        {
-            i.y = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("w");
-        if (attr != null)
-        {
-            i.w = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("h");
-        if (attr != null)
-        {
-            i.h = Ints.tryParse(attr.getTextContent());
-        }
-        attr = attributes.getNamedItem("tx");
-        if (attr != null)
-        {
-            i.tx = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("ty");
-        if (attr != null)
-        {
-            i.ty = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("tw");
-        if (attr != null)
-        {
-            i.tw = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("th");
-        if (attr != null)
-        {
-            i.th = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("src");
-        if (attr != null)
-        {
-            i.textureLocation = new ResourceLocation(attr.getTextContent());
-        }
-    }
-
-    private void parseStackAttributes(Stack s, NamedNodeMap attributes)
-    {
-        int meta = 0;
-        int stackSize = 1;
-        NBTTagCompound tag = new NBTTagCompound();
-
-        Node attr = attributes.getNamedItem("meta");
-        if (attr != null)
-        {
-            meta = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("count");
-        if (attr != null)
-        {
-            stackSize = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("tag");
-        if (attr != null)
-        {
-            try
+            else if (nodeName.equals("element"))
             {
-                tag = JsonToNBT.getTagFromJson(attr.getTextContent());
-            }
-            catch (NBTException e)
-            {
-                GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
-            }
-        }
+                TemplateElement i = new TemplateElement();
+                elements.add(i);
 
-        attr = attributes.getNamedItem("item");
-        if (attr != null)
-        {
-            String itemName = attr.getTextContent();
-
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(itemName));
-
-            if (item != null)
-            {
-                s.stack = new ItemStack(item, stackSize, meta);
-                s.stack.setTagCompound(tag);
-            }
-        }
-
-        attr = attributes.getNamedItem("x");
-        if (attr != null)
-        {
-            s.x = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("y");
-        if (attr != null)
-        {
-            s.y = Ints.tryParse(attr.getTextContent());
-        }
-    }
-
-    private void parseSpaceAttributes(Space s, NamedNodeMap attributes)
-    {
-        Node attr = attributes.getNamedItem("height");
-        if (attr != null)
-        {
-            String t = attr.getTextContent();
-            if (t.endsWith("%"))
-            {
-                s.asPercent = true;
-                t = t.substring(0, t.length() - 1);
-            }
-
-            s.space = Ints.tryParse(t);
-        }
-    }
-
-    private void parseLinkAttributes(Link link, NamedNodeMap attributes)
-    {
-        parseParagraphAttributes(link, attributes);
-
-        Node attr = attributes.getNamedItem("ref");
-        if (attr != null)
-        {
-            String ref = attr.getTextContent();
-
-            if (ref.indexOf(':') >= 0)
-            {
-                String[] parts = ref.split(":");
-                link.target = new PageRef(parts[0], parts[1]);
-            }
-            else
-            {
-                link.target = new PageRef(ref, null);
-            }
-        }
-    }
-
-    private void parseParagraphAttributes(Paragraph p, NamedNodeMap attributes)
-    {
-        Node attr = attributes.getNamedItem("align");
-        if (attr != null)
-        {
-            String a = attr.getTextContent();
-            switch (a)
-            {
-                case "left":
-                    p.alignment = 0;
-                    break;
-                case "center":
-                    p.alignment = 1;
-                    break;
-                case "right":
-                    p.alignment = 2;
-                    break;
-            }
-        }
-
-        attr = attributes.getNamedItem("indent");
-        if (attr != null)
-        {
-            p.indent = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("space");
-        if (attr != null)
-        {
-            p.space = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("bold");
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                p.bold = true;
-        }
-
-        attr = attributes.getNamedItem("italics");
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                p.italics = true;
-        }
-
-        attr = attributes.getNamedItem("underline");
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                p.underline = true;
-        }
-
-        attr = attributes.getNamedItem("color");
-        if (attr != null)
-        {
-            String c = attr.getTextContent();
-
-            if (c.startsWith("#"))
-                c = c.substring(1);
-
-            try
-            {
-                if (c.length() <= 6)
+                if (elementItem.hasAttributes())
                 {
-                    p.color = 0xFF000000 | Integer.parseInt(c, 16);
-                }
-                else
-                {
-                    p.color = Integer.parseInt(c, 16);
+                    i.parse(elementItem.getAttributes());
                 }
             }
-            catch (NumberFormatException e)
+            else if (templates.containsKey(nodeName))
             {
-                // ignored
+                TemplateDefinition tDef = templates.get(nodeName);
+
+                Template t = new Template();
+                t.parse(tDef.attributes);
+
+                elements.add(t);
+
+                if (elementItem.hasAttributes())
+                {
+                    t.parse(elementItem.getAttributes());
+                }
+
+                List<IPageElement> elementList = Lists.newArrayList();
+
+                parseChildElements(elementItem, elementList);
+
+                List<IPageElement> effectiveList = tDef.applyTemplate(elementList);
+
+                t.innerElements.addAll(effectiveList);
             }
         }
     }
@@ -610,6 +431,11 @@ public class BookDocument
                 }
             }
         }
+
+        public PageRef copy()
+        {
+            return new PageRef(chapter, page);
+        }
     }
 
     public class ChapterData
@@ -652,6 +478,10 @@ public class BookDocument
         int apply(IBookGraphics nav, int left, int top);
 
         default void findTextures(Set<ResourceLocation> textures)  {}
+
+        void parse(NamedNodeMap attributes);
+
+        IPageElement copy();
     }
 
     private interface IBoundedPageElement extends IPageElement
@@ -667,6 +497,11 @@ public class BookDocument
     public interface IHoverPageElement extends IBoundedPageElement
     {
         void mouseOver(IBookGraphics info, int x, int y);
+    }
+
+    public interface IContainerPageElement extends IPageElement
+    {
+        Collection<IPageElement> getChildren();
     }
 
     private class Paragraph implements IPageElement
@@ -693,6 +528,103 @@ public class BookDocument
             if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
             if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
             return nav.addStringWrapping(left + indent, top, textWithFormat, color, alignment) + space;
+        }
+
+        @Override
+        public void parse(NamedNodeMap attributes)
+        {
+            Node attr = attributes.getNamedItem("align");
+            if (attr != null)
+            {
+                String a = attr.getTextContent();
+                switch (a)
+                {
+                    case "left":
+                        alignment = 0;
+                        break;
+                    case "center":
+                        alignment = 1;
+                        break;
+                    case "right":
+                        alignment = 2;
+                        break;
+                }
+            }
+
+            attr = attributes.getNamedItem("indent");
+            if (attr != null)
+            {
+                indent = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("space");
+            if (attr != null)
+            {
+                space = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("bold");
+            if (attr != null)
+            {
+                String text = attr.getTextContent();
+                if ("".equals(text) || "true".equals(text))
+                    bold = true;
+            }
+
+            attr = attributes.getNamedItem("italics");
+            if (attr != null)
+            {
+                String text = attr.getTextContent();
+                if ("".equals(text) || "true".equals(text))
+                    italics = true;
+            }
+
+            attr = attributes.getNamedItem("underline");
+            if (attr != null)
+            {
+                String text = attr.getTextContent();
+                if ("".equals(text) || "true".equals(text))
+                    underline = true;
+            }
+
+            attr = attributes.getNamedItem("color");
+            if (attr != null)
+            {
+                String c = attr.getTextContent();
+
+                if (c.startsWith("#"))
+                    c = c.substring(1);
+
+                try
+                {
+                    if (c.length() <= 6)
+                    {
+                        color = 0xFF000000 | Integer.parseInt(c, 16);
+                    }
+                    else
+                    {
+                        color = Integer.parseInt(c, 16);
+                    }
+                }
+                catch (NumberFormatException e)
+                {
+                    // ignored
+                }
+            }
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            Paragraph paragraph = new Paragraph(text);
+            paragraph.alignment = alignment;
+            paragraph.color = color;
+            paragraph.indent = indent;
+            paragraph.space = space;
+            paragraph.bold = bold;
+            paragraph.italics = italics;
+            paragraph.underline = underline;
+            return paragraph;
         }
     }
 
@@ -730,6 +662,46 @@ public class BookDocument
 
             return nav.addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
         }
+
+        @Override
+        public void parse(NamedNodeMap attributes)
+        {
+            super.parse(attributes);
+
+            Node attr = attributes.getNamedItem("ref");
+            if (attr != null)
+            {
+                String ref = attr.getTextContent();
+
+                if (ref.indexOf(':') >= 0)
+                {
+                    String[] parts = ref.split(":");
+                    target = new PageRef(parts[0], parts[1]);
+                }
+                else
+                {
+                    target = new PageRef(ref, null);
+                }
+            }
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            Link link = new Link(text);
+            link.alignment = alignment;
+            link.color = color;
+            link.indent = indent;
+            link.space = space;
+            link.bold = bold;
+            link.italics = italics;
+            link.underline = underline;
+
+            link.target = target.copy();
+            link.colorHover = colorHover;
+
+            return link;
+        }
     }
 
     private class Space implements IPageElement
@@ -745,6 +717,32 @@ public class BookDocument
         public int apply(IBookGraphics nav, int left, int top)
         {
             return asPercent ? nav.getPageHeight() * space / 100 : space;
+        }
+
+        @Override
+        public void parse(NamedNodeMap attributes)
+        {
+            Node attr = attributes.getNamedItem("height");
+            if (attr != null)
+            {
+                String t = attr.getTextContent();
+                if (t.endsWith("%"))
+                {
+                    asPercent = true;
+                    t = t.substring(0, t.length() - 1);
+                }
+
+                space = Ints.tryParse(t);
+            }
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            Space space = new Space();
+            space.asPercent = asPercent;
+            space.space = this.space;
+            return space;
         }
     }
 
@@ -771,6 +769,75 @@ public class BookDocument
 
             nav.drawItemStack(left, top, stack, 0xFFFFFFFF);
             return 0;
+        }
+
+        @Override
+        public void parse(NamedNodeMap attributes)
+        {
+            int meta = 0;
+            int stackSize = 1;
+            NBTTagCompound tag = new NBTTagCompound();
+
+            Node attr = attributes.getNamedItem("meta");
+            if (attr != null)
+            {
+                meta = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("count");
+            if (attr != null)
+            {
+                stackSize = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("tag");
+            if (attr != null)
+            {
+                try
+                {
+                    tag = JsonToNBT.getTagFromJson(attr.getTextContent());
+                }
+                catch (NBTException e)
+                {
+                    GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
+                }
+            }
+
+            attr = attributes.getNamedItem("item");
+            if (attr != null)
+            {
+                String itemName = attr.getTextContent();
+
+                Item item = Item.REGISTRY.getObject(new ResourceLocation(itemName));
+
+                if (item != null)
+                {
+                    stack = new ItemStack(item, stackSize, meta);
+                    stack.setTagCompound(tag);
+                }
+            }
+
+            attr = attributes.getNamedItem("x");
+            if (attr != null)
+            {
+                x = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("y");
+            if (attr != null)
+            {
+                y = Ints.tryParse(attr.getTextContent());
+            }
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            Stack stack = new Stack();
+            stack.stack = this.stack.copy();
+            stack.x=x;
+            stack.y=y;
+            return stack;
         }
 
         @Override
@@ -818,6 +885,192 @@ public class BookDocument
         public void findTextures(Set<ResourceLocation> textures)
         {
             textures.add(textureLocation);
+        }
+
+        @Override
+        public void parse(NamedNodeMap attributes)
+        {
+            Node attr = attributes.getNamedItem("x");
+            if (attr != null)
+            {
+                x = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("y");
+            if (attr != null)
+            {
+                y = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("w");
+            if (attr != null)
+            {
+                w = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("h");
+            if (attr != null)
+            {
+                h = Ints.tryParse(attr.getTextContent());
+            }
+            attr = attributes.getNamedItem("tx");
+            if (attr != null)
+            {
+                tx = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("ty");
+            if (attr != null)
+            {
+                ty = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("tw");
+            if (attr != null)
+            {
+                tw = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("th");
+            if (attr != null)
+            {
+                th = Ints.tryParse(attr.getTextContent());
+            }
+
+            attr = attributes.getNamedItem("src");
+            if (attr != null)
+            {
+                textureLocation = new ResourceLocation(attr.getTextContent());
+            }
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            Image img = new Image();
+
+            img.textureLocation = new ResourceLocation(textureLocation.toString());
+            img.x = x;
+            img.y = y;
+            img.w = w;
+            img.h = h;
+            img.tx = tx;
+            img.ty = ty;
+            img.tw = tw;
+            img.th = th;
+            return img;
+        }
+    }
+
+    private class Template extends Space implements IContainerPageElement
+    {
+        public final List<IPageElement> innerElements;
+
+        public Template()
+        {
+            this.innerElements = Lists.newArrayList();
+        }
+
+        public Template(List<IPageElement> innerElements)
+        {
+            this.innerElements = Lists.newArrayList(innerElements);
+        }
+
+        @Override
+        public int apply(IBookGraphics nav, int left, int top)
+        {
+            int top0 = top;
+
+            for (IPageElement child : innerElements)
+            {
+                top0 += child.apply(nav, left, top0);
+            }
+
+            return super.apply(nav, left, top);
+        }
+
+        @Override
+        public void findTextures(Set<ResourceLocation> textures)
+        {
+            for (IPageElement child : innerElements)
+                child.findTextures(textures);
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            return new Template(innerElements);
+        }
+
+        @Override
+        public Collection<IPageElement> getChildren()
+        {
+            return innerElements;
+        }
+    }
+
+    private class TemplateDefinition
+    {
+        final List<IPageElement> elements = Lists.newArrayList();
+        NamedNodeMap attributes;
+
+        public List<IPageElement> applyTemplate(List<IPageElement> sourceElements)
+        {
+            List<IPageElement> output = Lists.newArrayList();
+            for (IPageElement element : elements)
+            {
+                if (element instanceof TemplateElement)
+                {
+                    IPageElement result = ((TemplateElement)element).apply(sourceElements);
+                    if (result != null)
+                        output.add(result);
+                }
+                else
+                {
+                    output.add(element.copy());
+                }
+            }
+            return output;
+        }
+    }
+
+    private class TemplateElement implements IPageElement
+    {
+        int index;
+        private NamedNodeMap attributes;
+
+        @Nullable
+        public IPageElement apply(List<IPageElement> sourceElements)
+        {
+            IPageElement e = sourceElements.get(index).copy();
+            e.parse(attributes);
+            return e;
+        }
+
+        @Override
+        public int apply(IBookGraphics nav, int left, int top)
+        {
+            throw new IllegalStateException("Template elements must not be used directly");
+        }
+
+        @Override
+        public void parse(NamedNodeMap attributes)
+        {
+            this.attributes = attributes;
+
+            Node attr = attributes.getNamedItem("index");
+            if (attr != null)
+            {
+                index = Ints.tryParse(attr.getTextContent());
+            }
+
+            attributes.removeNamedItem("index");
+        }
+
+        @Override
+        public IPageElement copy()
+        {
+            throw new IllegalStateException("Template elements can not be nested");
         }
     }
 }

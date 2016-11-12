@@ -68,8 +68,9 @@ public class GuidebookMod
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
-        guidebook = new ItemGuidebook("guidebook");
-        GameRegistry.register(guidebook);
+        event.getRegistry().registerAll(
+                guidebook = new ItemGuidebook("guidebook")
+        );
     }
 
     private void registerRecipes()

@@ -1,4 +1,21 @@
 <book title="Guidebook Manual" cover="guidebook:covers/default" fontSize="0.6">
+
+  <template id="big_recipe" height="64">
+    <image src="guidebook:crafting_grid" />
+
+    <element index="0" x="3" y="3" />
+    <element index="1" x="22" y="3" />
+    <element index="2" x="41" y="3" />
+    <element index="3" x="3" y="22" />
+    <element index="4" x="22" y="22" />
+    <element index="5" x="41" y="22" />
+    <element index="6" x="3" y="41" />
+    <element index="7" x="22" y="41" />
+    <element index="8" x="41" y="41" />
+    <element index="9" x="79" y="22" />
+
+  </template>
+
   <chapter>
     <page>
       <!--
@@ -73,25 +90,18 @@
     </page>
     <page id="images">
       <title>Images and Links</title>
-      <p space="8">Blah blah blah blah:</p>
-      <!--
-      'stack' and 'image' tags are relative to the current vertical offset,
-      but they do not increment the vertical offset.
-      -->
-      <stack item="minecraft:coal" meta="0" x="4" y="-4" />
       <p space="8" indent="22">Fire</p>
-      <image src="minecraft:items/coal" x="4" y="-4" />
-      <p space="8" indent="22">Fire</p>
+      <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
+      <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
+      <p>Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      <image src="minecraft:items/coal" tw="16" th="16" />
     </page>
     <page id="stacks">
-      <title>Item Stacksd</title>
-      <p>CONTENT UPCOMING</p>
-    </page>
-  </chapter>
-  <chapter id="recipes">
-    <page>
-      <title>Recipes</title>
-      <p>CONTENT UPCOMING</p>
+      <title>Item Stacks</title>
+      <p>The </p>
+      <p>'stack' and 'image' tags are relative to the current vertical offset,
+        but they do not increment the vertical offset.</p>
+      <stack item="minecraft:coal" meta="0" x="4" y="-4" />
     </page>
   </chapter>
   <chapter id="templates">
@@ -99,5 +109,40 @@
       <title>Templates</title>
       <p>CONTENT UPCOMING</p>
     </page>
+    <page id="recipes">
+      <title>Recipes</title>
+      <p>CONTENT UPCOMING</p>
+      <image src="guidebook:crafting_grid" x="0" y="0" />
+      <stack item="minecraft:stained_glass_pane" meta="0" x="3" y="3" />
+      <stack item="minecraft:stained_glass_pane" meta="1" x="22" y="3" />
+      <stack item="minecraft:stained_glass_pane" meta="2" x="41" y="3" />
+
+      <stack item="minecraft:stained_glass_pane" meta="3" x="3" y="22" />
+      <stack item="minecraft:stained_glass_pane" meta="4" x="22" y="22" />
+      <stack item="minecraft:stained_glass_pane" meta="5" x="41" y="22" />
+
+      <stack item="minecraft:stained_glass_pane" meta="6" x="3" y="41" />
+      <stack item="minecraft:stained_glass_pane" meta="7" x="22" y="41" />
+      <stack item="minecraft:stained_glass_pane" meta="8" x="41" y="41" />
+
+      <stack item="minecraft:stained_glass_pane" meta="9" x="79" y="22" />
+
+      <space height="64" />
+
+      <big_recipe>
+        <stack item="minecraft:stained_glass_pane" meta="0" />
+        <stack item="minecraft:stained_glass_pane" meta="1" />
+        <stack item="minecraft:stained_glass_pane" meta="2" />
+        <stack item="minecraft:stained_glass_pane" meta="3" />
+        <stack item="minecraft:stained_glass_pane" meta="4" />
+        <stack item="minecraft:stained_glass_pane" meta="5" />
+        <stack item="minecraft:stained_glass_pane" meta="6" />
+        <stack item="minecraft:stained_glass_pane" meta="7" />
+        <stack item="minecraft:stained_glass_pane" meta="8" />
+        <stack item="minecraft:stained_glass_pane" meta="9" />
+      </big_recipe>
+
+    </page>
   </chapter>
+
 </book>

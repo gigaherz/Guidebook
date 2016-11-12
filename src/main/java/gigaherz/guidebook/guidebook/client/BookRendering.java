@@ -8,13 +8,14 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
+
+import java.util.Collection;
 
 public class BookRendering implements IBookGraphics
 {
@@ -296,7 +297,12 @@ public class BookRendering implements IBookGraphics
 
     private boolean mouseClickPage(int mX, int mY, BookDocument.PageData pg)
     {
-        for (BookDocument.IPageElement e : pg.elements)
+        return mouseClickContainer(mX, mY, pg.elements);
+    }
+
+    private boolean mouseClickContainer(int mX, int mY, Collection<BookDocument.IPageElement> elements)
+    {
+        for (BookDocument.IPageElement e : elements)
         {
             if (e instanceof BookDocument.IClickablePageElement)
             {
@@ -308,6 +314,10 @@ public class BookRendering implements IBookGraphics
                     l.click(this);
                     return true;
                 }
+            }
+            else if (e instanceof BookDocument.IContainerPageElement)
+            {
+                mouseClickContainer(mX, mY, ((BookDocument.IContainerPageElement)e).getChildren());
             }
         }
         return false;
@@ -339,7 +349,12 @@ public class BookRendering implements IBookGraphics
         int mX = Mouse.getX() * dw / mc.displayWidth;
         int mY = dh - Mouse.getY() * dh / mc.displayHeight;
 
-        for (BookDocument.IPageElement e : pg.elements)
+        return mouseHoverContainer(mouseX, mouseY, mX, mY, pg.elements);
+    }
+
+    private boolean mouseHoverContainer(int mouseX, int mouseY, int mX, int mY, Collection<BookDocument.IPageElement> elements)
+    {
+        for (BookDocument.IPageElement e : elements)
         {
             if (e instanceof BookDocument.IHoverPageElement)
             {
@@ -351,6 +366,10 @@ public class BookRendering implements IBookGraphics
                     l.mouseOver(this, mouseX, mouseY);
                     return true;
                 }
+            }
+            else if (e instanceof BookDocument.IContainerPageElement)
+            {
+                mouseHoverContainer(mouseX, mouseY, mX, mY, ((BookDocument.IContainerPageElement)e).getChildren());
             }
         }
         return false;
@@ -429,15 +448,11 @@ public class BookRendering implements IBookGraphics
     @Override
     public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th)
     {
-        if (w == 0 || h == 0)
-        {
-            TextureAtlasSprite tas = mc.getTextureMapBlocks().getAtlasSprite(loc.toString());
-            if (w == 0) w = tas.getIconWidth();
-            if (h == 0) h = tas.getIconHeight();
-        }
+        int sw = tw != 0 ? tw : 256;
+        int sh = th != 0 ? th : 256;
 
-        int sw = tw != 0 ? tw : w;
-        int sh = th != 0 ? th : h;
+        if (w==0) w = sw;
+        if (h==0) h = sh;
 
         ResourceLocation locExpanded = new ResourceLocation(loc.getResourceDomain(), "textures/" + loc.getResourcePath() + ".png");
         gui.getRenderEngine().bindTexture(locExpanded);
