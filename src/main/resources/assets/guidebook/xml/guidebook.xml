@@ -1,20 +1,6 @@
 <book title="Guidebook Manual" cover="guidebook:covers/default" fontSize="0.6">
 
-  <template id="big_recipe" height="64">
-    <image src="guidebook:crafting_grid" />
-
-    <element index="0" x="3" y="3" />
-    <element index="1" x="22" y="3" />
-    <element index="2" x="41" y="3" />
-    <element index="3" x="3" y="22" />
-    <element index="4" x="22" y="22" />
-    <element index="5" x="41" y="22" />
-    <element index="6" x="3" y="41" />
-    <element index="7" x="22" y="41" />
-    <element index="8" x="41" y="41" />
-    <element index="9" x="79" y="22" />
-
-  </template>
+  <include ref="guidebook:xml/standard.xml" />
 
   <chapter>
     <page>
@@ -112,22 +98,6 @@
     <page id="recipes">
       <title>Recipes</title>
       <p>CONTENT UPCOMING</p>
-      <image src="guidebook:crafting_grid" x="0" y="0" />
-      <stack item="minecraft:stained_glass_pane" meta="0" x="3" y="3" />
-      <stack item="minecraft:stained_glass_pane" meta="1" x="22" y="3" />
-      <stack item="minecraft:stained_glass_pane" meta="2" x="41" y="3" />
-
-      <stack item="minecraft:stained_glass_pane" meta="3" x="3" y="22" />
-      <stack item="minecraft:stained_glass_pane" meta="4" x="22" y="22" />
-      <stack item="minecraft:stained_glass_pane" meta="5" x="41" y="22" />
-
-      <stack item="minecraft:stained_glass_pane" meta="6" x="3" y="41" />
-      <stack item="minecraft:stained_glass_pane" meta="7" x="22" y="41" />
-      <stack item="minecraft:stained_glass_pane" meta="8" x="41" y="41" />
-
-      <stack item="minecraft:stained_glass_pane" meta="9" x="79" y="22" />
-
-      <space height="64" />
 
       <big_recipe>
         <stack item="minecraft:stained_glass_pane" meta="0" />

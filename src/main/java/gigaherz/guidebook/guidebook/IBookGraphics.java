@@ -20,7 +20,7 @@ public interface IBookGraphics
 
     boolean canGoPrevChapter();
 
-    void navigateTo(BookDocument.PageRef target);
+    void navigateTo(PageRef target);
 
     void nextPage();
 

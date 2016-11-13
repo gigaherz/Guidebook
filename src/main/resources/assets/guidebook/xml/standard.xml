@@ -1,0 +1,18 @@
+<library>
+
+    <template id="big_recipe" height="64">
+        <image src="guidebook:crafting_grid" />
+
+        <element index="0" x="3" y="3" />
+        <element index="1" x="22" y="3" />
+        <element index="2" x="41" y="3" />
+        <element index="3" x="3" y="22" />
+        <element index="4" x="22" y="22" />
+        <element index="5" x="41" y="22" />
+        <element index="6" x="3" y="41" />
+        <element index="7" x="22" y="41" />
+        <element index="8" x="41" y="41" />
+        <element index="9" x="79" y="22" />
+    </template>
+
+</library>

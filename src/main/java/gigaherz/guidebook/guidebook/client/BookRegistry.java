@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResource;
@@ -39,6 +40,7 @@ public class BookRegistry
 
     public static void parseAllBooks()
     {
+        TemplateLibrary.reload();
         REGISTRY.values().forEach(BookRegistry::parseBook);
     }
 

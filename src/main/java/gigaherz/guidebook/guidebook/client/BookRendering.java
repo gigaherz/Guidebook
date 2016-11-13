@@ -3,6 +3,11 @@ package gigaherz.guidebook.guidebook.client;
 import gigaherz.common.client.StackRenderingHelper;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.elements.IClickablePageElement;
+import gigaherz.guidebook.guidebook.elements.IContainerPageElement;
+import gigaherz.guidebook.guidebook.elements.IHoverPageElement;
+import gigaherz.guidebook.guidebook.elements.IPageElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -40,9 +45,9 @@ public class BookRendering implements IBookGraphics
     private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
     private int pageHeight = bookHeight - verticalMargin;
 
-    final java.util.Stack<BookDocument.PageRef> history = new java.util.Stack<>();
-    int currentChapter = 0;
-    int currentPair = 0;
+    final java.util.Stack<PageRef> history = new java.util.Stack<>();
+    private int currentChapter = 0;
+    private int currentPair = 0;
     private boolean hasScale;
 
     private float scalingFactor;
@@ -159,11 +164,11 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void navigateTo(final BookDocument.PageRef target)
+    public void navigateTo(final PageRef target)
     {
         pushHistory();
 
-        target.resolve();
+        target.resolve(book);
         currentChapter = Math.max(0, Math.min(book.chapterCount() - 1, target.chapter));
         currentPair = Math.max(0, Math.min(book.getChapter(currentChapter).pagePairs - 1, target.page / 2));
     }
@@ -227,8 +232,8 @@ public class BookRendering implements IBookGraphics
     {
         if (history.size() > 0)
         {
-            BookDocument.PageRef target = history.pop();
-            target.resolve();
+            PageRef target = history.pop();
+            target.resolve(book);
             currentChapter = target.chapter;
             currentPair = target.page / 2;
         }
@@ -241,7 +246,7 @@ public class BookRendering implements IBookGraphics
 
     private void pushHistory()
     {
-        history.push(book.new PageRef(currentChapter, currentPair * 2));
+        history.push(new PageRef(currentChapter, currentPair * 2));
     }
 
     private int getSplitWidth(FontRenderer fontRenderer, String s)
@@ -300,13 +305,13 @@ public class BookRendering implements IBookGraphics
         return mouseClickContainer(mX, mY, pg.elements);
     }
 
-    private boolean mouseClickContainer(int mX, int mY, Collection<BookDocument.IPageElement> elements)
+    private boolean mouseClickContainer(int mX, int mY, Collection<IPageElement> elements)
     {
-        for (BookDocument.IPageElement e : elements)
+        for (IPageElement e : elements)
         {
-            if (e instanceof BookDocument.IClickablePageElement)
+            if (e instanceof IClickablePageElement)
             {
-                BookDocument.IClickablePageElement l = (BookDocument.IClickablePageElement) e;
+                IClickablePageElement l = (IClickablePageElement) e;
                 Rectangle b = l.getBounds();
                 if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
                         mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
@@ -315,9 +320,9 @@ public class BookRendering implements IBookGraphics
                     return true;
                 }
             }
-            else if (e instanceof BookDocument.IContainerPageElement)
+            else if (e instanceof IContainerPageElement)
             {
-                mouseClickContainer(mX, mY, ((BookDocument.IContainerPageElement)e).getChildren());
+                mouseClickContainer(mX, mY, ((IContainerPageElement)e).getChildren());
             }
         }
         return false;
@@ -352,13 +357,13 @@ public class BookRendering implements IBookGraphics
         return mouseHoverContainer(mouseX, mouseY, mX, mY, pg.elements);
     }
 
-    private boolean mouseHoverContainer(int mouseX, int mouseY, int mX, int mY, Collection<BookDocument.IPageElement> elements)
+    private boolean mouseHoverContainer(int mouseX, int mouseY, int mX, int mY, Collection<IPageElement> elements)
     {
-        for (BookDocument.IPageElement e : elements)
+        for (IPageElement e : elements)
         {
-            if (e instanceof BookDocument.IHoverPageElement)
+            if (e instanceof IHoverPageElement)
             {
-                BookDocument.IHoverPageElement l = (BookDocument.IHoverPageElement) e;
+                IHoverPageElement l = (IHoverPageElement) e;
                 Rectangle b = l.getBounds();
                 if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
                         mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
@@ -367,9 +372,9 @@ public class BookRendering implements IBookGraphics
                     return true;
                 }
             }
-            else if (e instanceof BookDocument.IContainerPageElement)
+            else if (e instanceof IContainerPageElement)
             {
-                mouseHoverContainer(mouseX, mouseY, mX, mY, ((BookDocument.IContainerPageElement)e).getChildren());
+                mouseHoverContainer(mouseX, mouseY, mX, mY, ((IContainerPageElement)e).getChildren());
             }
         }
         return false;
@@ -415,7 +420,7 @@ public class BookRendering implements IBookGraphics
 
         BookDocument.PageData pg = ch.pages.get(page);
 
-        for (BookDocument.IPageElement e : pg.elements)
+        for (IPageElement e : pg.elements)
         {
             top += e.apply(this, left, top);
         }
