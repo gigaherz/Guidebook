@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
@@ -19,6 +20,7 @@ public class Stack implements IHoverPageElement
     public ItemStack stack;
     public int x = 0;
     public int y = 0;
+    public float scale = 1.0f;
 
     public Rectangle bounds;
 
@@ -31,11 +33,12 @@ public class Stack implements IHoverPageElement
     {
         left += x;
         top += y;
-        int width = 16;
-        int height = 16;
+        int width = (int) (16 * scale);
+        int height = (int) (16 * scale);
         bounds = new Rectangle(left, top, width, height);
 
-        nav.drawItemStack(left, top, stack, 0xFFFFFFFF);
+        nav.drawItemStack(left, top, stack, 0xFFFFFFFF, scale);
+
         return 0;
     }
 
@@ -95,6 +98,13 @@ public class Stack implements IHoverPageElement
         if (attr != null)
         {
             y = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = attributes.getNamedItem("scale");
+        if (attr != null)
+        {
+            Float f = Floats.tryParse(attr.getTextContent());
+            scale = f != null ? f : scale;
         }
     }
 

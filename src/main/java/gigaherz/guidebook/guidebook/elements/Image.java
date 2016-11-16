@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
@@ -20,6 +21,7 @@ public class Image implements IPageElement
     public int ty = 0;
     public int tw = 0;
     public int th = 0;
+    public float scale = 1.0f;
 
     public Image()
     {
@@ -34,13 +36,14 @@ public class Image implements IPageElement
 
     private void drawImage(IBookGraphics nav, int left, int top)
     {
-        nav.drawImage(textureLocation, left + x, top + y, tx, ty, w, h, tw, th);
+        nav.drawImage(textureLocation, left + x, top + y, tx, ty, w, h, tw, th, scale);
     }
 
     @Override
     public void findTextures(Set<ResourceLocation> textures)
     {
-        textures.add(textureLocation);
+        // No need to require them, since they are used dynamically and not stitched.
+        //textures.add(textureLocation);
     }
 
     @Override
@@ -97,6 +100,13 @@ public class Image implements IPageElement
         if (attr != null)
         {
             textureLocation = new ResourceLocation(attr.getTextContent());
+        }
+
+        attr = attributes.getNamedItem("scale");
+        if (attr != null)
+        {
+            Float f = Floats.tryParse(attr.getTextContent());
+            scale = f != null ? f : scale;
         }
     }
 

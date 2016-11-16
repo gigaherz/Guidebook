@@ -103,7 +103,7 @@ public class BookBakedModel implements IBakedModel
                     {
                         ResourceLocation cover = bookDocument.getBookCover();
                         if (cover != null)
-                            mh = mh.replace("CoverGraphics", cover.toString());
+                            mh = mh.replace("#CoverGraphics", cover.toString());
                     }
                 }
 

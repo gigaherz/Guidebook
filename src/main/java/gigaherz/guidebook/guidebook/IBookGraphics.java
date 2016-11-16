@@ -46,9 +46,9 @@ public interface IBookGraphics
 
     int getPageHeight();
 
-    void drawItemStack(int left, int top, ItemStack stack, int color);
+    void drawItemStack(int left, int top, ItemStack stack, int color, float scale);
 
-    void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th);
+    void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
 
     Rectangle getStringBounds(String text, int left, int top);
 

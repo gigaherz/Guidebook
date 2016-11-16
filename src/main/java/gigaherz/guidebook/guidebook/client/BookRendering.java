@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook.client;
 
-import gigaherz.common.client.StackRenderingHelper;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.PageRef;
@@ -13,6 +12,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -445,13 +445,19 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawItemStack(int left, int top, ItemStack stack, int color)
+    public void drawItemStack(int left, int top, ItemStack stack, int color, float scale)
     {
-        StackRenderingHelper.renderItemStack(gui.getMesher(), gui.getRenderEngine(), left, top, stack, color);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(left, top, 0);
+        GlStateManager.scale(scale,scale,scale);
+        RenderHelper.enableGUIStandardItemLighting();
+        gui.mc.getRenderItem().renderItemIntoGUI(stack, 0, 0);
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.popMatrix();
     }
 
     @Override
-    public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th)
+    public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
     {
         int sw = tw != 0 ? tw : 256;
         int sh = th != 0 ? th : 256;
@@ -469,7 +475,8 @@ public class BookRendering implements IBookGraphics
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-        Gui.drawModalRectWithCustomSizedTexture(x, y, tx, ty, w, h, sw, sh);
+        Gui.drawScaledCustomSizeModalRect(x, y, tx, ty, w, h, (int)(w*scale), (int)(h*scale), sw, sh);
+
     }
 
     @Override

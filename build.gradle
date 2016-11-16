@@ -24,9 +24,9 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "1.0.0"
+version = "1.10.2-1.0.5"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Guidebook-1.10.2"
+archivesBaseName = "Guidebook"
 
 minecraft {
     version = "1.10.2-12.18.2.2114"
@@ -90,6 +90,7 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
 
+            artifact shadowJar
             artifact sourceJar
         }
     }
