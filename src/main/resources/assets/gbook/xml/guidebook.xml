@@ -1,6 +1,6 @@
-<book title="Guidebook Manual" cover="guidebook:covers/default" fontSize="0.6">
+<book title="Guidebook Manual" cover="gbook:covers/default" fontSize="0.6">
 
-  <include ref="guidebook:xml/standard.xml" />
+  <include ref="gbook:xml/standard.xml" />
 
   <chapter>
     <page>

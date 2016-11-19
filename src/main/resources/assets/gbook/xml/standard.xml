@@ -1,7 +1,7 @@
 <library>
 
     <template id="big_recipe" height="64">
-        <image src="guidebook:crafting_grid" />
+        <image src="gbook:crafting_grid" />
 
         <element index="0" x="3" y="3" />
         <element index="1" x="22" y="3" />

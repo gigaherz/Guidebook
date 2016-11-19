@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.common.client.ModelHandle;
+import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -22,10 +23,10 @@ public class AnimatedBookBackground
 
     private boolean closing = false;
 
-    private final ModelHandle book00 = ModelHandle.of("guidebook:gui/book.obj").vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-    private final ModelHandle book30 = ModelHandle.of("guidebook:gui/book30.obj").vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-    private final ModelHandle book60 = ModelHandle.of("guidebook:gui/book60.obj").vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-    private final ModelHandle book90 = ModelHandle.of("guidebook:gui/book90.obj").vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+    private final ModelHandle book00 = ModelHandle.of(GuidebookMod.location("gui/book.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+    private final ModelHandle book30 = ModelHandle.of(GuidebookMod.location("gui/book30.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+    private final ModelHandle book60 = ModelHandle.of(GuidebookMod.location("gui/book60.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+    private final ModelHandle book90 = ModelHandle.of(GuidebookMod.location("gui/book90.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
     private final GuiGuidebook gui;
 

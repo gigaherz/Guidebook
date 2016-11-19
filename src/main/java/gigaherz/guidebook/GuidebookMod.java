@@ -52,7 +52,7 @@ public class GuidebookMod
     {
         logger = event.getModLog();
 
-        BookRegistry.registerBook(new ResourceLocation("guidebook:xml/guidebook.xml"));
+        BookRegistry.registerBook(GuidebookMod.location("xml/guidebook.xml"));
 
         proxy.preInit();
     }

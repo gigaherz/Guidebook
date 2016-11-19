@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class GuiGuidebook extends GuiScreen
 {
-    private static final ResourceLocation BOOK_GUI_TEXTURES = new ResourceLocation("guidebook:textures/gui/book.png");
+    private static final ResourceLocation BOOK_GUI_TEXTURES = GuidebookMod.location("textures/gui/book.png");
 
     public final ResourceLocation bookLocation;
 

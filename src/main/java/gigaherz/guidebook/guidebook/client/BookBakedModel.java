@@ -32,7 +32,7 @@ import java.util.Set;
 public class BookBakedModel implements IBakedModel
 {
     private static final ResourceLocation FAKE_LOCATION = GuidebookMod.location("models/block/custom/book");
-    private static final ResourceLocation PIPE_CONNECTOR = GuidebookMod.location("block/book.obj");
+    private static final ResourceLocation BASE_MODEL = GuidebookMod.location("block/book.obj");
 
     private final TextureAtlasSprite particle;
     private final IModelState state;
@@ -87,7 +87,7 @@ public class BookBakedModel implements IBakedModel
             @Override
             public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity)
             {
-                ModelHandle mh = ModelHandle.of(PIPE_CONNECTOR);
+                ModelHandle mh = ModelHandle.of(BASE_MODEL);
 
                 if (state != null)
                 {
@@ -131,7 +131,7 @@ public class BookBakedModel implements IBakedModel
         public Collection<ResourceLocation> getDependencies()
         {
             List<ResourceLocation> dependencies = Lists.newArrayList();
-            dependencies.add(PIPE_CONNECTOR);
+            dependencies.add(BASE_MODEL);
             return dependencies;
         }
 
