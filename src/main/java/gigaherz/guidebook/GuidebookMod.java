@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
         updateJSON = "https://raw.githubusercontent.com/gigaherz/guidebook/master/update.json")
 public class GuidebookMod
 {
-    public static final String MODID = "guidebook";
+    public static final String MODID = "gbook";
     public static final String VERSION = "@VERSION@";
 
     // The instance of your mod that Forge uses.

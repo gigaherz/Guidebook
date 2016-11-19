@@ -76,7 +76,7 @@ public class BookRendering implements IBookGraphics
             ++scaleFactor;
         }
 
-        scaleFactor = MathHelper.floor_double(Math.max(1, scaleFactor * scaleFactorCoef));
+        scaleFactor = MathHelper.floor(Math.max(1, scaleFactor * scaleFactorCoef));
 
         if (flag && scaleFactor % 2 != 0 && scaleFactor != 1)
         {
@@ -85,8 +85,8 @@ public class BookRendering implements IBookGraphics
 
         double scaledWidthD = (double) this.scaledWidth / (double) scaleFactor;
         double scaledHeightD = (double) this.scaledHeight / (double) scaleFactor;
-        this.scaledWidth = MathHelper.ceiling_double_int(scaledWidthD);
-        this.scaledHeight = MathHelper.ceiling_double_int(scaledHeightD);
+        this.scaledWidth = MathHelper.ceil(scaledWidthD);
+        this.scaledHeight = MathHelper.ceil(scaledHeightD);
     }
 
     @Override
@@ -447,13 +447,23 @@ public class BookRendering implements IBookGraphics
     @Override
     public void drawItemStack(int left, int top, ItemStack stack, int color, float scale)
     {
+        GlStateManager.enableDepth();
+        GlStateManager.enableAlpha();
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(left, top, 0);
         GlStateManager.scale(scale,scale,scale);
+
         RenderHelper.enableGUIStandardItemLighting();
-        gui.mc.getRenderItem().renderItemIntoGUI(stack, 0, 0);
+        gui.mc.getRenderItem().renderItemAndEffectIntoGUI(stack, 0, 0);
         RenderHelper.disableStandardItemLighting();
+
+        gui.mc.getRenderItem().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
+
         GlStateManager.popMatrix();
+
+        GlStateManager.disableLighting();
+        GlStateManager.disableDepth();
     }
 
     @Override

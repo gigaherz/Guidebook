@@ -75,18 +75,20 @@
       <title>Title Here</title>
     </page>
     <page id="images">
-      <title>Images and Links</title>
-      <p space="8" indent="22">Fire</p>
-      <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
-      <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
-      <p>Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      <image src="minecraft:items/coal" tw="16" th="16" scale="1.5" /> />
+      <space height="100%">
+        <title>Images and Links</title>
+        <p space="8" indent="22">Fire</p>
+        <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
+        <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
+        <p>Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      </space>
+      <image src="minecraft:items/coal" tw="16" th="16" y="-30" />
     </page>
     <page id="stacks">
       <title>Item Stacks</title>
       <p>The </p>
       <p>'stack' and 'image' tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      <stack item="minecraft:coal" meta="0" x="4" y="-4" scale="1.5" />
+      <stack item="minecraft:coal" meta="0" count="2" x="4" y="-4" />
     </page>
   </chapter>
   <chapter id="templates">

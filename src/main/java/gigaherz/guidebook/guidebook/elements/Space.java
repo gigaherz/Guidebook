@@ -1,23 +1,42 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
-import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class Space implements IPageElement
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+public class Space implements IContainerPageElement
 {
+    public final List<IPageElement> innerElements;
     public boolean asPercent;
     public int space;
 
     public Space()
     {
+        this.innerElements = Lists.newArrayList();
+    }
+
+    public Space(List<IPageElement> innerElements)
+    {
+        this.innerElements = Lists.newArrayList(innerElements);
     }
 
     @Override
     public int apply(IBookGraphics nav, int left, int top)
     {
+        int top0 = top;
+
+        for (IPageElement child : innerElements)
+        {
+            top0 += child.apply(nav, left, top0);
+        }
+
         return asPercent ? nav.getPageHeight() * space / 100 : space;
     }
 
@@ -36,6 +55,21 @@ public class Space implements IPageElement
 
             space = Ints.tryParse(t);
         }
+    }
+
+    @Override
+    public void findTextures(Set<ResourceLocation> textures)
+    {
+        for (IPageElement child : innerElements)
+        {
+            child.findTextures(textures);
+        }
+    }
+
+    @Override
+    public Collection<IPageElement> getChildren()
+    {
+        return innerElements;
     }
 
     @Override

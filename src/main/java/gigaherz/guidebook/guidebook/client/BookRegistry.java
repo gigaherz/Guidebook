@@ -58,8 +58,14 @@ public class BookRegistry
         }
     }
 
+    private static boolean initialized = false;
     public static void initReloadHandler()
     {
+        if (initialized)
+            return;
+
+        initialized = true;
+
         IResourceManager rm = Minecraft.getMinecraft().getResourceManager();
         if (rm instanceof IReloadableResourceManager)
         {

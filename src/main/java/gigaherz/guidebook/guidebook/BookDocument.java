@@ -308,7 +308,8 @@ public class BookDocument
                     link.parse(elementItem.getAttributes());
                 }
             }
-            else if (nodeName.equals("space"))
+            else if (nodeName.equals("space")
+                    || nodeName.equals("group"))
             {
                 Space s = new Space();
                 elements.add(s);
@@ -317,6 +318,12 @@ public class BookDocument
                 {
                     s.parse(elementItem.getAttributes());
                 }
+
+                List<IPageElement> elementList = Lists.newArrayList();
+
+                parseChildElements(elementItem, elementList, templates);
+
+                s.innerElements.addAll(elementList);
             }
             else if (nodeName.equals("stack"))
             {
