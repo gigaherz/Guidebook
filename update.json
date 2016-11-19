@@ -1,9 +1,10 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.10.2-latest": "1.10.2-1.2.2"
+    "1.10.2-latest": "1.10.2-1.2.3"
   },
   "1.10.2": {
-    "1.10.2-1.2.2": "(Third) First public release"
+    "1.10.2-1.2.2": "(Third) First public release",
+    "1.10.2-1.2.3": "Add the ability to change the drawing depth for itemstacks."
   }
 }

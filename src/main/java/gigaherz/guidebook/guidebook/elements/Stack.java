@@ -20,6 +20,7 @@ public class Stack implements IHoverPageElement
     public ItemStack stack;
     public int x = 0;
     public int y = 0;
+    public int z = 0;
     public float scale = 1.0f;
 
     public Rectangle bounds;
@@ -37,7 +38,7 @@ public class Stack implements IHoverPageElement
         int height = (int) (16 * scale);
         bounds = new Rectangle(left, top, width, height);
 
-        nav.drawItemStack(left, top, stack, 0xFFFFFFFF, scale);
+        nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
 
         return 0;
     }
@@ -98,6 +99,12 @@ public class Stack implements IHoverPageElement
         if (attr != null)
         {
             y = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = attributes.getNamedItem("z");
+        if (attr != null)
+        {
+            z = Ints.tryParse(attr.getTextContent());
         }
 
         attr = attributes.getNamedItem("scale");

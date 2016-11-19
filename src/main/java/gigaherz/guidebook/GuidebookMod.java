@@ -7,6 +7,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -52,7 +53,11 @@ public class GuidebookMod
     {
         logger = event.getModLog();
 
-        BookRegistry.registerBook(GuidebookMod.location("xml/guidebook.xml"));
+        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
+        String[] books = config.get("Books", "BookList", new String[]{GuidebookMod.location("xml/guidebook.xml").toString()}).getStringList();
+        for(String book : books)
+            BookRegistry.registerBook(new ResourceLocation(book));
+        config.save();
 
         proxy.preInit();
     }

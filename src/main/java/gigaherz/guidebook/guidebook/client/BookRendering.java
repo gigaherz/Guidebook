@@ -445,13 +445,13 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawItemStack(int left, int top, ItemStack stack, int color, float scale)
+    public void drawItemStack(int left, int top, int z, ItemStack stack, int color, float scale)
     {
         GlStateManager.enableDepth();
         GlStateManager.enableAlpha();
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(left, top, 0);
+        GlStateManager.translate(left, top, z);
         GlStateManager.scale(scale,scale,scale);
 
         RenderHelper.enableGUIStandardItemLighting();
