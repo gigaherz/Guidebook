@@ -1,10 +1,7 @@
 buildscript {
     repositories {
         jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
+        maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
@@ -24,15 +21,15 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "1.10.2-1.2.3"
+version = "1.11.0-1.2.4"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook"
 
 minecraft {
-    version = "1.10.2-12.18.2.2147"
+    version = "1.11-13.19.0.2153"
     runDir = "run"
 
-    mappings = "snapshot_20161116"
+    mappings = "snapshot_20161119"
 
     replace "@VERSION@", project.version
     replaceIn "GuidebookMod.java"
@@ -62,7 +59,7 @@ artifacts {
 }
 
 dependencies {
-    deobfCompile "gigaherz.commons:Commons:1.10.2-0.4.4"
+    deobfCompile "gigaherz.commons:Commons:1.11.0-0.4.5"
 }
 
 compileJava {

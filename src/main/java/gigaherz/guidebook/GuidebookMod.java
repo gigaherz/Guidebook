@@ -6,6 +6,7 @@ import gigaherz.guidebook.guidebook.client.BookRegistry;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
@@ -19,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 @Mod.EventBusSubscriber
 @Mod(modid = GuidebookMod.MODID, version = GuidebookMod.VERSION,
-        acceptedMinecraftVersions = "[1.9.4,1.11.0)",
+        acceptedMinecraftVersions = "[1.11.0,1.12.0)",
         updateJSON = "https://raw.githubusercontent.com/gigaherz/guidebook/master/update.json")
 public class GuidebookMod
 {
@@ -42,9 +43,9 @@ public class GuidebookMod
     public static CreativeTabs tabMagic = new CreativeTabs(MODID)
     {
         @Override
-        public Item getTabIconItem()
+        public ItemStack getTabIconItem()
         {
-            return guidebook;
+            return new ItemStack(guidebook);
         }
     };
 

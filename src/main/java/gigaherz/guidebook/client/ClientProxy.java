@@ -52,7 +52,7 @@ public class ClientProxy implements IModProxy
     {
         ResourceLocation loc = new ResourceLocation(book);
         BookDocument br = BookRegistry.get(loc);
-        if (br.chapterCount() > 0)
+        if (br != null && br.chapterCount() > 0)
             Minecraft.getMinecraft().displayGuiScreen(new GuiGuidebook(loc));
     }
 }

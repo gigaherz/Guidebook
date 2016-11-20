@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook;
 
+import com.google.common.base.Strings;
 import gigaherz.common.ItemRegistered;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
@@ -27,16 +28,17 @@ public class ItemGuidebook extends ItemRegistered
     }
 
     @Override
-    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-        return showBook(worldIn, stack);
+        return showBook(worldIn, playerIn.getHeldItem(hand));
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn, EnumHand hand)
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand hand)
     {
-        EnumActionResult result = showBook(worldIn, itemStackIn);
-        return ActionResult.newResult(result, itemStackIn);
+        ItemStack stack = playerIn.getHeldItem(hand);
+        EnumActionResult result = showBook(worldIn, stack);
+        return ActionResult.newResult(result, stack);
     }
 
     private EnumActionResult showBook(World worldIn, ItemStack stack)
@@ -63,7 +65,7 @@ public class ItemGuidebook extends ItemRegistered
     }
 
     @Override
-    public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems)
+    public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems)
     {
         BookRegistry.REGISTRY.keySet().stream().map(this::of).forEach(subItems::add);
     }
@@ -75,7 +77,7 @@ public class ItemGuidebook extends ItemRegistered
         if(tag != null)
         {
             String book = tag.getString("Book");
-            if (book != null)
+            if (!Strings.isNullOrEmpty(book))
             {
                 BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
                 if (bookDocument != null)
@@ -83,10 +85,6 @@ public class ItemGuidebook extends ItemRegistered
                     String name = bookDocument.getBookName();
                     if (name != null)
                         return name;
-                }
-                else
-                {
-
                 }
             }
         }
