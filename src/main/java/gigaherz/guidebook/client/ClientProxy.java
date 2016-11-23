@@ -3,8 +3,8 @@ package gigaherz.guidebook.client;
 import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.common.IModProxy;
-import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
 import net.minecraft.client.Minecraft;
@@ -35,8 +35,6 @@ public class ClientProxy implements IModProxy
     public void preInit()
     {
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
-
-        BookRegistry.parseAllBooks();
     }
 
     @Override

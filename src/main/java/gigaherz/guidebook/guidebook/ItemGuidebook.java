@@ -14,8 +14,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.List;
-
 public class ItemGuidebook extends ItemRegistered
 {
     public ItemGuidebook(String name)
@@ -67,7 +65,7 @@ public class ItemGuidebook extends ItemRegistered
     @Override
     public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems)
     {
-        BookRegistry.REGISTRY.keySet().stream().map(this::of).forEach(subItems::add);
+        BookRegistry.LOADED_BOOKS.keySet().stream().map(this::of).forEach(subItems::add);
     }
 
     @Override

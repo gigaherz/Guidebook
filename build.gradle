@@ -21,9 +21,9 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "1.11.0-1.2.4"
+version = "1.2.4"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Guidebook"
+archivesBaseName = "Guidebook-1.11.0"
 
 minecraft {
     version = "1.11-13.19.0.2153"
@@ -82,6 +82,7 @@ processResources {
     }
 }
 
+tasks.publish.dependsOn build
 publishing {
     publications {
         mavenJava(MavenPublication) {

@@ -2,7 +2,6 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
-import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
