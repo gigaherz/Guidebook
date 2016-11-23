@@ -1,8 +1,6 @@
 package gigaherz.guidebook.guidebook.templates;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.primitives.Floats;
 import gigaherz.guidebook.guidebook.BookDocument;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
@@ -18,7 +16,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 
 public class TemplateLibrary
@@ -70,7 +67,7 @@ public class TemplateLibrary
 
     public static Map<String, TemplateLibrary> LIBRARIES = Maps.newHashMap();
 
-    public static void reload()
+    public static void clear()
     {
         LIBRARIES.clear();
     }

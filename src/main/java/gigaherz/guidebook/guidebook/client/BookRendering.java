@@ -114,7 +114,7 @@ public class BookRendering implements IBookGraphics
             computeScaledResolution2(mc, fontSize);
 
             this.hasScale = true;
-            this.scalingFactor = Math.min(sr.getScaledWidth() / (float)scaledWidth, sr.getScaledHeight() / (float)scaledHeight);
+            this.scalingFactor = Math.min(sr.getScaledWidth() / (float) scaledWidth, sr.getScaledHeight() / (float) scaledHeight);
 
             this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
             this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
@@ -322,7 +322,7 @@ public class BookRendering implements IBookGraphics
             }
             else if (e instanceof IContainerPageElement)
             {
-                mouseClickContainer(mX, mY, ((IContainerPageElement)e).getChildren());
+                mouseClickContainer(mX, mY, ((IContainerPageElement) e).getChildren());
             }
         }
         return false;
@@ -374,7 +374,7 @@ public class BookRendering implements IBookGraphics
             }
             else if (e instanceof IContainerPageElement)
             {
-                mouseHoverContainer(mouseX, mouseY, mX, mY, ((IContainerPageElement)e).getChildren());
+                mouseHoverContainer(mouseX, mouseY, mX, mY, ((IContainerPageElement) e).getChildren());
             }
         }
         return false;
@@ -452,7 +452,7 @@ public class BookRendering implements IBookGraphics
 
         GlStateManager.pushMatrix();
         GlStateManager.translate(left, top, z);
-        GlStateManager.scale(scale,scale,scale);
+        GlStateManager.scale(scale, scale, scale);
 
         RenderHelper.enableGUIStandardItemLighting();
         gui.mc.getRenderItem().renderItemAndEffectIntoGUI(stack, 0, 0);
@@ -472,8 +472,8 @@ public class BookRendering implements IBookGraphics
         int sw = tw != 0 ? tw : 256;
         int sh = th != 0 ? th : 256;
 
-        if (w==0) w = sw;
-        if (h==0) h = sh;
+        if (w == 0) w = sw;
+        if (h == 0) h = sh;
 
         ResourceLocation locExpanded = new ResourceLocation(loc.getResourceDomain(), "textures/" + loc.getResourcePath() + ".png");
         gui.getRenderEngine().bindTexture(locExpanded);
@@ -485,8 +485,7 @@ public class BookRendering implements IBookGraphics
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-        Gui.drawScaledCustomSizeModalRect(x, y, tx, ty, w, h, (int)(w*scale), (int)(h*scale), sw, sh);
-
+        Gui.drawScaledCustomSizeModalRect(x, y, tx, ty, w, h, (int) (w * scale), (int) (h * scale), sw, sh);
     }
 
     @Override

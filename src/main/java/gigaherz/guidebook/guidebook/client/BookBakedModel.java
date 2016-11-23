@@ -8,7 +8,10 @@ import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.resources.IResourceManager;
@@ -83,7 +86,8 @@ public class BookBakedModel implements IBakedModel
     @Override
     public ItemOverrideList getOverrides()
     {
-        return new ItemOverrideList(Collections.emptyList()) {
+        return new ItemOverrideList(Collections.emptyList())
+        {
             @Override
             public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity)
             {
@@ -95,7 +99,7 @@ public class BookBakedModel implements IBakedModel
                 }
 
                 NBTTagCompound tag = stack.getTagCompound();
-                if(tag != null)
+                if (tag != null)
                 {
                     String book = tag.getString("Book");
                     BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
@@ -142,7 +146,7 @@ public class BookBakedModel implements IBakedModel
             if (particle != null)
                 textures.add(particle);
 
-            for (BookDocument renderer : BookRegistry.REGISTRY.values())
+            for (BookDocument renderer : BookRegistry.LOADED_BOOKS.values())
             {
                 renderer.findTextures(textures);
             }

@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook;
 
+import com.google.common.base.Strings;
 import gigaherz.common.ItemRegistered;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
@@ -65,17 +66,17 @@ public class ItemGuidebook extends ItemRegistered
     @Override
     public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems)
     {
-        BookRegistry.REGISTRY.keySet().stream().map(this::of).forEach(subItems::add);
+        BookRegistry.LOADED_BOOKS.keySet().stream().map(this::of).forEach(subItems::add);
     }
 
     @Override
     public String getItemStackDisplayName(ItemStack stack)
     {
         NBTTagCompound tag = stack.getTagCompound();
-        if(tag != null)
+        if (tag != null)
         {
             String book = tag.getString("Book");
-            if (book != null)
+            if (!Strings.isNullOrEmpty(book))
             {
                 BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
                 if (bookDocument != null)
@@ -83,10 +84,6 @@ public class ItemGuidebook extends ItemRegistered
                     String name = bookDocument.getBookName();
                     if (name != null)
                         return name;
-                }
-                else
-                {
-
                 }
             }
         }

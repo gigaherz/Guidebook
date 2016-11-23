@@ -193,5 +193,4 @@ public class AnimatedBookBackground
         }
         tessellator.draw();
     }
-
 }

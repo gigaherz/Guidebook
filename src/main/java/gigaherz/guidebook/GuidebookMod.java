@@ -55,11 +55,11 @@ public class GuidebookMod
 
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         String[] books = config.get("Books", "BookList", new String[]{GuidebookMod.location("xml/guidebook.xml").toString()}).getStringList();
-        for(String book : books)
-            BookRegistry.registerBook(new ResourceLocation(book));
+        for (String book : books)
+        { BookRegistry.registerBook(new ResourceLocation(book)); }
         config.save();
 
-        proxy.preInit();
+        proxy.preInit(event.getModConfigurationDirectory());
     }
 
     @Mod.EventHandler

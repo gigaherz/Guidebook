@@ -31,8 +31,9 @@
       <link ref="start:text">1.2. Paragraphs and titles</link>
       <link ref="start:images">1.3. Images and Links</link>
       <link ref="start:stacks">1.4. Item Stacks</link>
-      <link ref="templates">2. Templates (UPCOMING)</link>
-      <link ref="templates:recipes">2.1. Recipes (UPCOMING)</link>
+      <link ref="templates">2. Templates (WIP)</link>
+      <link ref="templates:recipes">2.1. Recipes (WIP)</link>
+      <link ref="API">3. Adding new Books</link>
     </page>
   </chapter>
   <chapter id="start">
@@ -75,30 +76,30 @@
       <title>Title Here</title>
     </page>
     <page id="images">
-      <space height="100%">
-        <title>Images and Links</title>
-        <p space="8" indent="22">Fire</p>
-        <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
-        <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
-        <p>Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      </space>
-      <image src="minecraft:items/coal" tw="16" th="16" y="-30" />
+      <title>Images and Links</title>
+      <p space="8" indent="22">Fire</p>
+      <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
+      <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
+      <p space="8">Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      <image src="minecraft:items/coal" tw="16" th="16" />
     </page>
     <page id="stacks">
       <title>Item Stacks</title>
       <p>The </p>
-      <p>'stack' and 'image' tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      <stack item="minecraft:coal" meta="0" count="2" x="4" y="-4" />
+      <p space="8">'stack' and 'image' tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      <stack item="minecraft:coal" meta="0" count="2" />
     </page>
   </chapter>
   <chapter id="templates">
     <page>
       <title>Templates</title>
-      <p>CONTENT UPCOMING</p>
+      <p>Guidebook offers a template system, that allows declaring a pattern that can be repeated multiple times.</p>
+      <p>On top of that, templates can be defined inside template library files, and thosefiles can be included from books.</p>
+      <p>Read this book's source code for an example of use and declaration.</p>
     </page>
     <page id="recipes">
       <title>Recipes</title>
-      <p>CONTENT UPCOMING</p>
+      <p>For now, the only way to show recipes is to declare them using the template system. The result looks as follows:</p>
 
       <big_recipe>
         <stack item="minecraft:stained_glass" meta="0" />
@@ -113,7 +114,47 @@
         <stack item="minecraft:stained_glass" meta="9" />
       </big_recipe>
 
+      <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
   </chapter>
+  <chapter id="API">
+    <page>
+      <title>Adding new books</title>
+      <p>Guidebook has 3 ways to declare new books, designed for different purposes:</p>
+      <link ref=":registry" indent="8">1. Using the book registry API.</link>
+      <link ref=":configuration" indent="8">2. Using the configuration folder.</link>
+      <link ref=":respack" indent="8">3. Using resource packs.</link>
+    </page>
+    <page id="registry">
+      <title>Book Registry</title>
+      <p space="8">The preferred way to access the registry is through the BookRegistryEvent. An example of use is provided below:</p>
 
+      <p>@Optional.Method(modid="gbook")</p>
+      <p>@SubscribeEvent</p>
+      <p>public static void registerBook(BookRegistryEvent event)</p>
+      <p>{</p>
+      <p>event.register(new ResourceLocation("modid:xml/book.xml"));</p>
+      <p>}</p>
+
+      <space height="8" />
+
+      <p>The Optional annotation is needed to prevent a hard-dependency on the mod. The event parameter has a register method, that can be used to perform the registration.</p>
+      <p>In order for this event to run, you need to annotate the class with @Mod.EventBusSubscriber.</p>
+
+    </page>
+    <page id="configuration">
+      <title>Configuration Folder</title>
+      <p>If you are a modpack author, you may want to add custom books available to everyone using your pack. This can be done by using the `config/guidebook/` folder. This folder will behave like a resource pack, except the contents inside will be limited to the `gbook` resource domain.</p>
+      <p>See the following section for details on how to declare books in a resource pack.</p>
+    </page>
+    <page id="respack">
+      <title>Resource Packs</title>
+      <p>Another way to provide books is to use a resource pack. This is useful for adventure map developers, and users who just want some extra books without unnecessary hassle.</p>
+      <p>The most important resource will be the `books.json` file, which will have to reside at the root of any resource domain. That is, in a folder like `assets/[ANY NAME HERE]/books.json`. Keep in mid that the resource domain must be lowercase, like `minecraft`.</p>
+      <p>This JSON-formatted file will contain a single array, with the list of books inside. It will look like this:</p>
+      <p indent="8">[ "domain1:path/book1.xml", "domain2:path/book2.xml", ... ]</p>
+      <p>These resources are additive. That means an upper resource pack will not be able to remove books registered by a lower one, unlike normal resources which are replaced by upper packs.</p>
+      <p>See the other sections of this document for information on the tags available, and read the source code of this book for a practical example.</p>
+    </page>
+  </chapter>
 </book>

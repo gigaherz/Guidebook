@@ -1,7 +1,6 @@
 package gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.collect.Lists;
-import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.elements.IPageElement;
 import org.w3c.dom.NamedNodeMap;
 

@@ -29,7 +29,7 @@ public class BookDocument
 {
     private static final float DEFAULT_FONT_SIZE = 1.0f;
 
-    private float fontSize;
+    private float fontSize = 1.0f;
 
     private final ResourceLocation bookLocation;
     private String bookName;
@@ -124,6 +124,7 @@ public class BookDocument
             bookName = "";
             bookCover = null;
             totalPairs = 0;
+            fontSize = DEFAULT_FONT_SIZE;
             chaptersByName.clear();
             pagesByName.clear();
 
@@ -135,7 +136,7 @@ public class BookDocument
 
             Node root = doc.getChildNodes().item(0);
 
-            if(root.hasAttributes())
+            if (root.hasAttributes())
             {
                 NamedNodeMap attributes = root.getAttributes();
                 Node n = attributes.getNamedItem("title");

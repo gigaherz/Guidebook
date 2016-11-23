@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook;
 
+import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 
 import javax.annotation.Nullable;
@@ -30,7 +31,7 @@ public class PageRef
     {
         if (!resolvedNames)
         {
-            if (chapterName != null)
+            if (!Strings.isNullOrEmpty(chapterName))
             {
                 Integer ch = Ints.tryParse(chapterName);
                 if (ch != null)
@@ -42,7 +43,7 @@ public class PageRef
                     chapter = bookDocument.chaptersByName.get(chapterName);
                 }
 
-                if (pageName != null)
+                if (!Strings.isNullOrEmpty(pageName))
                 {
                     Integer pg = Ints.tryParse(pageName);
                     if (pg != null)
@@ -55,7 +56,7 @@ public class PageRef
                     }
                 }
             }
-            else if (pageName != null)
+            else if (!Strings.isNullOrEmpty(pageName))
             {
                 PageRef temp = bookDocument.pagesByName.get(pageName);
                 temp.resolve(bookDocument);
