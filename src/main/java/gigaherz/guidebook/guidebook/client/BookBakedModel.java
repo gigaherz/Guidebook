@@ -86,7 +86,8 @@ public class BookBakedModel implements IBakedModel
     @Override
     public ItemOverrideList getOverrides()
     {
-        return new ItemOverrideList(Collections.emptyList()) {
+        return new ItemOverrideList(Collections.emptyList())
+        {
             @Override
             public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity)
             {
@@ -98,7 +99,7 @@ public class BookBakedModel implements IBakedModel
                 }
 
                 NBTTagCompound tag = stack.getTagCompound();
-                if(tag != null)
+                if (tag != null)
                 {
                     String book = tag.getString("Book");
                     BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));

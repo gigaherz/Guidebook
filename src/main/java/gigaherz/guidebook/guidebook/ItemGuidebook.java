@@ -72,7 +72,7 @@ public class ItemGuidebook extends ItemRegistered
     public String getItemStackDisplayName(ItemStack stack)
     {
         NBTTagCompound tag = stack.getTagCompound();
-        if(tag != null)
+        if (tag != null)
         {
             String book = tag.getString("Book");
             if (!Strings.isNullOrEmpty(book))

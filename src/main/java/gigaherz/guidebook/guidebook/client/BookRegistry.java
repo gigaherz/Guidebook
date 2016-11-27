@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 
 import javax.annotation.Nullable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,24 +51,34 @@ public class BookRegistry
 
         Set<ResourceLocation> toLoad = Sets.newHashSet(REGISTRY);
 
-        try
+        for (String domain : manager.getResourceDomains())
         {
-            List<IResource> resources = manager.getAllResources(GuidebookMod.location("books.json"));
-
-            for(IResource res : resources)
+            try
             {
-                loadBooksData(toLoad, res.getInputStream());
+                List<IResource> resources = manager.getAllResources(new ResourceLocation(domain, "books.json"));
+
+                for (IResource res : resources)
+                {
+                    loadBooksData(toLoad, res.getInputStream());
+                }
             }
-        }
-        catch (IOException e)
-        {
-            GuidebookMod.logger.error("Error loading books from resourcepacks", e);
+            catch (FileNotFoundException e)
+            {
+                // IGNORE, it just means nothing was found
+            }
+            catch (IOException e)
+            {
+                GuidebookMod.logger.error("Error loading books from resourcepacks", e);
+            }
         }
 
         LOADED_BOOKS.putAll(Maps.asMap(toLoad, b -> parseBook(manager, b)));
     }
 
-    private static Type listType = new TypeToken<List<String>>() {}.getType();
+    private static Type listType = new TypeToken<List<String>>()
+    {
+    }.getType();
+
     private static void loadBooksData(Set<ResourceLocation> toLoad, InputStream stream)
     {
         List<String> yourList = new Gson().fromJson(new InputStreamReader(stream), listType);
@@ -91,6 +102,7 @@ public class BookRegistry
     }
 
     private static boolean initialized = false;
+
     public static void initReloadHandler()
     {
         if (initialized)
