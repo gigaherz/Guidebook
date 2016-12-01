@@ -43,6 +43,7 @@ public class BookDocument
     private final Map<String, TemplateDefinition> templates = Maps.newHashMap();
 
     private int totalPairs = 0;
+    private IBookGraphics rendering;
 
     public BookDocument(ResourceLocation bookLocation)
     {
@@ -379,6 +380,17 @@ public class BookDocument
                 t.innerElements.addAll(effectiveList);
             }
         }
+    }
+
+    public void setRendering(IBookGraphics rendering)
+    {
+        this.rendering = rendering;
+    }
+
+    @Nullable
+    public IBookGraphics getRendering()
+    {
+        return rendering;
     }
 
     public class ChapterData

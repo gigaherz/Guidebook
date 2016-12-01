@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -51,7 +52,13 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void initGui()
     {
-        book = new BookRendering(BookRegistry.get(bookLocation), this);
+        BookDocument theBook = BookRegistry.get(bookLocation);
+        book = theBook.getRendering();
+        if (book == null)
+        {
+            book = new BookRendering(theBook, this);
+            theBook.setRendering(book);
+        }
         background = new AnimatedBookBackground(this);
 
         this.buttonList.clear();
