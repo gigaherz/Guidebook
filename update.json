@@ -1,15 +1,15 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.10.2-latest": "1.10.2-1.3.0"
-    "1.11-latest": "1.11.0-1.3.0"
+    "1.10.2-latest": "1.3.0"
+    "1.11-latest": "1.3.0"
   },
   "1.10.2": {
-    "1.10.2-1.2.2": "(Third) First public release",
-    "1.10.2-1.2.3": "Add the ability to change the drawing depth for itemstacks.",
-    "1.10.2-1.3.0": "Added the ability to define books from resource packs, and form a configuration folder."
+    "1.3.0": "Added the ability to define books from resource packs, and form a configuration folder.",
+    "1.3.1": "Guidebook will now remember the last reading position of each book (shared across copies of the same book)."
   },
   "1.11": {
-    "1.11.0-1.3.0": "Added the ability to define books from resource packs, and form a configuration folder."
+    "1.3.0": "Added the ability to define books from resource packs, and form a configuration folder.",
+    "1.3.1": "Guidebook will now remember the last reading position of each book (shared across copies of the same book)."
   }
 }
