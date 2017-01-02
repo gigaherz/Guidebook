@@ -1,8 +1,10 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.10.2-latest": "1.3.0"
-    "1.11-latest": "1.3.0"
+    "1.11-latest": "1.3.1",
+    "1.11-recommended": "1.3.1",
+    "1.10.2-latest": "1.3.1",
+    "1.10.2-recommended": "1.3.1"
   },
   "1.10.2": {
     "1.3.0": "Added the ability to define books from resource packs, and form a configuration folder.",
