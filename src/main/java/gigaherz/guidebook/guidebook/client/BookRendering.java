@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
+import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.PageRef;
@@ -64,7 +65,7 @@ public class BookRendering implements IBookGraphics
         this.scaledHeight = minecraftClient.displayHeight;
         int scaleFactor = 1;
         boolean flag = minecraftClient.isUnicode();
-        int i = minecraftClient.gameSettings.guiScale;
+        int i = GuidebookMod.bookGUIScale < 0 ? minecraftClient.gameSettings.guiScale : GuidebookMod.bookGUIScale;
 
         if (i == 0)
         {

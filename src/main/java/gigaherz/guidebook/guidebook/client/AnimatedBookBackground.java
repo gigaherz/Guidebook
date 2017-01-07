@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.sun.javafx.geom.Vec3f;
 import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,10 +12,13 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static net.minecraft.client.renderer.RenderHelper.setColorBuffer;
 
 public class AnimatedBookBackground
 {
@@ -60,6 +64,25 @@ public class AnimatedBookBackground
             angleT = Math.max(0, angleT - angleSpeed);
         }
         return false;
+    }
+
+    private static void enableStandardItemLighting()
+    {
+        GlStateManager.enableLighting();
+        GlStateManager.enableLight(0);
+        GlStateManager.enableLight(1);
+        GlStateManager.colorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
+        GlStateManager.enableColorMaterial();
+        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION, setColorBuffer(-5.0f, -5f, 1.0f, 0.0f));
+        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_POSITION, setColorBuffer(5.0f, -6f, 5.0f, 0.0f));
+        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
+        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+        GlStateManager.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
     }
 
     public void draw(float partialTicks, int bookHeight, float scalingFactor)
@@ -110,8 +133,11 @@ public class AnimatedBookBackground
         GlStateManager.enableDepth();
         GlStateManager.disableBlend();
         GlStateManager.disableCull();
+        GlStateManager.enableAlpha();
 
         GlStateManager.pushMatrix();
+        GlStateManager.enableRescaleNormal();
+        enableStandardItemLighting();
 
         GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight / 2 - 4, 50);
         GlStateManager.rotate(180, 0, 1, 0);
@@ -122,11 +148,8 @@ public class AnimatedBookBackground
 
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 
-        RenderHelper.enableStandardItemLighting();
-
         gui.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-        GlStateManager.enableAlpha();
         if (modelBookB != null)
         {
             renderModelInterpolate(modelBookA, modelBookB, blend);
@@ -137,7 +160,7 @@ public class AnimatedBookBackground
         }
 
         RenderHelper.disableStandardItemLighting();
-
+        GlStateManager.disableRescaleNormal();
         GlStateManager.popMatrix();
 
         GlStateManager.enableCull();

@@ -8,6 +8,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -49,6 +50,9 @@ public class GuidebookMod
         }
     };
 
+    // Config
+    public static int bookGUIScale;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
@@ -56,9 +60,11 @@ public class GuidebookMod
 
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         String[] books = config.get("Books", "BookList", new String[]{GuidebookMod.location("xml/guidebook.xml").toString()}).getStringList();
+        bookGUIScale = config.get("general", "BookGUIScale", -1, "-1 for same as GUI scale, 0 for auto, 1+ for small/medium/large").getInt();
+        config.save();
+
         for (String book : books)
         { BookRegistry.registerBook(new ResourceLocation(book)); }
-        config.save();
 
         proxy.preInit(event.getModConfigurationDirectory());
     }
