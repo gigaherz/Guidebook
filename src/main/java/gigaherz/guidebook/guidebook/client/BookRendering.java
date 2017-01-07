@@ -252,7 +252,7 @@ public class BookRendering implements IBookGraphics
 
     private int getSplitWidth(FontRenderer fontRenderer, String s)
     {
-        int height = fontRenderer.splitStringWidth(s, pageWidth);
+        int height = fontRenderer.getWordWrappedHeight(s, pageWidth);
         return height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(s);
     }
 
@@ -271,7 +271,7 @@ public class BookRendering implements IBookGraphics
         }
 
         fontRenderer.drawSplitString(s, left, top, pageWidth, color);
-        return fontRenderer.splitStringWidth(s, pageWidth);
+        return fontRenderer.getWordWrappedHeight(s, pageWidth);
     }
 
     @Override
@@ -494,7 +494,7 @@ public class BookRendering implements IBookGraphics
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
-        int height = fontRenderer.splitStringWidth(text, pageWidth);
+        int height = fontRenderer.getWordWrappedHeight(text, pageWidth);
         int width = height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(text);
         return new Rectangle(left, top, width, height);
     }
