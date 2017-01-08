@@ -217,6 +217,12 @@ public class GuiGuidebook extends GuiScreen
         if (book.mouseClicked(mouseButton))
             return;
 
+        if (mouseButton == 3)
+        {
+            book.navigateBack();
+            return;
+        }
+
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
