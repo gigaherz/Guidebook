@@ -1,23 +1,29 @@
 package gigaherz.guidebook;
 
+import com.google.common.collect.Lists;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 @Mod.EventBusSubscriber
 @Mod(modid = GuidebookMod.MODID, version = GuidebookMod.VERSION,
@@ -53,6 +59,8 @@ public class GuidebookMod
     // Config
     public static int bookGUIScale;
 
+    public static List<String> giveOnFirstJoin;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
@@ -60,11 +68,14 @@ public class GuidebookMod
 
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
         String[] books = config.get("Books", "BookList", new String[]{GuidebookMod.location("xml/guidebook.xml").toString()}).getStringList();
+        String[] give = config.get("Books", "GiveOnFirstJoin", new String[0]).getStringList();
         bookGUIScale = config.get("general", "BookGUIScale", -1, "-1 for same as GUI scale, 0 for auto, 1+ for small/medium/large").getInt();
         config.save();
 
         for (String book : books)
         { BookRegistry.registerBook(new ResourceLocation(book)); }
+
+        giveOnFirstJoin = Lists.newArrayList(give);
 
         proxy.preInit(event.getModConfigurationDirectory());
     }
@@ -83,6 +94,24 @@ public class GuidebookMod
         event.getRegistry().registerAll(
                 guidebook = new ItemGuidebook("guidebook")
         );
+    }
+
+    @SubscribeEvent
+    public static void entityJoinWorld(EntityJoinWorldEvent event)
+    {
+        Entity e = event.getEntity();
+        if (e instanceof EntityPlayer && !e.getEntityWorld().isRemote)
+        {
+            for (String g : giveOnFirstJoin)
+            {
+                String tag = MODID + ":givenBook:" + g;
+                if (!e.getTags().contains(tag))
+                {
+                    ItemHandlerHelper.giveItemToPlayer((EntityPlayer)e, guidebook.of(new ResourceLocation(g)));
+                    e.addTag(tag);
+                }
+            }
+        }
     }
 
     private void registerRecipes()
