@@ -26,95 +26,17 @@
     </page>
     <page>
       <title>Index</title>
-      <link ref="start">1. Getting Started</link>
-      <link ref="start:pages">1.1. Chapters and Pages</link>
-      <link ref="start:text">1.2. Paragraphs and titles</link>
-      <link ref="start:images">1.3. Images and Links</link>
-      <link ref="start:stacks">1.4. Item Stacks</link>
-      <link ref="templates">2. Templates (WIP)</link>
-      <link ref="templates:recipes">2.1. Recipes (WIP)</link>
-      <link ref="API">3. Adding new Books</link>
-    </page>
-  </chapter>
-  <chapter id="start">
-    <page>
-      <title>Getting Started</title>
-      <p space="8">Book files are XML documents. At the root is the 'book' tag. This tag has two optional attributes: 'title', for the name shown in the item tooltip, and 'cover', for the resource location of a cover texture.</p>
-      <p indent="8">&lt;book title=&quot;Demo&quot;&gt;</p>
-      <p indent="16">...</p>
-      <p indent="8">&lt;/book&gt;</p>
-    </page>
-    <page id="pages">
-      <title>Chapters and Pages</title>
-      <p>Books are split into chapters. At least one chapter must be present. Chapters have an optional 'id' attribute for use in links.</p>
-      <p>Chapters are split into pages. Pages can also have an 'id' attribute.</p>
-      <p indent="8">&lt;chapter id=&quot;ch1&quot;&gt;</p>
-      <p indent="16">&lt;page id=&quot;pg1&quot;&gt;</p>
-      <p indent="24">...</p>
-      <p indent="16">&lt;/page&gt;</p>
-      <p indent="8">&lt;/chapter&gt;</p>
-    </page>
-    <page id="text">
-      <title>Paragraphs and titles</title>
-      <p>Inside pages there can be text, alongside other page elements. The primary way of adding text is through paragraph elements 'p'.</p>
-      <p indent="12" space="8">&lt;p&gt;Text&lt;/p&gt;</p>
-      <p space="12">Text</p>
-      <p>There's many reasons to want different colors and alignments. This can be accomplished with the 'color' and 'align' attributes.</p>
-      <p indent="8" space="8">&lt;p color=&quot;#606060&quot; align=&quot;center&quot;&gt; Centered Gray Text&lt;/p&gt;</p>
-      <p color="#606060" align="center" space="12">Centered Gray Text</p>
-      <p>You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
-      <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
-      <p bold="true" italics="true">Formatted text</p>
-    </page>
-    <page>
-      <p>Sometimes, you need indented text, or you want to change the separation between successive paragraphs, for this, you have 'indent' and 'space', respectively.</p>
-      <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
-      <p indent="20" space="20">Indented spaced text</p>
-      <p space="12">Text after</p>
-      <p>Finally, to avoid writing so many formatting codes. Section titles can be shortened with the 'title' tag, which has different default formattings.</p>
-      <p indent="8" space="8">&lt;title&gt;Title Here&lt;/title&gt;</p>
-      <title>Title Here</title>
-    </page>
-    <page id="images">
-      <title>Images and Links</title>
-      <p space="8" indent="22">Fire</p>
-      <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
-      <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
-      <p space="8">Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      <image src="minecraft:items/coal" tw="16" th="16" />
-    </page>
-    <page id="stacks">
-      <title>Item Stacks</title>
-      <p>The </p>
-      <p space="8">'stack' and 'image' tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      <stack item="minecraft:coal" meta="0" count="2" />
-    </page>
-  </chapter>
-  <chapter id="templates">
-    <page>
-      <title>Templates</title>
-      <p>Guidebook offers a template system, that allows declaring a pattern that can be repeated multiple times.</p>
-      <p>On top of that, templates can be defined inside template library files, and thosefiles can be included from books.</p>
-      <p>Read this book's source code for an example of use and declaration.</p>
-    </page>
-    <page id="recipes">
-      <title>Recipes</title>
-      <p>For now, the only way to show recipes is to declare them using the template system. The result looks as follows:</p>
-
-      <big_recipe>
-        <stack item="minecraft:stained_glass" meta="0" />
-        <stack item="minecraft:stained_glass" meta="1" />
-        <stack item="minecraft:stained_glass" meta="2" />
-        <stack item="minecraft:stained_glass" meta="3" />
-        <stack item="minecraft:stained_glass" meta="4" />
-        <stack item="minecraft:stained_glass" meta="5" />
-        <stack item="minecraft:stained_glass" meta="6" />
-        <stack item="minecraft:stained_glass" meta="7" />
-        <stack item="minecraft:stained_glass" meta="8" />
-        <stack item="minecraft:stained_glass" meta="9" />
-      </big_recipe>
-
-      <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
+      <link ref="API">1. Adding new Books</link>
+      <link indent="8" ref="API:registry">1.1. Book Registry (for mods)</link>
+      <link indent="8" ref="API:configuration">1.2. Config. Folder (for modpacks)</link>
+      <link indent="8" ref="API:respack">1.3. Resource Packs (for adv. maps)</link>
+      <link ref="XML">2. Structure of the book</link>
+      <link indent="8" ref="XML:pages">2.1. Chapters and Pages</link>
+      <link indent="8" ref="XML:text">2.2. Paragraphs and titles</link>
+      <link indent="8" ref="XML:images">2.3. Images and Links</link>
+      <link indent="8" ref="XML:stacks">2.4. Item Stacks</link>
+      <link ref="templates">3. Templates (WIP)</link>
+      <link indent="8" ref="templates:recipes">3.1. Recipes (WIP)</link>
     </page>
   </chapter>
   <chapter id="API">
@@ -123,7 +45,11 @@
       <p>Guidebook has 3 ways to declare new books, designed for different purposes:</p>
       <link ref=":registry" indent="8">1. Using the book registry API.</link>
       <link ref=":configuration" indent="8">2. Using the configuration folder.</link>
-      <link ref=":respack" indent="8">3. Using resource packs.</link>
+      <link ref=":respack" indent="8" space="8">3. Using resource packs.</link>
+      <p space="8">Afterward, you can give the books to the player by using the creative menu, or using a command (command-block) with</p>
+      <p space="8">/give @p gbook:guidebook 1 0 {Book:"gbook:xml/book.xml"}</p>
+      <p>Finally, you can make the mod give new players one or more books the first time they join (applies retroactively to existing players if enabled).</p>
+      <p>This is available in the configuration file.</p>
     </page>
     <page id="registry">
       <title>Book Registry</title>
@@ -131,9 +57,12 @@
 
       <p>@Optional.Method(modid="gbook")</p>
       <p>@SubscribeEvent</p>
-      <p>public static void registerBook(BookRegistryEvent event)</p>
+      <p>public static void registerBook</p>
+      <p indent="24">(BookRegistryEvent event)</p>
       <p>{</p>
-      <p>event.register(new ResourceLocation("modid:xml/book.xml"));</p>
+      <p indent="8">event.register(</p>
+      <p indent="16">new ResourceLocation(</p>
+      <p indent="24">"modid:xml/book.xml"));</p>
       <p>}</p>
 
       <space height="8" />
@@ -155,6 +84,92 @@
       <p indent="8">[ "domain1:path/book1.xml", "domain2:path/book2.xml", ... ]</p>
       <p>These resources are additive. That means an upper resource pack will not be able to remove books registered by a lower one, unlike normal resources which are replaced by upper packs.</p>
       <p>See the other sections of this document for information on the tags available, and read the source code of this book for a practical example.</p>
+    </page>
+  </chapter>
+  <chapter id="XML">
+    <page>
+      <title>Getting Started</title>
+      <p space="8">Book files are XML documents. At the root is the 'book' tag. This tag has two optional attributes: 'title', for the name shown in the item tooltip, and 'cover', for the resource location of a cover texture.</p>
+      <p indent="8">&lt;book title=&quot;Demo&quot;&gt;</p>
+      <p indent="16">...</p>
+      <p indent="8">&lt;/book&gt;</p>
+    </page>
+    <page id="pages">
+      <title>Chapters and Pages</title>
+      <p>Books are split into chapters. At least one chapter must be present. Chapters have an optional 'id' attribute for use in links.</p>
+      <p>Chapters are split into pages. Pages can also have an 'id' attribute.</p>
+      <p indent="8">&lt;chapter id=&quot;ch1&quot;&gt;</p>
+      <p indent="16">&lt;page id=&quot;pg1&quot;&gt;</p>
+      <p indent="24">...</p>
+      <p indent="16">&lt;/page&gt;</p>
+      <p indent="8">&lt;/chapter&gt;</p>
+    </page>
+    <page id="text">
+      <title>Paragraphs and titles</title>
+      <p space="8">Inside pages there can be text, alongside other page elements. The primary way of adding text is through paragraph elements 'p'.</p>
+      <p indent="12" space="8">&lt;p&gt;Text&lt;/p&gt;</p>
+      <p space="12">Text</p>
+      <p space="8">There's many reasons to want different colors and alignments. This can be accomplished with the 'color' and 'align' attributes.</p>
+      <p indent="8" space="8">&lt;p color=&quot;#606060&quot; align=&quot;center&quot;&gt; Centered Gray Text&lt;/p&gt;</p>
+      <p color="#606060" align="center" space="12">Centered Gray Text</p>
+      <p space="8">You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
+      <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
+      <p bold="true" italics="true">Formatted text</p>
+    </page>
+    <page>
+      <p space="8">Sometimes, you need indented text, or you want to change the separation between successive paragraphs, for this, you have 'indent' and 'space', respectively.</p>
+      <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
+      <p indent="20" space="20">Indented spaced text</p>
+      <p space="12">Text after</p>
+      <p space="8">Finally, to avoid writing so many formatting codes. Section titles can be shortened with the 'title' tag, which has different default formattings.</p>
+      <p indent="8" space="8">&lt;title&gt;Title Here&lt;/title&gt;</p>
+      <title>Title Here</title>
+    </page>
+    <page id="images">
+      <title>Images and Links</title>
+      <p space="8" indent="22">Fire</p>
+      <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
+      <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
+      <p space="8">Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      <p indent="8" space="8">&lt;image src=&quot;minecraft:items/coal&quot; tw=&quot;16&quot; th=&quot;16&quot; /&gt;</p>
+      <image src="minecraft:items/coal" tw="16" th="16" />
+    </page>
+    <page id="stacks">
+      <title>Item Stacks</title>
+      <p space="8">Stack tags let you show an item stack in the book. The stack will show the icon and count, and if hovered, the tooltip.</p>
+      <p space="8">Like images, stack tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      <p indent="8" space="8">&lt;stack item=&quot;minecraft:coal&quot; meta=&quot;0&quot; count=&quot;2&quot; /&gt;</p>
+      <stack item="minecraft:coal" meta="0" count="2" />
+    </page>
+  </chapter>
+  <chapter id="templates">
+    <page>
+      <title>Templates</title>
+      <p>Guidebook offers a template system, that allows declaring a pattern that can be repeated multiple times.</p>
+    </page>
+    <page>
+      <title>Template Libraries</title>
+      <p>Templates can be defined inside template library files, and thosefiles can be included from books.</p>
+      <p>Browse this mod's source code on github for an example of use and declaration.</p>
+    </page>
+    <page id="recipes">
+      <title>Recipes</title>
+      <p>For now, the only way to show recipes is to declare them using the template system. The result looks as follows:</p>
+
+      <big_recipe>
+        <stack item="minecraft:stained_glass" meta="0" />
+        <stack item="minecraft:stained_glass" meta="1" />
+        <stack item="minecraft:stained_glass" meta="2" />
+        <stack item="minecraft:stained_glass" meta="3" />
+        <stack item="minecraft:stained_glass" meta="4" />
+        <stack item="minecraft:stained_glass" meta="5" />
+        <stack item="minecraft:stained_glass" meta="6" />
+        <stack item="minecraft:stained_glass" meta="7" />
+        <stack item="minecraft:stained_glass" meta="8" />
+        <stack item="minecraft:stained_glass" meta="9" />
+      </big_recipe>
+
+      <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
   </chapter>
 </book>
