@@ -1,0 +1,47 @@
+<book title="Demo / Feature test book" cover="gbook:covers/default" fontSize="0.6">
+
+    <include ref="gbook:xml/standard.xml" />
+
+    <chapter>
+        <page>
+            <p>Left</p>
+            <p align="center">Center</p>
+            <p align="right">Right</p>
+            <title>Title</title>
+            <p bold="true">Bold</p>
+            <p italics="true">Italics</p>
+            <p underline="true">Underline</p>
+            <p color="#306090">Colored</p>
+            <p bold="true" italics="true" underline="true" color="#123456" align="center">All the Formats</p>
+            <apace height="20" />
+            <p space="20">A</p>
+            <p>B</p>
+            <space height="25%" />
+            <p>C</p>
+            <p indent="60">D</p>
+        </page>
+        <page>
+            <p>Page 2</p>
+            <link ref="chapter2">Click me</link>
+        </page>
+    </chapter>
+    <chapter id="chapter2">
+        <page>
+            <title>Chapter 2</title>
+
+            <big_recipe>
+                <stack item="minecraft:iron_ingot"/>
+                <stack item="minecraft:iron_ingot"/>
+                <stack item="minecraft:iron_ingot"/>
+                <space/>
+                <stack item="minecraft:stick"/>
+                <space/>
+                <space/>
+                <stack item="minecraft:stick"/>
+                <space/>
+                <stack item="minecraft:iron_pickaxe"/>
+            </big_recipe>
+
+        </page>
+    </chapter>
+</book>
