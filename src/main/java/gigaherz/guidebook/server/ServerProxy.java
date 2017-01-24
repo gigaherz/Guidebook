@@ -2,8 +2,6 @@ package gigaherz.guidebook.server;
 
 import gigaherz.guidebook.common.IModProxy;
 
-import java.io.File;
-
 public class ServerProxy implements IModProxy
 {
     @Override
@@ -19,7 +17,7 @@ public class ServerProxy implements IModProxy
     }
 
     @Override
-    public void preInit(File modConfigurationDirectory)
+    public void preInit()
     {
 
     }

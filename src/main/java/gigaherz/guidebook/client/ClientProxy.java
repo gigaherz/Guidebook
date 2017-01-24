@@ -42,9 +42,9 @@ public class ClientProxy implements IModProxy
     }
 
     @Override
-    public void preInit(File modConfigurationDirectory)
+    public void preInit()
     {
-        injectCustomResourcePack(modConfigurationDirectory);
+        //injectCustomResourcePack();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
     }
@@ -52,9 +52,9 @@ public class ClientProxy implements IModProxy
     private static Field _defaultResourcePacks = ReflectionHelper.findField(Minecraft.class, "field_110449_ao", "defaultResourcePacks");
 
     @SuppressWarnings("unchecked")
-    private void injectCustomResourcePack(File modConfigurationDirectory)
+    private void injectCustomResourcePack()
     {
-        File booksFolder = new File(modConfigurationDirectory, "books");
+        File booksFolder = GuidebookMod.booksDirectory;
 
         if (!booksFolder.exists() || !booksFolder.isDirectory())
             return;

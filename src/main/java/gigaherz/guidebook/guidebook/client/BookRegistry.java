@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -8,22 +9,17 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
+import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
 
@@ -72,12 +68,16 @@ public class BookRegistry
             }
         }
 
-        LOADED_BOOKS.putAll(Maps.asMap(toLoad, b -> parseBook(manager, b)));
+        loadRawBookFiles(manager);
+
+        for(ResourceLocation loc : toLoad)
+        {
+            if (!LOADED_BOOKS.containsKey(loc))
+                LOADED_BOOKS.put(loc, parseBook(manager, loc));
+        }
     }
 
-    private static Type listType = new TypeToken<List<String>>()
-    {
-    }.getType();
+    private static Type listType = new TypeToken<List<String>>() {}.getType();
 
     private static void loadBooksData(Set<ResourceLocation> toLoad, InputStream stream)
     {
@@ -100,6 +100,48 @@ public class BookRegistry
         }
         return bookDocument;
     }
+
+    private static BookDocument parseBook(IResourceManager manager, ResourceLocation location, File file)
+    {
+        BookDocument bookDocument = new BookDocument(location);
+        try
+        {
+            InputStream stream = new FileInputStream(file);
+            bookDocument.parseBook(stream);
+        }
+        catch (IOException e)
+        {
+            bookDocument.initializeWithLoadError(e);
+        }
+        return bookDocument;
+    }
+
+    private static void loadRawBookFiles(IResourceManager manager)
+    {
+        File booksFolder = GuidebookMod.booksDirectory;
+
+        if (!booksFolder.exists() || !booksFolder.isDirectory())
+            return;
+
+        Collection<File> xmlFiles = FileUtils.listFiles(booksFolder, new String[]{"xml"}, true);
+
+        for (File f : xmlFiles)
+        {
+            if (f.isFile())
+            {
+                ResourceLocation loc = new ResourceLocation(GuidebookMod.MODID, relativePath(booksFolder, f));
+
+                if (!LOADED_BOOKS.containsKey(loc))
+                    LOADED_BOOKS.put(loc, parseBook(manager, loc, f));
+            }
+        }
+    }
+
+    private static String relativePath(File base, File sub)
+    {
+        return base.toURI().relativize(sub.toURI()).getPath();
+    }
+
 
     private static boolean initialized = false;
 
