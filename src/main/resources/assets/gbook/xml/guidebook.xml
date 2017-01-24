@@ -174,19 +174,20 @@
     <page id="recipes">
       <title>Recipes</title>
       <p>For now, the only way to show recipes is to declare them using the template system. The result looks as follows:</p>
+      <p>For Items with multiple Id's (for example orange dye - 351:14) use the meta tag as below for bonemeal</p>
 
-      <big_recipe>
-        <stack item="minecraft:stained_glass" meta="0" />
-        <stack item="minecraft:stained_glass" meta="1" />
-        <stack item="minecraft:stained_glass" meta="2" />
-        <stack item="minecraft:stained_glass" meta="3" />
-        <stack item="minecraft:stained_glass" meta="4" />
-        <stack item="minecraft:stained_glass" meta="5" />
-        <stack item="minecraft:stained_glass" meta="6" />
-        <stack item="minecraft:stained_glass" meta="7" />
-        <stack item="minecraft:stained_glass" meta="8" />
-        <stack item="minecraft:stained_glass" meta="9" />
-      </big_recipe>
+			<big_recipe>
+				<stack item="minecraft:air"/>
+				<stack item="minecraft:air"/>
+				<stack item="minecraft:air"/>
+				<stack item="minecraft:dye" meta="15" />
+				<stack item="minecraft:slime_ball"/>
+				<stack item="minecraft:dye" meta="15" />
+				<stack item="minecraft:gold_nugget"/>
+				<stack item="minecraft:bucket"/>
+				<stack item="minecraft:gold_nugget"/>
+				<stack item="minecraft:glass_bottle"/>
+			</big_recipe>
 
       <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
