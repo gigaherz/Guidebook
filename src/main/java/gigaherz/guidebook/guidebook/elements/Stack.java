@@ -4,6 +4,7 @@ import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -37,7 +38,10 @@ public class Stack implements IHoverPageElement
         int height = (int) (16 * scale);
         bounds = new Rectangle(left, top, width, height);
 
-        nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
+        if (stack != null)
+        {
+            nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
+        }
 
         return 0;
     }
@@ -118,7 +122,7 @@ public class Stack implements IHoverPageElement
     public IPageElement copy()
     {
         Stack stack = new Stack();
-        stack.stack = this.stack.copy();
+        stack.stack = this.stack != null ? this.stack.copy() : null;
         stack.x = x;
         stack.y = y;
         return stack;
@@ -127,7 +131,10 @@ public class Stack implements IHoverPageElement
     @Override
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
-        nav.drawTooltip(stack, x, y);
+        if (stack != null)
+        {
+            nav.drawTooltip(stack, x, y);
+        }
     }
 
     @Override

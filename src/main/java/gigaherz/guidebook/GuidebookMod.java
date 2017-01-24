@@ -22,6 +22,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.List;
 
 @Mod.EventBusSubscriber
@@ -60,6 +61,8 @@ public class GuidebookMod
 
     public static List<String> giveOnFirstJoin;
 
+    public static File booksDirectory;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
@@ -76,7 +79,9 @@ public class GuidebookMod
 
         giveOnFirstJoin = Lists.newArrayList(give);
 
-        proxy.preInit(event.getModConfigurationDirectory());
+        booksDirectory = new File(event.getModConfigurationDirectory(), "books");
+
+        proxy.preInit();
     }
 
     @Mod.EventHandler

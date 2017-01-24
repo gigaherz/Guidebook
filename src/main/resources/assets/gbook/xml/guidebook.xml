@@ -9,7 +9,9 @@
       They do NOT behave exactly like in html.
       The space attribute changes the default spacing added after the paragraph.
       -->
-      <p color="#606060">This book is a work in progress.</p>
+      <p color="#606060" space="8">This book is a work in progress.</p>
+
+      <p color="#606060">A web-based version of the documentation is available in the wiki on the github project.</p>
     </page>
     <page>
       <!--
@@ -177,9 +179,9 @@
       <p>For Items with multiple Id's (for example orange dye - 351:14) use the meta tag as below for bonemeal</p>
 
       <big_recipe>
-        <stack item="minecraft:air"/>
-        <stack item="minecraft:air"/>
-        <stack item="minecraft:air"/>
+        <space/>
+        <space/>
+        <space/>
         <stack item="minecraft:dye" meta="15"/>
         <stack item="minecraft:slime_ball"/>
         <stack item="minecraft:dye" meta="15"/>
