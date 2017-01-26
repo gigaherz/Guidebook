@@ -85,7 +85,7 @@ public class ClientProxy implements IModProxy
                 {
                     if ("pack.mcmeta".equals(name))
                     {
-                        return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 2}}").getBytes(Charsets.UTF_8));
+                        return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 3}}").getBytes(Charsets.UTF_8));
                     }
                     if (!name.startsWith(prefix))
                         throw new FileNotFoundException(name);
