@@ -1,7 +1,18 @@
 <library>
 
+    <template id="small_recipe" height="64">
+        <image src="gbook:things" w="100" h="60" tx="0" ty="64" />
+
+        <element index="0" x="3" y="3" />
+        <element index="1" x="22" y="3" />
+        <element index="2" x="3" y="22" />
+        <element index="3" x="22" y="22" />
+
+        <element index="4" x="60" y="13" />
+    </template>
+
     <template id="big_recipe" height="64">
-        <image src="gbook:crafting_grid" />
+        <image src="gbook:things" w="100" h="60" tx="0" ty="0" />
 
         <element index="0" x="3" y="3" />
         <element index="1" x="22" y="3" />
@@ -12,6 +23,7 @@
         <element index="6" x="3" y="41" />
         <element index="7" x="22" y="41" />
         <element index="8" x="41" y="41" />
+
         <element index="9" x="79" y="22" />
     </template>
 
