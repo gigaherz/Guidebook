@@ -1,4 +1,4 @@
-<book title="Demo / Feature test book" cover="gbook:covers/default" fontSize="0.6">
+<book title="Demo / Feature test book" cover="gbook:demo" fontSize="0.6">
 
     <include ref="gbook:xml/standard.xml" />
 
@@ -42,6 +42,13 @@
                 <stack item="minecraft:iron_pickaxe"/>
             </big_recipe>
 
+            <small_recipe>
+                <stack item="minecraft:quartz"/>
+                <stack item="minecraft:quartz"/>
+                <stack item="minecraft:quartz"/>
+                <stack item="minecraft:quartz"/>
+                <stack item="minecraft:quartz_block"/>
+            </small_recipe>
         </page>
     </chapter>
 </book>
