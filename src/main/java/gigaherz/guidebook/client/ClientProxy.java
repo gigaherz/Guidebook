@@ -44,75 +44,9 @@ public class ClientProxy implements IModProxy
     @Override
     public void preInit()
     {
-        injectCustomResourcePack();
+        BookRegistry.injectCustomResourcePack();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
-    }
-
-    private static Field _defaultResourcePacks = ReflectionHelper.findField(Minecraft.class, "field_110449_ao", "defaultResourcePacks");
-
-    @SuppressWarnings("unchecked")
-    private void injectCustomResourcePack()
-    {
-        File resourcesFolder = new File(GuidebookMod.booksDirectory, "resources");
-
-        if (!resourcesFolder.exists())
-        {
-            GuidebookMod.logger.info("The resources folder does not exist, creating...");
-            if (!resourcesFolder.mkdirs())
-            {
-                GuidebookMod.logger.info("The resources folder could not be created, and it won't be injected as a resource pack folder.");
-                return;
-            }
-        }
-
-        if (!resourcesFolder.exists() || !resourcesFolder.isDirectory())
-        {
-            GuidebookMod.logger.info("There's a file called books, but it's not a directory, so it won't be injected as a resource pack folder.");
-            return;
-        }
-
-        try
-        {
-            List<IResourcePack> rp = (List<IResourcePack>) _defaultResourcePacks.get(Minecraft.getMinecraft());
-
-            rp.add(new FolderResourcePack(resourcesFolder)
-            {
-                String prefix = "assets/" + GuidebookMod.MODID + "/";
-
-                @Override
-                protected InputStream getInputStreamByName(String name) throws IOException
-                {
-                    if ("pack.mcmeta".equals(name))
-                    {
-                        return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 2}}").getBytes(Charsets.UTF_8));
-                    }
-                    if (!name.startsWith(prefix))
-                        throw new FileNotFoundException(name);
-                    return super.getInputStreamByName(name.substring(prefix.length()));
-                }
-
-                @Override
-                protected boolean hasResourceName(String name)
-                {
-                    if ("pack.mcmeta".equals(name))
-                        return true;
-                    if (!name.startsWith(prefix))
-                        return false;
-                    return super.hasResourceName(name.substring(prefix.length()));
-                }
-
-                @Override
-                public Set<String> getResourceDomains()
-                {
-                    return Collections.singleton(GuidebookMod.MODID);
-                }
-            });
-        }
-        catch (IllegalAccessException e)
-        {
-            // Ignore
-        }
     }
 
     @Override
