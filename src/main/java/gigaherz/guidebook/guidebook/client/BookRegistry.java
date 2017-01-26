@@ -120,8 +120,21 @@ public class BookRegistry
     {
         File booksFolder = GuidebookMod.booksDirectory;
 
+        if (!booksFolder.exists())
+        {
+            GuidebookMod.logger.info("The books folder does not exist, creating...");
+            if (!booksFolder.mkdirs())
+            {
+                GuidebookMod.logger.info("The books folder could not be created. Books can't be loaded from it.");
+                return;
+            }
+        }
+
         if (!booksFolder.exists() || !booksFolder.isDirectory())
+        {
+            GuidebookMod.logger.info("There's a file called books, but it's not a directory. Books can't be loaded from it.");
             return;
+        }
 
         Collection<File> xmlFiles = FileUtils.listFiles(booksFolder, new String[]{"xml"}, true);
 

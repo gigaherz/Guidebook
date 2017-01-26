@@ -69,13 +69,9 @@ public class GuidebookMod
         logger = event.getModLog();
 
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        String[] books = config.get("Books", "BookList", new String[]{GuidebookMod.location("xml/guidebook.xml").toString()}).getStringList();
         String[] give = config.get("Books", "GiveOnFirstJoin", new String[0]).getStringList();
         bookGUIScale = config.get("general", "BookGUIScale", -1, "-1 for same as GUI scale, 0 for auto, 1+ for small/medium/large").getInt();
         config.save();
-
-        for (String book : books)
-        { BookRegistry.registerBook(new ResourceLocation(book)); }
 
         giveOnFirstJoin = Lists.newArrayList(give);
 
