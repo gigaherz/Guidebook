@@ -44,7 +44,7 @@ public class ClientProxy implements IModProxy
     @Override
     public void preInit()
     {
-        //injectCustomResourcePack();
+        injectCustomResourcePack();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
     }
@@ -54,16 +54,29 @@ public class ClientProxy implements IModProxy
     @SuppressWarnings("unchecked")
     private void injectCustomResourcePack()
     {
-        File booksFolder = GuidebookMod.booksDirectory;
+        File resourcesFolder = new File(GuidebookMod.booksDirectory, "resources");
 
-        if (!booksFolder.exists() || !booksFolder.isDirectory())
+        if (!resourcesFolder.exists())
+        {
+            GuidebookMod.logger.info("The resources folder does not exist, creating...");
+            if (!resourcesFolder.mkdirs())
+            {
+                GuidebookMod.logger.info("The resources folder could not be created, and it won't be injected as a resource pack folder.");
+                return;
+            }
+        }
+
+        if (!resourcesFolder.exists() || !resourcesFolder.isDirectory())
+        {
+            GuidebookMod.logger.info("There's a file called books, but it's not a directory, so it won't be injected as a resource pack folder.");
             return;
+        }
 
         try
         {
             List<IResourcePack> rp = (List<IResourcePack>) _defaultResourcePacks.get(Minecraft.getMinecraft());
 
-            rp.add(new FolderResourcePack(booksFolder)
+            rp.add(new FolderResourcePack(resourcesFolder)
             {
                 String prefix = "assets/" + GuidebookMod.MODID + "/";
 
