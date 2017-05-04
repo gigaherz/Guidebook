@@ -228,7 +228,7 @@ public class GuiGuidebook extends GuiScreen
 
     public FontRenderer getFontRenderer()
     {
-        return fontRendererObj;
+        return fontRenderer;
     }
 
     public ItemModelMesher getMesher()

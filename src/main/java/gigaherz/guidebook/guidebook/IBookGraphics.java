@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook;
 
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Rectangle;
@@ -53,4 +54,6 @@ public interface IBookGraphics
     Rectangle getStringBounds(String text, int left, int top);
 
     void drawTooltip(ItemStack stack, int x, int y);
+
+    Object owner();
 }
