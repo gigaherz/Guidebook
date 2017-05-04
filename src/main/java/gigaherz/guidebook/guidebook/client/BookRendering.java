@@ -504,4 +504,10 @@ public class BookRendering implements IBookGraphics
     {
         gui.drawTooltip(stack, x, y);
     }
+
+    @Override
+    public Object owner()
+    {
+        return gui;
+    }
 }
