@@ -1,14 +1,21 @@
 package gigaherz.guidebook.guidebook;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 import com.google.common.primitives.Floats;
+import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.oredict.OreDictionary;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -36,6 +43,8 @@ public class BookDocument
     private ResourceLocation bookCover;
 
     final List<ChapterData> chapters = Lists.newArrayList();
+    private Map<String,PageRef> bookRefs = Maps.newHashMap();
+    private Table<Item,Integer,PageRef> stackRefs = HashBasedTable.create();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, PageRef> pagesByName = Maps.newHashMap();
@@ -70,6 +79,30 @@ public class BookDocument
     public ChapterData getChapter(int i)
     {
         return chapters.get(i);
+    }
+
+    @Nullable
+    public PageRef getBookRef(String id)
+    {
+        return bookRefs.containsKey(id)?bookRefs.get(id):null;
+    }
+
+    @Nullable
+    public PageRef getStackRef(ItemStack stack)
+    {
+        Item item=stack.getItem();
+        int damage=stack.getItemDamage();
+
+        if(stackRefs.containsRow(item)){
+            if(stackRefs.containsColumn(damage)){
+                return stackRefs.get(item,damage);
+            }else if(item instanceof ItemBlock && stackRefs.contains(item,OreDictionary.WILDCARD_VALUE)){
+                return stackRefs.get(item,OreDictionary.WILDCARD_VALUE);
+            }else if(stackRefs.contains(item,-1)){
+                return stackRefs.get(item,-1);
+            }
+        }
+        return null;
     }
 
     public int getTotalPairCount()
@@ -178,6 +211,10 @@ public class BookDocument
                 else if (nodeName.equals("chapter"))
                 {
                     parseChapter(chapterItem);
+                }
+                else if (nodeName.equals("refs"))
+                {
+                    parseRefs(chapterItem);
                 }
             }
 
@@ -378,6 +415,52 @@ public class BookDocument
                 List<IPageElement> effectiveList = tDef.applyTemplate(elementList);
 
                 t.innerElements.addAll(effectiveList);
+            }
+        }
+    }
+
+    private void parseRefs(Node refsItem)
+    {
+        NodeList refsList = refsItem.getChildNodes();
+        for (int j = 0; j < refsList.getLength(); j++)
+        {
+            Node refItem = refsList.item(j);
+
+            String nodeName = refItem.getNodeName();
+
+            if (nodeName.equals("ref")) //if book ref
+            {
+                if(refItem.hasAttributes()){
+                    Node id=refItem.getAttributes().getNamedItem("id");
+                    if (id!=null){
+                        String ref = refItem.getTextContent();
+                        bookRefs.put(id.getTextContent(),PageRef.fromString(ref,false));
+                    }
+                }
+            }else if(nodeName.equals("stack")){ //if stack ref
+                if(refItem.hasAttributes()){
+                    Node item_node=refItem.getAttributes().getNamedItem("item"); //get item
+                    if(item_node!=null){
+                        Item item = Item.REGISTRY.getObject(new ResourceLocation(item_node.getTextContent()));
+                        if(item!=null){
+
+                            int damage_value=0;
+                            Node meta=refItem.getAttributes().getNamedItem("meta");
+                            if (meta != null)
+                            {
+                                // meta="*" -> wildcard (for both blocks and items)
+                                if(meta.getTextContent().equals("*"))
+                                    damage_value=-1;
+                                else
+                                    damage_value=Ints.tryParse(meta.getTextContent());
+                            }
+
+                            String ref = refItem.getTextContent();
+                            stackRefs.put(item,damage_value,PageRef.fromString(ref,false));
+
+                        }
+                    }
+                }
             }
         }
     }

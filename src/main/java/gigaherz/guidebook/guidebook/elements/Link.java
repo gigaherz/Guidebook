@@ -108,16 +108,7 @@ public class Link extends Paragraph implements IClickablePageElement
         if (attr != null)
         {
             String ref = attr.getTextContent();
-
-            if (ref.indexOf(':') >= 0)
-            {
-                String[] parts = ref.split(":");
-                target = new PageRef(parts[0], parts[1]);
-            }
-            else
-            {
-                target = new PageRef(ref, null);
-            }
+            target=PageRef.fromString(ref,true);
         }
 
         attr = attributes.getNamedItem("href");
