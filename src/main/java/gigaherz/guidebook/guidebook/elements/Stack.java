@@ -6,7 +6,6 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.PageRef;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
@@ -46,7 +45,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
 
         ItemStack stack=getCurrentStack();
 
-        if (stack != null)
+        if (!stack.isEmpty())
         {
             nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
         }
@@ -100,7 +99,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
             if (item != null)
             {
                 //if wildcard
-                if( (item instanceof ItemBlock && meta==OreDictionary.WILDCARD_VALUE) || meta==-1 ){
+                if( ((meta==OreDictionary.WILDCARD_VALUE) || meta==-1) && item.getHasSubtypes() ){
                     //init empty list to fill with resolved items
                     NonNullList<ItemStack> processed_items=NonNullList.create();
                     //init empty subitems list
@@ -122,8 +121,9 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                     //save processed list into the array
                     stacks = subitems.toArray(new ItemStack[subitems.size()]);
                 }else{
-                    stacks = new ItemStack[]{new ItemStack(item, stackSize, meta)};
-                    stacks[0].setTagCompound(tag);
+                    ItemStack stack=new ItemStack(item, stackSize, meta);
+                    stack.setTagCompound(tag);
+                    stacks = new ItemStack[]{stack};
                 }
             }
         }
@@ -146,7 +146,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                     //make sure not to mess up ore dictionary item stacks
                     item=item.copy();
 
-                    if(item.getItem() instanceof ItemBlock && item.getItemDamage()==OreDictionary.WILDCARD_VALUE){
+                    if( meta==OreDictionary.WILDCARD_VALUE && item.getHasSubtypes() ){
                         //replace wildcard metas with subitems
                         NonNullList<ItemStack> subitems=NonNullList.create();
                         item.getItem().getSubItems(item.getItem(),null,subitems);
@@ -202,7 +202,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         if(this.stacks!=null){
             stack.stacks=new ItemStack[this.stacks.length];
             for(int i=0;i<this.stacks.length;i++){
-                stack.stacks[i] = this.stacks[i]!=null ? this.stacks[i].copy() : null;
+                stack.stacks[i] = this.stacks[i].copy();
             }
         }else{
             stack.stacks=null;
@@ -216,7 +216,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
         ItemStack stack=getCurrentStack();
-        if (stack != null)
+        if (!stack.isEmpty())
         {
             nav.drawTooltip(stack, x, y);
         }
@@ -232,7 +232,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
 
     public ItemStack getCurrentStack(){
         if(stacks==null||stacks.length==0)
-            return null;
+            return ItemStack.EMPTY;
         long time=System.currentTimeMillis();
         return stacks[(int)((time/1000)%stacks.length)];
     }

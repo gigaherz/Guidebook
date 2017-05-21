@@ -96,8 +96,6 @@ public class BookDocument
         if(stackRefs.containsRow(item)){
             if(stackRefs.containsColumn(damage)){
                 return stackRefs.get(item,damage);
-            }else if(item instanceof ItemBlock && stackRefs.contains(item,OreDictionary.WILDCARD_VALUE)){
-                return stackRefs.get(item,OreDictionary.WILDCARD_VALUE);
             }else if(stackRefs.contains(item,-1)){
                 return stackRefs.get(item,-1);
             }
