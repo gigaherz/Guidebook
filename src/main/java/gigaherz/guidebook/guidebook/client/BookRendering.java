@@ -167,9 +167,9 @@ public class BookRendering implements IBookGraphics
     @Override
     public void navigateTo(final PageRef target)
     {
+        if(!target.resolve(book))
+            return;
         pushHistory();
-
-        target.resolve(book);
         currentChapter = Math.max(0, Math.min(book.chapterCount() - 1, target.chapter));
         currentPair = Math.max(0, Math.min(book.getChapter(currentChapter).pagePairs - 1, target.page / 2));
     }
