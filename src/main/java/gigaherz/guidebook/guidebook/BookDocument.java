@@ -11,11 +11,9 @@ import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.oredict.OreDictionary;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -43,8 +41,7 @@ public class BookDocument
     private ResourceLocation bookCover;
 
     final List<ChapterData> chapters = Lists.newArrayList();
-    private Map<String,PageRef> bookRefs = Maps.newHashMap();
-    private Table<Item,Integer,PageRef> stackRefs = HashBasedTable.create();
+    private Table<Item,Integer,PageRef> stackLinks = HashBasedTable.create();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, PageRef> pagesByName = Maps.newHashMap();
@@ -82,22 +79,16 @@ public class BookDocument
     }
 
     @Nullable
-    public PageRef getBookRef(String id)
-    {
-        return bookRefs.containsKey(id)?bookRefs.get(id):null;
-    }
-
-    @Nullable
-    public PageRef getStackRef(ItemStack stack)
+    public PageRef getStackLink(ItemStack stack)
     {
         Item item=stack.getItem();
         int damage=stack.getItemDamage();
 
-        if(stackRefs.containsRow(item)){
-            if(stackRefs.containsColumn(damage)){
-                return stackRefs.get(item,damage);
-            }else if(stackRefs.contains(item,-1)){
-                return stackRefs.get(item,-1);
+        if(stackLinks.containsRow(item)){
+            if(stackLinks.containsColumn(damage)){
+                return stackLinks.get(item,damage);
+            }else if(stackLinks.contains(item,-1)){
+                return stackLinks.get(item,-1);
             }
         }
         return null;
@@ -210,9 +201,9 @@ public class BookDocument
                 {
                     parseChapter(chapterItem);
                 }
-                else if (nodeName.equals("refs"))
+                else if (nodeName.equals("stack-links"))
                 {
-                    parseRefs(chapterItem);
+                    parseStackLinks(chapterItem);
                 }
             }
 
@@ -417,25 +408,15 @@ public class BookDocument
         }
     }
 
-    private void parseRefs(Node refsItem)
+    private void parseStackLinks(Node refsItem)
     {
         NodeList refsList = refsItem.getChildNodes();
         for (int j = 0; j < refsList.getLength(); j++)
         {
             Node refItem = refsList.item(j);
-
             String nodeName = refItem.getNodeName();
 
-            if (nodeName.equals("ref")) //if book ref
-            {
-                if(refItem.hasAttributes()){
-                    Node id=refItem.getAttributes().getNamedItem("id");
-                    if (id!=null){
-                        String ref = refItem.getTextContent();
-                        bookRefs.put(id.getTextContent(),PageRef.fromString(ref,false));
-                    }
-                }
-            }else if(nodeName.equals("stack")){ //if stack ref
+            if(nodeName.equals("stack")){
                 if(refItem.hasAttributes()){
                     Node item_node=refItem.getAttributes().getNamedItem("item"); //get item
                     if(item_node!=null){
@@ -446,7 +427,7 @@ public class BookDocument
                             Node meta=refItem.getAttributes().getNamedItem("meta");
                             if (meta != null)
                             {
-                                // meta="*" -> wildcard (for both blocks and items)
+                                // meta="*" -> wildcard
                                 if(meta.getTextContent().equals("*"))
                                     damage_value=-1;
                                 else
@@ -454,7 +435,7 @@ public class BookDocument
                             }
 
                             String ref = refItem.getTextContent();
-                            stackRefs.put(item,damage_value,PageRef.fromString(ref,false));
+                            stackLinks.put(item,damage_value,PageRef.fromString(ref));
 
                         }
                     }

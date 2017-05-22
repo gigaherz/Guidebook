@@ -225,7 +225,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     @Override
     public void click(IBookGraphics nav)
     {
-        PageRef ref=nav.getBook().getStackRef(getCurrentStack());
+        PageRef ref=nav.getBook().getStackLink(getCurrentStack());
         if(ref!=null)
             nav.navigateTo(ref);
     }

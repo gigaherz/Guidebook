@@ -15,7 +15,6 @@ public class PageRef
     public boolean resolvedNames = false;
     public String chapterName;
     public String pageName;
-    public String bookRef;
 
     public PageRef(int chapter, int page)
     {
@@ -28,11 +27,6 @@ public class PageRef
     {
         this.chapterName = chapter;
         this.pageName = page;
-    }
-
-    public PageRef(String bookRef)
-    {
-        this.bookRef=bookRef;
     }
 
     /**
@@ -76,24 +70,15 @@ public class PageRef
                     chapter = temp.chapter;
                     page = temp.page;
                 }
-                else if (!Strings.isNullOrEmpty(bookRef)) //if target is a page reference defined by a book ref
-                {
-                    PageRef ref=bookDocument.getBookRef(bookRef); //get book page ref
-                    if(!ref.resolve(bookDocument)) //if the target ref is not defined
-                        throw new InvalidPageRefException("Invalid book ref."); //throw error
-                    this.chapter=ref.chapter; //else set this page ref's target to the target ref's target
-                    this.page=ref.page;
-                }
                 else
                 {
-                    //throw error if none none of the 3 fields are defined = invalid format
-                    throw new InvalidPageRefException("Invalid format.");
+                    //throw error if neither field is defined
+                    throw new InvalidPageRefException("Invalid format: missing page and chapter");
                 }
             }catch (Exception e){ //catch error to prevent crash
-                //try to parse the page ref into a string: <chapter>:<page>$<bookref>
+                //try to parse the page ref into a string: <chapter>:<page>
                 String ref_string=(Strings.isNullOrEmpty(chapterName)?"<none>":(chapterName))+
-                        ":" + (Strings.isNullOrEmpty(pageName)?"<none>":(pageName))+
-                        "$" + (Strings.isNullOrEmpty(bookRef)?"<none>":(bookRef));
+                        ":" + (Strings.isNullOrEmpty(pageName)?"<none>":(pageName));
                 //log error
                 GuidebookMod.logger.error(
                         String.format(
@@ -127,13 +112,9 @@ public class PageRef
     /**
      * Parses a String into a {@link PageRef}.
      * @param refString the string to be parsed
-     * @param allowBookRef true if book refs(<code>"$id"</code>) are allowed
      */
-    public static PageRef fromString(@Nonnull String refString, boolean allowBookRef){
-        if(allowBookRef && refString.startsWith("$") && refString.length()>=2) {
-            return new PageRef(refString.substring(1));
-        }
-        else if (refString.indexOf(':') >= 0)
+    public static PageRef fromString(@Nonnull String refString){
+        if (refString.indexOf(':') >= 0)
         {
             String[] parts = refString.split(":");
             return new PageRef(parts[0], parts[1]);
