@@ -23,6 +23,8 @@
         <page>
             <p>Page 2</p>
             <link ref="chapter2">Click me</link>
+            <p>An image:</p>
+            <image src="minecraft:items/coal" tw="16" th="16" />
         </page>
     </chapter>
     <chapter id="chapter2">

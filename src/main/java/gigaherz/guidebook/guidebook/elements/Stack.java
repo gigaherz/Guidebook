@@ -45,7 +45,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
 
         ItemStack stack=getCurrentStack();
 
-        if (!stack.isEmpty())
+        if (stack.getCount() > 0)
         {
             nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
         }
@@ -145,6 +145,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                 for (ItemStack item:items) {
                     //make sure not to mess up ore dictionary item stacks
                     item=item.copy();
+                    meta = item.getMetadata();
 
                     if( meta==OreDictionary.WILDCARD_VALUE && item.getHasSubtypes() ){
                         //replace wildcard metas with subitems
@@ -216,7 +217,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
         ItemStack stack=getCurrentStack();
-        if (!stack.isEmpty())
+        if (stack.getCount() > 0)
         {
             nav.drawTooltip(stack, x, y);
         }

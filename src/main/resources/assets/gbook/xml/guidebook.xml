@@ -159,6 +159,7 @@
       <title>Item Stacks</title>
       <p space="8">Stack tags let you show an item stack in the book. The stack will show the icon and count, and if hovered, the tooltip.</p>
       <p space="8">Like images, stack tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
+      <p space="8">By using the stack-links feature, you can make certain stacks turn into links to a page. As an example, the stack below will lead to the recipes page in this book.</p>
       <p indent="8" space="8">&lt;stack item=&quot;minecraft:coal&quot; meta=&quot;0&quot; count=&quot;2&quot; /&gt;</p>
       <stack item="minecraft:coal" meta="0" count="2" />
     </page>
@@ -191,7 +192,23 @@
         <stack item="minecraft:glass_bottle"/>
       </big_recipe>
 
+      <big_recipe>
+        <space/>
+        <space/>
+        <space/>
+        <stack item="minecraft:planks" meta="*" />
+        <stack item="minecraft:planks" meta="*" />
+        <stack item="minecraft:planks" meta="*" />
+        <stack ore="plankWood" />
+        <stack ore="plankWood" />
+        <stack ore="plankWood" />
+        <stack item="minecraft:trapdoor" />
+      </big_recipe>
+
       <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
   </chapter>
+  <stack-links>
+    <stack item="minecraft:coal">:recipes</stack>
+  </stack-links>
 </book>
