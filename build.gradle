@@ -34,7 +34,7 @@ minecraft {
 
     mappings = "stable_29"
 
-    replace "@VERSION@", project.versionF
+    replace "@VERSION@", project.version
     replaceIn "GuidebookMod.java"
 }
 
