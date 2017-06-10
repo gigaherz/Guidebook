@@ -149,6 +149,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                 {
                     //make sure not to mess up ore dictionary item stacks
                     item = item.copy();
+                    meta = item.getMetadata();
 
                     if (meta == OreDictionary.WILDCARD_VALUE && item.getHasSubtypes())
                     {
