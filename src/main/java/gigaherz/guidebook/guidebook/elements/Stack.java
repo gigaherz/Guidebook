@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
@@ -10,17 +11,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.util.Rectangle;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 public class Stack implements IHoverPageElement, IClickablePageElement
 {
-    //The time each stack displayed lasts in ms.
-    public static final int CYCLE_TIME=1000;//=1s
+    public static final int CYCLE_TIME = 1000;//=1s
+    public static final String WILDCARD = "*";
 
     public ItemStack[] stacks;
     public int x = 0;
@@ -43,9 +46,9 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         int height = (int) (16 * scale);
         bounds = new Rectangle(left, top, width, height);
 
-        ItemStack stack=getCurrentStack();
+        ItemStack stack = getCurrentStack();
 
-        if (!stack.isEmpty())
+        if (stack != null && stack.stackSize > 0)
         {
             nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
         }
@@ -63,9 +66,8 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         Node attr = attributes.getNamedItem("meta");
         if (attr != null)
         {
-            // meta="*" -> wildcard (for both blocks and items)
-            if(attr.getTextContent().equals("*"))
-                meta=-1;
+            if (attr.getTextContent().equals(WILDCARD))
+                meta = -1;
             else
                 meta = Ints.tryParse(attr.getTextContent());
         }
@@ -98,30 +100,31 @@ public class Stack implements IHoverPageElement, IClickablePageElement
 
             if (item != null)
             {
-                //if wildcard
-                if( ((meta==OreDictionary.WILDCARD_VALUE) || meta==-1) && item.getHasSubtypes() ){
-                    //init empty list to fill with resolved items
-                    NonNullList<ItemStack> processed_items=NonNullList.create();
-                    //init empty subitems list
-                    NonNullList<ItemStack> subitems=NonNullList.create();
-                    //fill list
-                    item.getSubItems(item,null,subitems);
-                    //iterate over the list
-                    for (ItemStack subitem:subitems) {
-                        //just in case the ItemStack instance is not just a copy or a new instance
-                        subitem=subitem.copy();
+                if (((meta == OreDictionary.WILDCARD_VALUE) || meta == -1) && item.getHasSubtypes())
+                {
+                    List<ItemStack> processedItems = Lists.newArrayList();
+                    List<ItemStack> subitems = Lists.newArrayList();
 
-                        //set count and tag
-                        subitem.setCount(stackSize);
-                        subitem.setTagCompound(tag);
+                    item.getSubItems(item, null, subitems);
 
-                        //add to processed list
-                        processed_items.add(subitem);
+                    for (ItemStack subitem : subitems)
+                    {
+                        if (subitem != null)
+                        {
+                            subitem = subitem.copy();
+
+                            subitem.stackSize = stackSize;
+                            subitem.setTagCompound(tag);
+
+                            processedItems.add(subitem);
+                        }
                     }
-                    //save processed list into the array
-                    stacks = subitems.toArray(new ItemStack[subitems.size()]);
-                }else{
-                    ItemStack stack=new ItemStack(item, stackSize, meta);
+
+                    stacks = processedItems.toArray(new ItemStack[processedItems.size()]);
+                }
+                else
+                {
+                    ItemStack stack = new ItemStack(item, stackSize, meta);
                     stack.setTagCompound(tag);
                     stacks = new ItemStack[]{stack};
                 }
@@ -134,32 +137,37 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         {
             String oreName = attr.getTextContent();
             //list of matching item stack; may contain wildcard meta data
-            NonNullList<ItemStack> items = OreDictionary.getOres(oreName);
+            List<ItemStack> items = OreDictionary.getOres(oreName);
 
-            if (items.size()!=0)
+            if (items.size() != 0)
             {
                 //init empty list to fill with resolved items
-                NonNullList<ItemStack> items_processed=NonNullList.create();
+                List<ItemStack> items_processed = Lists.newArrayList();
 
                 //foreach item: try to resolve wildcard meta data
-                for (ItemStack item:items) {
+                for (ItemStack item : items)
+                {
                     //make sure not to mess up ore dictionary item stacks
-                    item=item.copy();
+                    item = item.copy();
 
-                    if( meta==OreDictionary.WILDCARD_VALUE && item.getHasSubtypes() ){
+                    if (meta == OreDictionary.WILDCARD_VALUE && item.getHasSubtypes())
+                    {
                         //replace wildcard metas with subitems
-                        NonNullList<ItemStack> subitems=NonNullList.create();
-                        item.getItem().getSubItems(item.getItem(),null,subitems);
-                        for (ItemStack subitem:subitems) {
+                        List<ItemStack> subitems = Lists.newArrayList();
+                        item.getItem().getSubItems(item.getItem(), null, subitems);
+                        for (ItemStack subitem : subitems)
+                        {
                             //just in case the ItemStack instance is not just a copy or a new instance
-                            subitem=subitem.copy();
+                            subitem = subitem.copy();
 
-                            subitem.setCount(stackSize);
+                            subitem.stackSize = stackSize;
                             subitem.setTagCompound(tag);
                             items_processed.add(subitem);
                         }
-                    }else{
-                        item.setCount(stackSize);
+                    }
+                    else
+                    {
+                        item.stackSize = stackSize;
                         items_processed.add(item);
                     }
                 }
@@ -199,13 +207,17 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     public IPageElement copy()
     {
         Stack stack = new Stack();
-        if(this.stacks!=null){
-            stack.stacks=new ItemStack[this.stacks.length];
-            for(int i=0;i<this.stacks.length;i++){
+        if (this.stacks != null)
+        {
+            stack.stacks = new ItemStack[this.stacks.length];
+            for (int i = 0; i < this.stacks.length; i++)
+            {
                 stack.stacks[i] = this.stacks[i].copy();
             }
-        }else{
-            stack.stacks=null;
+        }
+        else
+        {
+            stack.stacks = null;
         }
         stack.x = x;
         stack.y = y;
@@ -215,8 +227,8 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     @Override
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
-        ItemStack stack=getCurrentStack();
-        if (!stack.isEmpty())
+        ItemStack stack = getCurrentStack();
+        if (stack != null && stack.stackSize > 0)
         {
             nav.drawTooltip(stack, x, y);
         }
@@ -225,16 +237,22 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     @Override
     public void click(IBookGraphics nav)
     {
-        PageRef ref=nav.getBook().getStackLink(getCurrentStack());
-        if(ref!=null)
+        ItemStack stack = getCurrentStack();
+        if (stack == null)
+            return;
+
+        PageRef ref = nav.getBook().getStackLink(stack);
+        if (ref != null)
             nav.navigateTo(ref);
     }
 
-    public ItemStack getCurrentStack(){
-        if(stacks==null||stacks.length==0)
-            return ItemStack.EMPTY;
-        long time=System.currentTimeMillis();
-        return stacks[(int)((time/1000)%stacks.length)];
+    @Nullable
+    public ItemStack getCurrentStack()
+    {
+        if (stacks == null || stacks.length == 0)
+            return null;
+        long time = System.currentTimeMillis();
+        return stacks[(int) ((time / CYCLE_TIME) % stacks.length)];
     }
 
     @Override

@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.sun.javafx.geom.Vec3f;
 import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.renderer.GlStateManager;
@@ -12,7 +11,6 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
