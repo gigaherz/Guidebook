@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
@@ -28,7 +29,7 @@ import java.util.List;
 
 @Mod.EventBusSubscriber
 @Mod(modid = GuidebookMod.MODID, version = GuidebookMod.VERSION,
-        acceptedMinecraftVersions = "[1.11.0,1.12.0)",
+        acceptedMinecraftVersions = "[1.12.0,1.13.0)",
         updateJSON = "https://raw.githubusercontent.com/gigaherz/guidebook/master/update.json")
 public class GuidebookMod
 {
@@ -117,7 +118,7 @@ public class GuidebookMod
 
     private void registerRecipes()
     {
-        GameRegistry.addShapelessRecipe(guidebook.of(location("xml/guidebook.xml")), Items.BOOK);
+        //GameRegistry.addShapelessRecipe(location("manual"), guidebook.of(location("xml/guidebook.xml")), Ingredient.func_193367_a(Items.BOOK));
     }
 
     public static ResourceLocation location(String location)

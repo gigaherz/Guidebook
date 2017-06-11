@@ -105,7 +105,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                     //init empty subitems list
                     NonNullList<ItemStack> subitems=NonNullList.create();
                     //fill list
-                    item.getSubItems(item,null,subitems);
+                    item.getSubItems(null,subitems);
                     //iterate over the list
                     for (ItemStack subitem:subitems) {
                         //just in case the ItemStack instance is not just a copy or a new instance
@@ -150,7 +150,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                     if( meta==OreDictionary.WILDCARD_VALUE && item.getHasSubtypes() ){
                         //replace wildcard metas with subitems
                         NonNullList<ItemStack> subitems=NonNullList.create();
-                        item.getItem().getSubItems(item.getItem(),null,subitems);
+                        item.getItem().getSubItems(null, subitems);
                         for (ItemStack subitem:subitems) {
                             //just in case the ItemStack instance is not just a copy or a new instance
                             subitem=subitem.copy();

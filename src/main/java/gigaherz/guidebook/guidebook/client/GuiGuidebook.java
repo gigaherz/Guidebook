@@ -177,18 +177,18 @@ public class GuiGuidebook extends GuiScreen
         int right = (int) (left + BookRendering.DEFAULT_BOOK_WIDTH * bookScale);
         int top = (int) ((this.height - BookRendering.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
         int bottom = (int) (top + BookRendering.DEFAULT_BOOK_HEIGHT * bookScale);
-        buttonBack.xPosition = left - 9;
-        buttonBack.yPosition = top - 5;
-        buttonClose.xPosition = right - 6;
-        buttonClose.yPosition = top - 6;
-        buttonPreviousPage.xPosition = left + 24;
-        buttonPreviousPage.yPosition = bottom - 13;
-        buttonNextPage.xPosition = right - 42;
-        buttonNextPage.yPosition = bottom - 13;
-        buttonPreviousChapter.xPosition = left + 2;
-        buttonPreviousChapter.yPosition = bottom - 13;
-        buttonNextChapter.xPosition = right - 23;
-        buttonNextChapter.yPosition = bottom - 13;
+        buttonBack.x = left - 9;
+        buttonBack.y = top - 5;
+        buttonClose.x = right - 6;
+        buttonClose.y = top - 6;
+        buttonPreviousPage.x = left + 24;
+        buttonPreviousPage.y = bottom - 13;
+        buttonNextPage.x = right - 42;
+        buttonNextPage.y = bottom - 13;
+        buttonPreviousChapter.x = left + 2;
+        buttonPreviousChapter.y = bottom - 13;
+        buttonNextChapter.x = right - 23;
+        buttonNextChapter.y = bottom - 13;
 
 
         background.draw(partialTicks, scaledBookHeight, bookScale);
@@ -257,18 +257,21 @@ public class GuiGuidebook extends GuiScreen
             this.whichIcon = back;
         }
 
-        /**
-         * Draws this button to the screen.
-         */
+        @Override
+        public void func_191745_a(Minecraft p_191745_1_, int p_191745_2_, int p_191745_3_, float p_191745_4_)
+        {
+            drawButton(p_191745_1_, p_191745_2_, p_191745_3_);
+        }
+
         public void drawButton(Minecraft mc, int mouseX, int mouseY)
         {
             if (this.visible)
             {
                 boolean hover =
-                        mouseX >= this.xPosition &&
-                                mouseY >= this.yPosition &&
-                                mouseX < this.xPosition + this.width &&
-                                mouseY < this.yPosition + this.height;
+                        mouseX >= this.x &&
+                                mouseY >= this.y &&
+                                mouseX < this.x + this.width &&
+                                mouseY < this.y + this.height;
 
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 mc.getTextureManager().bindTexture(BOOK_GUI_TEXTURES);
@@ -282,7 +285,7 @@ public class GuiGuidebook extends GuiScreen
                     x += 25;
                 }
 
-                this.drawTexturedModalRect(this.xPosition, this.yPosition, x, y, w, h);
+                this.drawTexturedModalRect(this.x, this.y, x, y, w, h);
             }
         }
     }

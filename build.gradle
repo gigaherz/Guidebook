@@ -4,7 +4,7 @@ buildscript {
         maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
 
@@ -23,13 +23,13 @@ apply plugin: 'maven-publish'
 
 version = "1.7.0"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Guidebook-1.11.0"
+archivesBaseName = "Guidebook-1.12.0"
 
 minecraft {
-    version = "1.11.2-13.20.0.2294"
+    version = "1.12-14.21.0.2321"
     runDir = "run"
 
-    mappings = "snapshot_20170504"
+    mappings = "snapshot_20170611"
 
     replace "@VERSION@", project.version
     replaceIn "GuidebookMod.java"

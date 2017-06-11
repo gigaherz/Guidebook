@@ -1,18 +1,16 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.sun.javafx.geom.Vec3f;
 import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
@@ -171,7 +169,7 @@ public class AnimatedBookBackground
     private static void renderModel(IBakedModel model)
     {
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer worldrenderer = tessellator.getBuffer();
+        BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
         for (BakedQuad quad : model.getQuads(null, null, 0))
         {
@@ -184,7 +182,7 @@ public class AnimatedBookBackground
     {
         VertexFormat fmt = DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL;
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer worldrenderer = tessellator.getBuffer();
+        BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(GL11.GL_QUADS, fmt);
         List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, 0);
         List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, 0);

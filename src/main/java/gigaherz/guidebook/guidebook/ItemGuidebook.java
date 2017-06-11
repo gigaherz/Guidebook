@@ -63,7 +63,7 @@ public class ItemGuidebook extends ItemRegistered
     }
 
     @Override
-    public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems)
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems)
     {
         BookRegistry.LOADED_BOOKS.keySet().stream().map(this::of).forEach(subItems::add);
     }
