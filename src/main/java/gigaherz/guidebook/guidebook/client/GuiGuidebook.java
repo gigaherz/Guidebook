@@ -258,12 +258,7 @@ public class GuiGuidebook extends GuiScreen
         }
 
         @Override
-        public void func_191745_a(Minecraft p_191745_1_, int p_191745_2_, int p_191745_3_, float p_191745_4_)
-        {
-            drawButton(p_191745_1_, p_191745_2_, p_191745_3_);
-        }
-
-        public void drawButton(Minecraft mc, int mouseX, int mouseY)
+        public void drawButton(Minecraft mc, int mouseX, int mouseY, float p_191745_4_)
         {
             if (this.visible)
             {

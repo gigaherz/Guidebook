@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -23,7 +22,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IRetexturableModel;
 import net.minecraftforge.common.model.IModelState;
 
 import javax.annotation.Nullable;
@@ -31,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public class BookBakedModel implements IBakedModel
 {
@@ -116,7 +115,7 @@ public class BookBakedModel implements IBakedModel
         };
     }
 
-    private static class Model implements IModel, IRetexturableModel
+    private static class Model implements IModel
     {
         @Nullable
         private final ResourceLocation particle;

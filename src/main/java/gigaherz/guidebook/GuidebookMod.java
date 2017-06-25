@@ -85,8 +85,6 @@ public class GuidebookMod
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
-        registerRecipes();
-
         proxy.init();
     }
 
@@ -114,11 +112,6 @@ public class GuidebookMod
                 }
             }
         }
-    }
-
-    private void registerRecipes()
-    {
-        //GameRegistry.addShapelessRecipe(location("manual"), guidebook.of(location("xml/guidebook.xml")), Ingredient.func_193367_a(Items.BOOK));
     }
 
     public static ResourceLocation location(String location)
