@@ -20,7 +20,7 @@ import org.w3c.dom.Node;
 public class Stack implements IHoverPageElement, IClickablePageElement
 {
     //The time each stack displayed lasts in ms.
-    public static final int CYCLE_TIME=1000;//=1s
+    public static final int CYCLE_TIME = 1000;//=1s
 
     public ItemStack[] stacks;
     public int x = 0;
@@ -43,7 +43,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         int height = (int) (16 * scale);
         bounds = new Rectangle(left, top, width, height);
 
-        ItemStack stack=getCurrentStack();
+        ItemStack stack = getCurrentStack();
 
         if (stack.getCount() > 0)
         {
@@ -64,8 +64,8 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         if (attr != null)
         {
             // meta="*" -> wildcard (for both blocks and items)
-            if(attr.getTextContent().equals("*"))
-                meta=-1;
+            if (attr.getTextContent().equals("*"))
+                meta = -1;
             else
                 meta = Ints.tryParse(attr.getTextContent());
         }
@@ -99,17 +99,19 @@ public class Stack implements IHoverPageElement, IClickablePageElement
             if (item != null)
             {
                 //if wildcard
-                if( ((meta==OreDictionary.WILDCARD_VALUE) || meta==-1) && item.getHasSubtypes() ){
+                if (((meta == OreDictionary.WILDCARD_VALUE) || meta == -1) && item.getHasSubtypes())
+                {
                     //init empty list to fill with resolved items
-                    NonNullList<ItemStack> processed_items=NonNullList.create();
+                    NonNullList<ItemStack> processed_items = NonNullList.create();
                     //init empty subitems list
-                    NonNullList<ItemStack> subitems=NonNullList.create();
+                    NonNullList<ItemStack> subitems = NonNullList.create();
                     //fill list
-                    item.getSubItems(null,subitems);
+                    item.getSubItems(null, subitems);
                     //iterate over the list
-                    for (ItemStack subitem:subitems) {
+                    for (ItemStack subitem : subitems)
+                    {
                         //just in case the ItemStack instance is not just a copy or a new instance
-                        subitem=subitem.copy();
+                        subitem = subitem.copy();
 
                         //set count and tag
                         subitem.setCount(stackSize);
@@ -120,8 +122,10 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                     }
                     //save processed list into the array
                     stacks = subitems.toArray(new ItemStack[subitems.size()]);
-                }else{
-                    ItemStack stack=new ItemStack(item, stackSize, meta);
+                }
+                else
+                {
+                    ItemStack stack = new ItemStack(item, stackSize, meta);
                     stack.setTagCompound(tag);
                     stacks = new ItemStack[]{stack};
                 }
@@ -136,30 +140,35 @@ public class Stack implements IHoverPageElement, IClickablePageElement
             //list of matching item stack; may contain wildcard meta data
             NonNullList<ItemStack> items = OreDictionary.getOres(oreName);
 
-            if (items.size()!=0)
+            if (items.size() != 0)
             {
                 //init empty list to fill with resolved items
-                NonNullList<ItemStack> items_processed=NonNullList.create();
+                NonNullList<ItemStack> items_processed = NonNullList.create();
 
                 //foreach item: try to resolve wildcard meta data
-                for (ItemStack item:items) {
+                for (ItemStack item : items)
+                {
                     //make sure not to mess up ore dictionary item stacks
-                    item=item.copy();
+                    item = item.copy();
                     meta = item.getMetadata();
 
-                    if( meta==OreDictionary.WILDCARD_VALUE && item.getHasSubtypes() ){
+                    if (meta == OreDictionary.WILDCARD_VALUE && item.getHasSubtypes())
+                    {
                         //replace wildcard metas with subitems
-                        NonNullList<ItemStack> subitems=NonNullList.create();
+                        NonNullList<ItemStack> subitems = NonNullList.create();
                         item.getItem().getSubItems(null, subitems);
-                        for (ItemStack subitem:subitems) {
+                        for (ItemStack subitem : subitems)
+                        {
                             //just in case the ItemStack instance is not just a copy or a new instance
-                            subitem=subitem.copy();
+                            subitem = subitem.copy();
 
                             subitem.setCount(stackSize);
                             subitem.setTagCompound(tag);
                             items_processed.add(subitem);
                         }
-                    }else{
+                    }
+                    else
+                    {
                         item.setCount(stackSize);
                         items_processed.add(item);
                     }
@@ -200,13 +209,17 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     public IPageElement copy()
     {
         Stack stack = new Stack();
-        if(this.stacks!=null){
-            stack.stacks=new ItemStack[this.stacks.length];
-            for(int i=0;i<this.stacks.length;i++){
+        if (this.stacks != null)
+        {
+            stack.stacks = new ItemStack[this.stacks.length];
+            for (int i = 0; i < this.stacks.length; i++)
+            {
                 stack.stacks[i] = this.stacks[i].copy();
             }
-        }else{
-            stack.stacks=null;
+        }
+        else
+        {
+            stack.stacks = null;
         }
         stack.x = x;
         stack.y = y;
@@ -216,7 +229,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     @Override
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
-        ItemStack stack=getCurrentStack();
+        ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
             nav.drawTooltip(stack, x, y);
@@ -226,16 +239,17 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     @Override
     public void click(IBookGraphics nav)
     {
-        PageRef ref=nav.getBook().getStackLink(getCurrentStack());
-        if(ref!=null)
+        PageRef ref = nav.getBook().getStackLink(getCurrentStack());
+        if (ref != null)
             nav.navigateTo(ref);
     }
 
-    public ItemStack getCurrentStack(){
-        if(stacks==null||stacks.length==0)
+    public ItemStack getCurrentStack()
+    {
+        if (stacks == null || stacks.length == 0)
             return ItemStack.EMPTY;
-        long time=System.currentTimeMillis();
-        return stacks[(int)((time/1000)%stacks.length)];
+        long time = System.currentTimeMillis();
+        return stacks[(int) ((time / 1000) % stacks.length)];
     }
 
     @Override

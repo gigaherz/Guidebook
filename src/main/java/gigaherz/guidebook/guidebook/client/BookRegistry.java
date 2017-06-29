@@ -21,7 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
 
@@ -74,7 +73,7 @@ public class BookRegistry
 
         loadRawBookFiles(manager);
 
-        for(ResourceLocation loc : toLoad)
+        for (ResourceLocation loc : toLoad)
         {
             if (!LOADED_BOOKS.containsKey(loc))
                 LOADED_BOOKS.put(loc, parseBook(manager, loc));
