@@ -87,10 +87,13 @@ public class ItemGuidebook extends ItemRegistered
     {
         super.addInformation(stack, playerIn, tooltip, advanced);
 
-        String book = getBookLocation(stack);
-        if (!Strings.isNullOrEmpty(book))
+        if (advanced)
         {
-            tooltip.add(String.format("Book: " + book));
+            String book = getBookLocation(stack);
+            if (!Strings.isNullOrEmpty(book))
+            {
+                tooltip.add(String.format("Book: " + book));
+            }
         }
     }
 
