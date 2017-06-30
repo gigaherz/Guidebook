@@ -37,7 +37,8 @@ public class PageRef
     {
         if (!resolvedNames)
         {
-            try{
+            try
+            {
                 if (!Strings.isNullOrEmpty(chapterName))
                 {
                     Integer ch = Ints.tryParse(chapterName);
@@ -75,10 +76,12 @@ public class PageRef
                     //throw error if neither field is defined
                     throw new InvalidPageRefException("Invalid format: missing page and chapter");
                 }
-            }catch (Exception e){ //catch error to prevent crash
+            }
+            catch (Exception e)
+            { //catch error to prevent crash
                 //try to parse the page ref into a string: <chapter>:<page>
-                String ref_string=(Strings.isNullOrEmpty(chapterName)?"<none>":(chapterName))+
-                        ":" + (Strings.isNullOrEmpty(pageName)?"<none>":(pageName));
+                String ref_string = (Strings.isNullOrEmpty(chapterName) ? "<none>" : (chapterName)) +
+                        ":" + (Strings.isNullOrEmpty(pageName) ? "<none>" : (pageName));
                 //log error
                 GuidebookMod.logger.error(
                         String.format(
@@ -103,17 +106,21 @@ public class PageRef
      * Thrown by {@link PageRef#resolve(BookDocument)} in any case that normally wouldn't cause an exception
      * but still signifies that the {@link PageRef} has no valid target and is therefore invalid.
      */
-    public static class InvalidPageRefException extends Exception{
-        public InvalidPageRefException(String s) {
+    public static class InvalidPageRefException extends Exception
+    {
+        public InvalidPageRefException(String s)
+        {
             super(s);
         }
     }
 
     /**
      * Parses a String into a {@link PageRef}.
+     *
      * @param refString the string to be parsed
      */
-    public static PageRef fromString(@Nonnull String refString){
+    public static PageRef fromString(@Nonnull String refString)
+    {
         if (refString.indexOf(':') >= 0)
         {
             String[] parts = refString.split(":");

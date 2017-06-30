@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook;
 
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Rectangle;

@@ -52,7 +52,7 @@ public class Link extends Paragraph implements IClickablePageElement
 
     public void clickWeb(IBookGraphics nav)
     {
-        GuiScreen parent = (GuiScreen)nav.owner();
+        GuiScreen parent = (GuiScreen) nav.owner();
         Minecraft mc = Minecraft.getMinecraft();
 
         if (!mc.gameSettings.chatLinks)
@@ -108,7 +108,7 @@ public class Link extends Paragraph implements IClickablePageElement
         if (attr != null)
         {
             String ref = attr.getTextContent();
-            target=PageRef.fromString(ref);
+            target = PageRef.fromString(ref);
         }
 
         attr = attributes.getNamedItem("href");
@@ -143,12 +143,11 @@ public class Link extends Paragraph implements IClickablePageElement
         {
             Class<?> oclass = Class.forName("java.awt.Desktop");
             Object object = oclass.getMethod("getDesktop", new Class[0]).invoke(null);
-            oclass.getMethod("browse", new Class[] {URI.class}).invoke(object, url);
+            oclass.getMethod("browse", new Class[]{URI.class}).invoke(object, url);
         }
         catch (Throwable throwable1)
         {
             GuidebookMod.logger.error("Can't open url {}", url, throwable1);
         }
     }
-
 }

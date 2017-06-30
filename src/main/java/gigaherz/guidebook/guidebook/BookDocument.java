@@ -41,7 +41,7 @@ public class BookDocument
     private ResourceLocation bookCover;
 
     final List<ChapterData> chapters = Lists.newArrayList();
-    private Table<Item,Integer,PageRef> stackLinks = HashBasedTable.create();
+    private Table<Item, Integer, PageRef> stackLinks = HashBasedTable.create();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, PageRef> pagesByName = Maps.newHashMap();
@@ -81,13 +81,16 @@ public class BookDocument
     @Nullable
     public PageRef getStackLink(ItemStack stack)
     {
-        Item item=stack.getItem();
-        int damage=stack.getItemDamage();
+        Item item = stack.getItem();
+        int damage = stack.getItemDamage();
 
-        if(stackLinks.contains(item,damage)){
-            return stackLinks.get(item,damage);
-        }else if(stackLinks.contains(item,-1)){
-            return stackLinks.get(item,-1);
+        if (stackLinks.contains(item, damage))
+        {
+            return stackLinks.get(item, damage);
+        }
+        else if (stackLinks.contains(item, -1))
+        {
+            return stackLinks.get(item, -1);
         }
         return null;
     }
@@ -414,27 +417,30 @@ public class BookDocument
             Node refItem = refsList.item(j);
             String nodeName = refItem.getNodeName();
 
-            if(nodeName.equals("stack")){
-                if(refItem.hasAttributes()){
-                    Node item_node=refItem.getAttributes().getNamedItem("item"); //get item
-                    if(item_node!=null){
+            if (nodeName.equals("stack"))
+            {
+                if (refItem.hasAttributes())
+                {
+                    Node item_node = refItem.getAttributes().getNamedItem("item"); //get item
+                    if (item_node != null)
+                    {
                         Item item = Item.REGISTRY.getObject(new ResourceLocation(item_node.getTextContent()));
-                        if(item!=null){
+                        if (item != null)
+                        {
 
-                            int damage_value=0;
-                            Node meta=refItem.getAttributes().getNamedItem("meta");
+                            int damage_value = 0;
+                            Node meta = refItem.getAttributes().getNamedItem("meta");
                             if (meta != null)
                             {
                                 // meta="*" -> wildcard
-                                if(meta.getTextContent().equals("*"))
-                                    damage_value=-1;
+                                if (meta.getTextContent().equals("*"))
+                                    damage_value = -1;
                                 else
-                                    damage_value=Ints.tryParse(meta.getTextContent());
+                                    damage_value = Ints.tryParse(meta.getTextContent());
                             }
 
                             String ref = refItem.getTextContent();
-                            stackLinks.put(item,damage_value,PageRef.fromString(ref));
-
+                            stackLinks.put(item, damage_value, PageRef.fromString(ref));
                         }
                     }
                 }

@@ -3,7 +3,6 @@ package gigaherz.guidebook;
 import com.google.common.collect.Lists;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
-import gigaherz.guidebook.guidebook.client.BookRegistry;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -108,7 +107,7 @@ public class GuidebookMod
                 String tag = MODID + ":givenBook:" + g;
                 if (!e.getTags().contains(tag))
                 {
-                    ItemHandlerHelper.giveItemToPlayer((EntityPlayer)e, guidebook.of(new ResourceLocation(g)));
+                    ItemHandlerHelper.giveItemToPlayer((EntityPlayer) e, guidebook.of(new ResourceLocation(g)));
                     e.addTag(tag);
                 }
             }
