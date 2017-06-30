@@ -1,10 +1,12 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.11.2-latest": "1.7.0",
-    "1.11.2-recommended": "1.7.0",
-    "1.10.2-latest": "1.7.0",
-    "1.10.2-recommended": "1.7.0"
+    "1.12-latest": "1.7.3",
+    "1.12-recommended": "1.7.3",
+    "1.11.2-latest": "1.7.3",
+    "1.11.2-recommended": "1.7.3",
+    "1.10.2-latest": "1.7.3",
+    "1.10.2-recommended": "1.7.3"
   },
   "1.10.2": {
     "1.3.0": "Added the ability to define books from resource packs, and form a configuration folder.",
@@ -14,8 +16,9 @@
     "1.4.0": "Some improvements to the ingame manual. Added config array for books to give on first join (works retroactively for existing players).",
     "1.5.0": "Added book loading from config folder without a books.json file.",
     "1.6.0": "Added support for web links, using href instead of ref in link tags.",
-    "1.7.0": "Added rotating stacks with wildcard metadata and oredict."
-  },
+    "1.7.0": "Added rotating stacks with wildcard metadata and oredict.",
+    "1.7.3": "Tweaks and fixes."
+  ,
   "1.11.2": {
     "1.3.0": "Added the ability to define books from resource packs, and form a configuration folder.",
     "1.3.1": "Guidebook will now remember the last reading position of each book (shared across copies of the same book).",
@@ -24,6 +27,11 @@
     "1.4.0": "Some improvements to the ingame manual. Added config array for books to give on first join (works retroactively for existing players).",
     "1.5.0": "Added book loading from config folder without a books.json file.",
     "1.6.0": "Added support for web links, using href instead of ref in link tags.",
-    "1.7.0": "Added rotating stacks with wildcard metadata and oredict."
+    "1.7.0": "Added rotating stacks with wildcard metadata and oredict.",
+    "1.7.3": "Tweaks and fixes."
+  },
+  "1.12": {
+    "1.7.0": "Initial port to 1.12.",
+    "1.7.3": "Tweaks and fixes."
   }
 }
