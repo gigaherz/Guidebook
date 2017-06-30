@@ -98,7 +98,6 @@ public class Stack implements IHoverPageElement, IClickablePageElement
 
             if (item != null)
             {
-                stack.setTagCompound(tag);
                 if (((meta == OreDictionary.WILDCARD_VALUE) || meta == -1) && item.getHasSubtypes())
                 {
                     NonNullList<ItemStack> processed_items = NonNullList.create();
