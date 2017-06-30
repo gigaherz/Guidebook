@@ -55,4 +55,17 @@ public class ClientProxy implements IModProxy
         if (br != null && br.chapterCount() > 0)
             Minecraft.getMinecraft().displayGuiScreen(new GuiGuidebook(loc));
     }
+
+    @Override
+    public String getBookName(String book)
+    {
+        BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
+        if (bookDocument != null)
+        {
+            String name = bookDocument.getBookName();
+            if (name != null)
+                return name;
+        }
+        return String.format("Guidebook - %s unknown", book);
+    }
 }

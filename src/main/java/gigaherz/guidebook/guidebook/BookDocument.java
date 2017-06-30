@@ -84,16 +84,13 @@ public class BookDocument
         Item item = stack.getItem();
         int damage = stack.getItemDamage();
 
-        if (stackLinks.containsRow(item))
+        if (stackLinks.contains(item, damage))
         {
-            if (stackLinks.containsColumn(damage))
-            {
-                return stackLinks.get(item, damage);
-            }
-            else if (stackLinks.contains(item, -1))
-            {
-                return stackLinks.get(item, -1);
-            }
+            return stackLinks.get(item, damage);
+        }
+        else if (stackLinks.contains(item, -1))
+        {
+            return stackLinks.get(item, -1);
         }
         return null;
     }

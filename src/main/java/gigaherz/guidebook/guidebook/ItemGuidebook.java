@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import gigaherz.common.ItemRegistered;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -12,6 +13,9 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class ItemGuidebook extends ItemRegistered
 {
@@ -67,23 +71,39 @@ public class ItemGuidebook extends ItemRegistered
         BookRegistry.LOADED_BOOKS.keySet().stream().map(this::of).forEach(subItems::add);
     }
 
-    @Override
-    public String getItemStackDisplayName(ItemStack stack)
+    @Nullable
+    public String getBookLocation(ItemStack stack)
     {
         NBTTagCompound tag = stack.getTagCompound();
         if (tag != null)
         {
-            String book = tag.getString("Book");
+            return tag.getString("Book");
+        }
+        return null;
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn)
+    {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+
+        if (flagIn == ITooltipFlag.TooltipFlags.ADVANCED)
+        {
+            String book = getBookLocation(stack);
             if (!Strings.isNullOrEmpty(book))
             {
-                BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
-                if (bookDocument != null)
-                {
-                    String name = bookDocument.getBookName();
-                    if (name != null)
-                        return name;
-                }
+                tooltip.add(String.format("Book: " + book));
             }
+        }
+    }
+
+    @Override
+    public String getItemStackDisplayName(ItemStack stack)
+    {
+        String book = getBookLocation(stack);
+        if (!Strings.isNullOrEmpty(book))
+        {
+            return GuidebookMod.proxy.getBookName(book);
         }
 
         return super.getItemStackDisplayName(stack);

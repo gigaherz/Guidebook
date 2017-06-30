@@ -1,10 +1,12 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.PageRef;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
@@ -19,8 +21,8 @@ import org.w3c.dom.Node;
 
 public class Stack implements IHoverPageElement, IClickablePageElement
 {
-    //The time each stack displayed lasts in ms.
     public static final int CYCLE_TIME = 1000;//=1s
+    public static final String WILDCARD = "*";
 
     public ItemStack[] stacks;
     public int x = 0;
@@ -63,8 +65,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         Node attr = attributes.getNamedItem("meta");
         if (attr != null)
         {
-            // meta="*" -> wildcard (for both blocks and items)
-            if (attr.getTextContent().equals("*"))
+            if (attr.getTextContent().equals(WILDCARD))
                 meta = -1;
             else
                 meta = Ints.tryParse(attr.getTextContent());
@@ -98,29 +99,23 @@ public class Stack implements IHoverPageElement, IClickablePageElement
 
             if (item != null)
             {
-                //if wildcard
                 if (((meta == OreDictionary.WILDCARD_VALUE) || meta == -1) && item.getHasSubtypes())
                 {
-                    //init empty list to fill with resolved items
                     NonNullList<ItemStack> processed_items = NonNullList.create();
-                    //init empty subitems list
                     NonNullList<ItemStack> subitems = NonNullList.create();
-                    //fill list
-                    item.getSubItems(null, subitems);
-                    //iterate over the list
+
+                    item.getSubItems(CreativeTabs.SEARCH, subitems);
+
                     for (ItemStack subitem : subitems)
                     {
-                        //just in case the ItemStack instance is not just a copy or a new instance
                         subitem = subitem.copy();
 
-                        //set count and tag
                         subitem.setCount(stackSize);
                         subitem.setTagCompound(tag);
 
-                        //add to processed list
                         processed_items.add(subitem);
                     }
-                    //save processed list into the array
+
                     stacks = subitems.toArray(new ItemStack[subitems.size()]);
                 }
                 else
@@ -156,7 +151,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
                     {
                         //replace wildcard metas with subitems
                         NonNullList<ItemStack> subitems = NonNullList.create();
-                        item.getItem().getSubItems(null, subitems);
+                        item.getItem().getSubItems(CreativeTabs.SEARCH, subitems);
                         for (ItemStack subitem : subitems)
                         {
                             //just in case the ItemStack instance is not just a copy or a new instance

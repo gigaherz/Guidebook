@@ -2,9 +2,23 @@ package gigaherz.guidebook.common;
 
 public interface IModProxy
 {
-    void init();
+    default void init()
+    {
 
-    void displayBook(String book);
+    }
 
-    void preInit();
+    default void displayBook(String book)
+    {
+
+    }
+
+    default void preInit()
+    {
+
+    }
+
+    default String getBookName(String book)
+    {
+        return String.format("Guidebook - %s unknown", book);
+    }
 }
