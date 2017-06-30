@@ -80,9 +80,7 @@ public class BookRegistry
         }
     }
 
-    private static Type listType = new TypeToken<List<String>>()
-    {
-    }.getType();
+    private static Type listType = new TypeToken<List<String>>() {}.getType();
 
     private static void loadBooksData(Set<ResourceLocation> toLoad, InputStream stream)
     {
