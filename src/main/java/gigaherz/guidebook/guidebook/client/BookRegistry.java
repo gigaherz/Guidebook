@@ -42,6 +42,8 @@ public class BookRegistry
         return LOADED_BOOKS.get(loc);
     }
 
+    private static boolean initialized = false;
+
     public static void parseAllBooks(IResourceManager manager)
     {
         TemplateLibrary.clear();
@@ -158,28 +160,14 @@ public class BookRegistry
         return base.toURI().relativize(sub.toURI()).getPath();
     }
 
-
-    private static boolean initialized = false;
-
-    public static void initReloadHandler()
-    {
-        if (initialized)
-            return;
-
-        initialized = true;
-
-        IResourceManager rm = Minecraft.getMinecraft().getResourceManager();
-        if (rm instanceof IReloadableResourceManager)
-        {
-            ((IReloadableResourceManager) rm).registerReloadListener(BookRegistry::parseAllBooks);
-        }
-    }
-
     private static Field _defaultResourcePacks = ReflectionHelper.findField(Minecraft.class, "field_110449_ao", "defaultResourcePacks");
 
     @SuppressWarnings("unchecked")
     public static void injectCustomResourcePack()
     {
+        if (initialized) return;
+        initialized = true;
+
         File resourcesFolder = new File(GuidebookMod.booksDirectory, "resources");
 
         if (!resourcesFolder.exists())

@@ -191,7 +191,7 @@ public class BookBakedModel implements IBakedModel
         @Override
         public void onResourceManagerReload(IResourceManager resourceManager)
         {
-            // Nothing to do
+            BookRegistry.parseAllBooks(resourceManager);
         }
     }
 }

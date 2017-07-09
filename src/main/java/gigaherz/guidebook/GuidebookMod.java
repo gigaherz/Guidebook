@@ -78,12 +78,6 @@ public class GuidebookMod
         proxy.preInit();
     }
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event)
-    {
-        proxy.init();
-    }
-
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event)
     {

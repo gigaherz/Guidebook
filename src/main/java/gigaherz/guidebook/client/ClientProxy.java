@@ -25,6 +25,8 @@ public class ClientProxy implements IModProxy
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event)
     {
+        BookRegistry.injectCustomResourcePack();
+
         OBJLoader.INSTANCE.addDomain(GuidebookMod.MODID);
         ModelLoaderRegistry.registerLoader(new BookBakedModel.ModelLoader());
 
@@ -34,17 +36,9 @@ public class ClientProxy implements IModProxy
     @Override
     public void preInit()
     {
-        BookRegistry.injectCustomResourcePack();
-
-        MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
-    }
-
-    @Override
-    public void init()
-    {
         ModelHandle.init();
 
-        BookRegistry.initReloadHandler();
+        MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
     }
 
     @Override
