@@ -17,6 +17,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.util.Collection;
+
 import static gigaherz.common.client.ModelHelpers.registerItemModel;
 
 @Mod.EventBusSubscriber(Side.CLIENT)
@@ -37,6 +39,12 @@ public class ClientProxy implements IModProxy
         BookRegistry.injectCustomResourcePack();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
+    }
+
+    @Override
+    public Collection<ResourceLocation> getBooksList()
+    {
+        return BookRegistry.LOADED_BOOKS.keySet();
     }
 
     @Override
