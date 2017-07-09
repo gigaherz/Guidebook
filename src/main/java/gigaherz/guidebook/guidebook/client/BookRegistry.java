@@ -73,12 +73,16 @@ public class BookRegistry
             }
         }
 
-        loadRawBookFiles(manager);
+        loadRawBookFiles();
 
         for (ResourceLocation loc : toLoad)
         {
             if (!LOADED_BOOKS.containsKey(loc))
-                LOADED_BOOKS.put(loc, parseBook(manager, loc));
+            {
+                BookDocument book = parseBook(manager, loc);
+                if (book != null)
+                    LOADED_BOOKS.put(loc, book);
+            }
         }
     }
 
@@ -90,6 +94,7 @@ public class BookRegistry
         toLoad.addAll(yourList.stream().map(ResourceLocation::new).collect(Collectors.toList()));
     }
 
+    @Nullable
     private static BookDocument parseBook(IResourceManager manager, ResourceLocation location)
     {
         BookDocument bookDocument = new BookDocument(location);
@@ -97,31 +102,34 @@ public class BookRegistry
         {
             IResource res = manager.getResource(bookDocument.getBookLocation());
             InputStream stream = res.getInputStream();
-            bookDocument.parseBook(stream);
+            if (!bookDocument.parseBook(stream))
+                return null;
         }
         catch (IOException e)
         {
-            bookDocument.initializeWithLoadError(e);
+            bookDocument.initializeWithLoadError(e.toString());
         }
         return bookDocument;
     }
 
-    private static BookDocument parseBook(IResourceManager manager, ResourceLocation location, File file)
+    @Nullable
+    private static BookDocument parseBook(ResourceLocation location, File file)
     {
         BookDocument bookDocument = new BookDocument(location);
         try
         {
             InputStream stream = new FileInputStream(file);
-            bookDocument.parseBook(stream);
+            if (!bookDocument.parseBook(stream))
+                return null;
         }
         catch (IOException e)
         {
-            bookDocument.initializeWithLoadError(e);
+            bookDocument.initializeWithLoadError(e.toString());
         }
         return bookDocument;
     }
 
-    private static void loadRawBookFiles(IResourceManager manager)
+    private static void loadRawBookFiles()
     {
         File booksFolder = GuidebookMod.booksDirectory;
 
@@ -150,7 +158,11 @@ public class BookRegistry
                 ResourceLocation loc = new ResourceLocation(GuidebookMod.MODID, relativePath(booksFolder, f));
 
                 if (!LOADED_BOOKS.containsKey(loc))
-                    LOADED_BOOKS.put(loc, parseBook(manager, loc, f));
+                {
+                    BookDocument book = parseBook(loc, f);
+                    if (book != null)
+                        LOADED_BOOKS.put(loc, book);
+                }
             }
         }
     }
