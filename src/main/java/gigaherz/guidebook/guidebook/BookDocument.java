@@ -14,6 +14,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.Loader;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -131,7 +132,7 @@ public class BookDocument
         }
     }
 
-    public void initializeWithLoadError(Exception e)
+    public void initializeWithLoadError(String error)
     {
         ChapterData ch = new ChapterData(0);
         chapters.add(ch);
@@ -140,10 +141,10 @@ public class BookDocument
         ch.pages.add(pg);
 
         pg.elements.add(new Paragraph("Error loading book:"));
-        pg.elements.add(new Paragraph(TextFormatting.RED + e.toString()));
+        pg.elements.add(new Paragraph(TextFormatting.RED + error));
     }
 
-    public void parseBook(InputStream stream)
+    public boolean parseBook(InputStream stream)
     {
         try
         {
@@ -181,6 +182,18 @@ public class BookDocument
                 {
                     Float f = Floats.tryParse(n.getTextContent());
                     fontSize = f != null ? f : DEFAULT_FONT_SIZE;
+                }
+                n = attributes.getNamedItem("dependencies");
+                if (n != null)
+                {
+                    for (String s : n.getTextContent().split(","))
+                    {
+                        if (!Loader.isModLoaded(s))
+                        {
+                            initializeWithLoadError("Dependency not loaded: " + s);
+                            return false;
+                        }
+                    }
                 }
             }
 
@@ -221,8 +234,9 @@ public class BookDocument
         }
         catch (IOException | ParserConfigurationException | SAXException e)
         {
-            initializeWithLoadError(e);
+            initializeWithLoadError(e.toString());
         }
+        return true;
     }
 
     private static void parseTemplateDefinition(Node templateItem, Map<String, TemplateDefinition> templates)
