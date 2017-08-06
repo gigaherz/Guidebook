@@ -136,6 +136,7 @@ public class Paragraph implements IPageElement
         paragraph.bold = bold;
         paragraph.italics = italics;
         paragraph.underline = underline;
+        paragraph.scale = scale;
         return paragraph;
     }
 }

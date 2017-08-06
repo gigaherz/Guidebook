@@ -271,7 +271,7 @@ public class BookRendering implements IBookGraphics
         }
 
         // Does scaling need to be performed?
-        if(scale != 1f) {
+        if(!(MathHelper.epsilonEquals(scale, 1.0f))) {
             GlStateManager.pushMatrix(); {
                 GlStateManager.scale(scale, scale, 1f);
                 fontRenderer.drawSplitString(s, (int)(left / scale), (int)(top / scale), (int)(pageWidth / scale), color);
