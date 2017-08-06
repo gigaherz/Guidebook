@@ -250,38 +250,38 @@ public class BookRendering implements IBookGraphics
         history.push(new PageRef(currentChapter, currentPair * 2));
     }
 
-    private int getSplitWidth(FontRenderer fontRenderer, String s, float scalingFactor)
+    private int getSplitWidth(FontRenderer fontRenderer, String s, float scale)
     {
-        int height = (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scalingFactor)) * scalingFactor);
-        return height > (fontRenderer.FONT_HEIGHT * scalingFactor) ? pageWidth : (int)(fontRenderer.getStringWidth(s) * scalingFactor);
+        int height = (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scale)) * scale);
+        return height > (fontRenderer.FONT_HEIGHT * scale) ? pageWidth : (int)(fontRenderer.getStringWidth(s) * scale);
     }
 
     @Override
-    public int addStringWrapping(int left, int top, String s, int color, int align, float scalingFactor)
+    public int addStringWrapping(int left, int top, String s, int color, int align, float scale)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
         if (align == 1)
         {
-            left += (pageWidth - getSplitWidth(fontRenderer, s, scalingFactor)) / 2;
+            left += (pageWidth - getSplitWidth(fontRenderer, s, scale)) / 2;
         }
         else if (align == 2)
         {
-            left += pageWidth - getSplitWidth(fontRenderer, s, scalingFactor);
+            left += pageWidth - getSplitWidth(fontRenderer, s, scale);
         }
 
         // Does scaling need to be performed?
-        if(scalingFactor != 1f) {
+        if(scale != 1f) {
             GlStateManager.pushMatrix(); {
-                GlStateManager.scale(scalingFactor, scalingFactor, 1f);
-                fontRenderer.drawSplitString(s, (int)(left / scalingFactor), (int)(top / scalingFactor), (int)(pageWidth / scalingFactor), color);
+                GlStateManager.scale(scale, scale, 1f);
+                fontRenderer.drawSplitString(s, (int)(left / scale), (int)(top / scale), (int)(pageWidth / scale), color);
             }
             GlStateManager.popMatrix();
         } else {
             fontRenderer.drawSplitString(s, left, top, pageWidth, color);
         }
 
-        return (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scalingFactor)) * scalingFactor);
+        return (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scale)) * scale);
     }
 
     @Override
