@@ -250,10 +250,10 @@ public class BookRendering implements IBookGraphics
         history.push(new PageRef(currentChapter, currentPair * 2));
     }
 
-    private int getSplitWidth(FontRenderer fontRenderer, String s)
+    private int getSplitWidth(FontRenderer fontRenderer, String s, float scalingFactor)
     {
-        int height = fontRenderer.getWordWrappedHeight(s, pageWidth);
-        return height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(s);
+        int height = (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scalingFactor)) * scalingFactor);
+        return height > (fontRenderer.FONT_HEIGHT * scalingFactor) ? pageWidth : (int)(fontRenderer.getStringWidth(s) * scalingFactor);
     }
 
     @Override
@@ -263,11 +263,11 @@ public class BookRendering implements IBookGraphics
 
         if (align == 1)
         {
-            left += (pageWidth - (getSplitWidth(fontRenderer, s) * scalingFactor)) / 2;
+            left += (pageWidth - (getSplitWidth(fontRenderer, s, scalingFactor))) / 2;
         }
         else if (align == 2)
         {
-            left += pageWidth - getSplitWidth(fontRenderer, s) * scalingFactor;
+            left += pageWidth - getSplitWidth(fontRenderer, s, scalingFactor);
         }
 
         // Does scaling need to be performed?
@@ -281,7 +281,7 @@ public class BookRendering implements IBookGraphics
             fontRenderer.drawSplitString(s, left, top, pageWidth, color);
         }
 
-        return (int)(fontRenderer.getWordWrappedHeight(s, pageWidth) * scalingFactor);
+        return (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scalingFactor)) * scalingFactor);
     }
 
     @Override

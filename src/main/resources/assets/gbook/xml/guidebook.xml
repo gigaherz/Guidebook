@@ -125,7 +125,7 @@
       <p indent="16">&lt;/page&gt;</p>
       <p indent="8">&lt;/chapter&gt;</p>
     </page>
-    <page>
+    <page id="text">
       <title>Paragraphs and titles</title>
       <p space="8">Inside pages there can be text, alongside other page elements. The primary way of adding text is through paragraph elements 'p'.</p>
       <p indent="12" space="8">&lt;p&gt;Text&lt;/p&gt;</p>
@@ -150,7 +150,7 @@
       <p scale="1.5" align="center">larger</p>
       <p scale="2.0" align="center">huge</p>
     </page>
-    <page id="text_3">
+    <page>
       <p space="8">Finally, to avoid writing so many formatting codes. Section titles can be shortened with the 'title' tag, which has different default formattings.</p>
       <p indent="8" space="8">&lt;title&gt;Title Here&lt;/title&gt;</p>
       <title>Title Here</title>
