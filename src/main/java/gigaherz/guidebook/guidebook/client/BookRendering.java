@@ -263,7 +263,7 @@ public class BookRendering implements IBookGraphics
 
         if (align == 1)
         {
-            left += (pageWidth - (getSplitWidth(fontRenderer, s, scalingFactor))) / 2;
+            left += (pageWidth - getSplitWidth(fontRenderer, s, scalingFactor)) / 2;
         }
         else if (align == 2)
         {
