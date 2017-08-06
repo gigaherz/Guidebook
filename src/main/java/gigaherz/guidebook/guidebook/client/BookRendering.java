@@ -257,21 +257,31 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public int addStringWrapping(int left, int top, String s, int color, int align)
+    public int addStringWrapping(int left, int top, String s, int color, int align, float scalingFactor)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
         if (align == 1)
         {
-            left += (pageWidth - getSplitWidth(fontRenderer, s)) / 2;
+            left += (pageWidth - (getSplitWidth(fontRenderer, s) * scalingFactor)) / 2;
         }
         else if (align == 2)
         {
-            left += pageWidth - getSplitWidth(fontRenderer, s);
+            left += pageWidth - getSplitWidth(fontRenderer, s) * scalingFactor;
         }
 
-        fontRenderer.drawSplitString(s, left, top, pageWidth, color);
-        return fontRenderer.getWordWrappedHeight(s, pageWidth);
+        // Does scaling need to be performed?
+        if(scalingFactor != 1f) {
+            GlStateManager.pushMatrix(); {
+                GlStateManager.scale(scalingFactor, scalingFactor, 1f);
+                fontRenderer.drawSplitString(s, (int)(left / scalingFactor), (int)(top / scalingFactor), (int)(pageWidth / scalingFactor), color);
+            }
+            GlStateManager.popMatrix();
+        } else {
+            fontRenderer.drawSplitString(s, left, top, pageWidth, color);
+        }
+
+        return (int)(fontRenderer.getWordWrappedHeight(s, pageWidth) * scalingFactor);
     }
 
     @Override
@@ -405,7 +415,7 @@ public class BookRendering implements IBookGraphics
         drawPage(right, top, currentPair * 2 + 1);
 
         String cnt = "" + ((book.getChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (book.getTotalPairCount() * 2);
-        addStringWrapping(left, bottom, cnt, 0xFF000000, 1);
+        addStringWrapping(left, bottom, cnt, 0xFF000000, 1, 1f);
 
         if (hasScale)
         {

@@ -96,7 +96,7 @@ public class Link extends Paragraph implements IClickablePageElement
     {
         bounds = nav.getStringBounds(text, left, top);
 
-        return nav.addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
+        return nav.addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment, scale) + space;
     }
 
     @Override

@@ -20,11 +20,11 @@
       The % refers to a % of the page's height, while integer values refer to pixels.
       -->
       <space height="33%" />
-      <p space="0" align="center">Welcome</p>
-      <p space="0" align="center">to</p>
-      <p space="0" align="center">Guidebook</p>
-      <p space="6" align="center">__________</p>
-      <p align="center">by Gigaherz</p>
+      <p space="0" align="center" scale="2">Welcome</p>
+      <p space="0" align="center" scale="2">to</p>
+      <p space="0" align="center" scale="2">Guidebook</p>
+      <p space="6" align="center" scale="2">__________</p>
+      <p align="center" scale="1.5">by Gigaherz</p>
     </page>
     <page>
       <title>Index</title>

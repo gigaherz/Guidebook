@@ -32,7 +32,7 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addStringWrapping(int left, int top, String s, int color, int align);
+    int addStringWrapping(int left, int top, String s, int color, int align, float scale);
 
     boolean mouseClicked(int mouseButton);
 
