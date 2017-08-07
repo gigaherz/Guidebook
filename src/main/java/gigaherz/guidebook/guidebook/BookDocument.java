@@ -374,6 +374,21 @@ public class BookDocument
                     i.parse(elementItem.getAttributes());
                 }
             }
+            else if (nodeName.equals("recipe"))
+            {
+                RecipePanel r = new RecipePanel();
+                elements.add(r);
+
+                if (elementItem.hasAttributes())
+                {
+                    r.parse(elementItem.getAttributes());
+                }
+
+                if (elementItem.hasChildNodes())
+                {
+                    r.parseChildNodes(elementItem.getChildNodes());
+                }
+            }
             else if (nodeName.equals("element"))
             {
                 TemplateElement i = new TemplateElement();
