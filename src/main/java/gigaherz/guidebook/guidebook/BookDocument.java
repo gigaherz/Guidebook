@@ -376,17 +376,17 @@ public class BookDocument
             }
             else if (nodeName.equals("recipe"))
             {
-                RecipePanel r = new RecipePanel();
-                elements.add(r);
+                RecipePanel rp = new RecipePanel();
+                elements.add(rp);
 
                 if (elementItem.hasAttributes())
                 {
-                    r.parse(elementItem.getAttributes());
+                    rp.parse(elementItem.getAttributes());
                 }
 
                 if (elementItem.hasChildNodes())
                 {
-                    r.parseChildNodes(elementItem.getChildNodes());
+                    rp.parseChildNodes(elementItem);
                 }
             }
             else if (nodeName.equals("element"))

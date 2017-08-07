@@ -1,0 +1,103 @@
+package gigaherz.guidebook.guidebook.recipe;
+
+import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.IRenderDelegate;
+import gigaherz.guidebook.guidebook.elements.Image;
+import gigaherz.guidebook.guidebook.elements.Stack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.ArrayList;
+
+public class FurnaceRecipeProvider extends RecipeProvider {
+    private static final int INPUT_SLOT_X = 19;
+    private static final int INPUT_SLOT_Y = 3;
+    private static final int OUTPUT_SLOT_X = 64;
+    private static final int OUTPUT_SLOT_Y = 14;
+
+    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "gui/recipe_backgrounds");
+    private static final int BACKGROUND_X = 0;
+    private static final int BACKGROUND_Y = 0;
+    private static final int BACKGROUND_U = 0;
+    private static final int BACKGROUND_V = 101;
+    private static final int BACKGROUND_W = 100;
+    private static final int BACKGROUND_H = 39;
+
+    private static final int HEIGHT = BACKGROUND_H;
+    private static final int LEFT_OFFSET = 38;
+
+    public FurnaceRecipeProvider() {
+        this.setRegistryName(new ResourceLocation(GuidebookMod.MODID, "furnace"));
+    }
+
+    @Override
+    public boolean hasRecipe(ItemStack targetOutput) {
+        for(ItemStack result : FurnaceRecipes.instance().getSmeltingList().values()) {
+            if(result.isItemEqual(targetOutput)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public ProvidedComponents provideRecipeComponents(ItemStack targetOutput, int recipeIndex) {
+        // Ignore recipeIndex because a furnace recipe can show each recipe by alternating the slots
+
+        ArrayList<ItemStack> inputStacks = new ArrayList<>();
+        for(ItemStack key : FurnaceRecipes.instance().getSmeltingList().keySet()) {
+            if(FurnaceRecipes.instance().getSmeltingList().get(key).isItemEqual(targetOutput)) {
+                ItemStack input = key.copy();
+                if(input.isItemStackDamageable()) input.setItemDamage(0);
+                if(input.getMetadata() == OreDictionary.WILDCARD_VALUE && !input.getHasSubtypes()) input.setItemDamage(0);
+                inputStacks.add(input);
+            }
+        }
+
+        int height = 10; // Defaults to 10
+        if(inputStacks.size() > 0) { // Should always be true
+            IRenderDelegate additionalRenderer = (nav, left, right) -> { }; // No additional rendering needed
+            Stack[] recipeComponents = new Stack[2];
+
+            // Set up input slot element
+            Stack inputSlot = new Stack();
+            recipeComponents[0] = inputSlot;
+            inputSlot.stacks = new ItemStack[inputStacks.size()];
+            inputStacks.toArray(inputSlot.stacks);
+            inputSlot.x = INPUT_SLOT_X + LEFT_OFFSET;
+            inputSlot.y = INPUT_SLOT_Y;
+
+            // Set up output slot element
+            Stack outputSlot = new Stack();
+            recipeComponents[1] = outputSlot;
+            ArrayList<ItemStack> outputStacks = new ArrayList<>();
+            outputSlot.stacks = new ItemStack[inputStacks.size()];
+            // Add output stacks for each recipe in the same order as the input ones (in case the item quantities vary)
+            for(ItemStack inputStack : inputStacks) {
+                ItemStack output = FurnaceRecipes.instance().getSmeltingResult(inputStack).copy();
+                if(output.isItemStackDamageable()) output.setItemDamage(0);
+                if(output.getMetadata() == OreDictionary.WILDCARD_VALUE && !output.getHasSubtypes()) output.setItemDamage(0);
+                outputStacks.add(output);
+            }
+            outputStacks.toArray(outputSlot.stacks);
+            outputSlot.x = OUTPUT_SLOT_X + LEFT_OFFSET;
+            outputSlot.y = OUTPUT_SLOT_Y;
+
+            // Set up background image
+            Image background = new Image();
+            background.textureLocation = BACKGROUND_TEXTURE;
+            background.x = BACKGROUND_X + LEFT_OFFSET;
+            background.y = BACKGROUND_Y;
+            background.tx = BACKGROUND_U;
+            background.ty = BACKGROUND_V;
+            background.w = BACKGROUND_W;
+            background.h = BACKGROUND_H;
+
+            // Set up overall height
+            height = HEIGHT;
+
+            return new ProvidedComponents(height, recipeComponents, background, additionalRenderer);
+        } else GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
+        return null;
+    }
+}
