@@ -39,7 +39,9 @@ public class RecipePanel extends Space {
 
         Node attr = attributes.getNamedItem("type");
         if(attr != null) {
-            ResourceLocation recipeProviderKey = new ResourceLocation(attr.getTextContent().indexOf(':') == -1 ? GuidebookMod.MODID + ":" + attr.getTextContent() : attr.getTextContent());
+            String registryName = attr.getTextContent();
+            // If no domain is specified, insert Guidebook's modid (mostly needed for default recipe providers)
+            ResourceLocation recipeProviderKey = new ResourceLocation((registryName.indexOf(':') == -1 ? GuidebookMod.MODID + ":" : "") + registryName);
             if(RecipeProvider.registry.containsKey(recipeProviderKey)) {
                 recipeProvider = RecipeProvider.registry.getValue(recipeProviderKey);
             } else GuidebookMod.logger.warn(String.format("<recipe> type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey.toString()));
