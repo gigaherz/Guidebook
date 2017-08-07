@@ -34,8 +34,8 @@ public class RecipePanel extends Space {
 
     @Override
     public void parse(NamedNodeMap attributes) {
-        // If a RecipeProvider was not loaded correctly, fallback to the default
-        recipeProvider = RecipeProvider.registry.getValue(new ResourceLocation(GuidebookMod.MODID,"furnace"));
+        // If a RecipeProvider was not loaded correctly or was not specified, fallback to the default
+        recipeProvider = RecipeProvider.registry.getValue(new ResourceLocation(GuidebookMod.MODID,"shaped"));
 
         Node attr = attributes.getNamedItem("type");
         if(attr != null) {

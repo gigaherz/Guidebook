@@ -20,7 +20,6 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProvider> {
@@ -38,6 +37,7 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
 
         @SubscribeEvent
         public static void registerDefaults(RegistryEvent.Register<RecipeProvider> event) {
+            event.getRegistry().register(new ShapedRecipeProvider());
             event.getRegistry().register(new ShapelessRecipeProvider());
             event.getRegistry().register(new FurnaceRecipeProvider());
         }

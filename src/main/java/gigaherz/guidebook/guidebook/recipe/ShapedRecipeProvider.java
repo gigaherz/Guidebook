@@ -6,18 +6,17 @@ import gigaherz.guidebook.guidebook.elements.Image;
 import gigaherz.guidebook.guidebook.elements.Stack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.oredict.ShapelessOreRecipe;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShapelessRecipeProvider extends RecipeProvider {
-
+public class ShapedRecipeProvider extends RecipeProvider {
     private static final int[] INPUT_SLOT_BASE_X = {4, 13};
     private static final int[] INPUT_SLOT_BASE_Y = {3, 3};
     private static final int INPUT_SLOT_OFFSET = 19;
@@ -33,47 +32,47 @@ public class ShapelessRecipeProvider extends RecipeProvider {
     private static final int[] HEIGHT = BACKGROUND_H;
     private static final int LEFT_OFFSET = 38;
 
-    private ArrayList<ShapelessRecipes> shapelessRecipes;
-    private ArrayList<ShapelessOreRecipe> shapelessOreRecipes;
+    private ArrayList<ShapedRecipes> shapedRecipes;
+    private ArrayList<ShapedOreRecipe> shapedOreRecipes;
 
-    public ShapelessRecipeProvider() {
-        this.setRegistryName(GuidebookMod.MODID, "shapeless");
+    public ShapedRecipeProvider() {
+        this.setRegistryName(GuidebookMod.MODID, "shaped");
     }
 
     @Override
     public void reloadCache() {
-        shapelessRecipes = new ArrayList<>();
-        shapelessOreRecipes = new ArrayList<>();
+        shapedRecipes = new ArrayList<>();
+        shapedOreRecipes = new ArrayList<>();
         for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
-            if(recipe instanceof ShapelessOreRecipe) shapelessOreRecipes.add((ShapelessOreRecipe)recipe);
-            if(recipe instanceof ShapelessRecipes) shapelessRecipes.add((ShapelessRecipes)recipe);
+            if(recipe instanceof ShapedRecipes) shapedRecipes.add((ShapedRecipes)recipe);
+            if(recipe instanceof ShapedOreRecipe) shapedOreRecipes.add((ShapedOreRecipe)recipe);
         }
     }
 
     @Override
     public boolean hasRecipe(ItemStack targetOutput) {
-        // Query the shapeless and shapeless ore recipe caches
+        // Query the shaped and shaped ore recipe caches
         return queryRecipeCaches(targetOutput, 0) != null;
     }
 
     @Nullable
     public IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex) {
-        // Query the shapeless and shapeless ore recipe caches, but return the (recipeIndex + 1)th occurance
-        for(ShapelessOreRecipe shapelessOreRecipe : shapelessOreRecipes) {
-            if(shapelessOreRecipe.getRecipeOutput().isItemEqual(targetOutput)) {
+        // Query the shaped and shaped ore recipe caches, but return the (recipeIndex + 1)th occurance
+        for(ShapedOreRecipe shapedOreRecipe : shapedOreRecipes) {
+            if(shapedOreRecipe.getRecipeOutput().isItemEqual(targetOutput)) {
                 if(recipeIndex > 0) {
                     --recipeIndex;
                 } else {
-                    return shapelessOreRecipe;
+                    return shapedOreRecipe;
                 }
             }
         }
-        for(ShapelessRecipes shapelessRecipe : shapelessRecipes) {
-            if(shapelessRecipe.getRecipeOutput().isItemEqual(targetOutput)) {
+        for(ShapedRecipes shapedRecipe : shapedRecipes) {
+            if(shapedRecipe.getRecipeOutput().isItemEqual(targetOutput)) {
                 if(recipeIndex > 0) {
                     --recipeIndex;
                 } else {
-                    return shapelessRecipe;
+                    return shapedRecipe;
                 }
             }
         }
@@ -88,12 +87,11 @@ public class ShapelessRecipeProvider extends RecipeProvider {
         foundRecipe = queryRecipeCaches(targetOutput, recipeIndex);
         if(foundRecipe == null) {
             foundRecipe = queryRecipeCaches(targetOutput, 0);
-            GuidebookMod.logger.warn(String.format("<recipe> index '%d' was not found in the list of cached shapeless recipes for '%s'. Falling back to the first occurrence.", recipeIndex, targetOutput.toString()));
+            GuidebookMod.logger.warn(String.format("<recipe> index '%d' was not found in the list of cached shaped recipes for '%s'. Falling back to the first occurrence.", recipeIndex, targetOutput.toString()));
         }
 
         if(foundRecipe != null) {
-            int height = 10;
-            int constantIndex = foundRecipe.getIngredients().size() > 4 ? 0 : 1; // Whether to use the 3x3 (0) or 2x2 (1) grid
+            int constantIndex = foundRecipe.getIngredients().size() == 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
             ArrayList<Stack> stackComponents = new ArrayList<>();
             IRenderDelegate ird = (nav, top, left) -> { };
             int gridWidth = constantIndex == 0 ? 3 : 2;
@@ -101,8 +99,8 @@ public class ShapelessRecipeProvider extends RecipeProvider {
             // Set up input slots
             for(int i = 0; i < foundRecipe.getIngredients().size(); ++i) {
                 Stack inputSlot = new Stack();
-                stackComponents.add(inputSlot);
                 ItemStack[] matching = foundRecipe.getIngredients().get(i).getMatchingStacks();
+                if(matching.length == 0) continue; // If the recipe area is blank, continue and ignore
                 ArrayList<ItemStack> copyStacks = new ArrayList<>();
                 for (int j = 0; j < matching.length; ++j) {
                     copyStacks.add(matching[j].copy());
@@ -112,6 +110,7 @@ public class ShapelessRecipeProvider extends RecipeProvider {
                 int posY = i / gridWidth;
                 inputSlot.x = INPUT_SLOT_BASE_X[constantIndex] + (posX * INPUT_SLOT_OFFSET) + LEFT_OFFSET;
                 inputSlot.y = INPUT_SLOT_BASE_Y[constantIndex] + (posY * INPUT_SLOT_OFFSET);
+                stackComponents.add(inputSlot); // Only add the element if there is an item in the slot
             }
 
             // Set up output slot element
@@ -133,13 +132,13 @@ public class ShapelessRecipeProvider extends RecipeProvider {
             background.h = BACKGROUND_H[constantIndex];
 
             // Set up overall height
-            height = HEIGHT[constantIndex];
+            int     height = HEIGHT[constantIndex];
 
             Stack[] components = new Stack[stackComponents.size()];
             stackComponents.toArray(components);
             ProvidedComponents result = new ProvidedComponents(height, components, background, ird);
             return result;
-        } else GuidebookMod.logger.error(String.format("[ShapelessRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
+        } else GuidebookMod.logger.error(String.format("[ShapedRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
         return null;
     }
 }
