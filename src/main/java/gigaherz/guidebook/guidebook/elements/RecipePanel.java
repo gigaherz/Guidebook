@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IRenderDelegate;
@@ -37,12 +38,17 @@ public class RecipePanel implements IPageElement {
         // If a RecipeProvider was not loaded correctly, fallback to the default
         recipeProvider = RecipeProvider.registry.getValue(new ResourceLocation("shaped"));
 
-        Node type = attributes.getNamedItem("type");
-        if(type != null) {
-            ResourceLocation recipeProviderKey = new ResourceLocation(type.getTextContent());
+        Node attr = attributes.getNamedItem("type");
+        if(attr != null) {
+            ResourceLocation recipeProviderKey = new ResourceLocation(attr.getTextContent());
             if(RecipeProvider.registry.containsKey(recipeProviderKey)) {
                 recipeProvider = RecipeProvider.registry.getValue(recipeProviderKey);
             } else GuidebookMod.logger.warn(String.format("<recipe> type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey.toString()));
+        }
+
+        attr = attributes.getNamedItem("index");
+        if(attr != null) {
+            recipeIndex = Ints.tryParse(attr.getTextContent());
         }
     }
 
