@@ -4,6 +4,7 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IRenderDelegate;
 import gigaherz.guidebook.guidebook.recipe.RecipeProvider;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -53,16 +54,17 @@ public class RecipePanel implements IPageElement {
                 if(stackNode.hasAttributes()) {
                     Stack targetOutput = new Stack();
                     targetOutput.parse(stackNode.getAttributes());
-                    retrieveRecipe(targetOutput);
+                    ItemStack targetOutputItem = targetOutput.stacks[0];
+                    retrieveRecipe(targetOutputItem);
                 } else GuidebookMod.logger.warn("<recipe.result>'s <stack> sub-node has no attributes. Recipe not loaded");
             } else GuidebookMod.logger.warn("<recipe.result> sub-node is empty; Must contain exactly one <stack> node child");
         } else GuidebookMod.logger.warn("<recipe> sub-node is an invalid type");
     }
 
-    private void retrieveRecipe(Stack targetOutput) {
+    private void retrieveRecipe(ItemStack targetOutput) {
         if(recipeProvider.hasRecipe(targetOutput)) {
             height = recipeProvider.provideRecipeComponents(targetOutput, recipeIndex, recipeComponents, background, additionalRenderer);
-        } else GuidebookMod.logger.warn(String.format("<recipe>'s specified output item does not have a recipe for type '%s'", recipeProvider.getRegistryName().toString()));
+        } else GuidebookMod.logger.warn(String.format("<recipe>'s specified output item '%s' does not have a recipe for type '%s'", targetOutput.toString(), recipeProvider.getRegistryName().toString()));
     }
 
     @Override
