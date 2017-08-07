@@ -9,6 +9,8 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 
 public class FurnaceRecipeProvider extends RecipeProvider {
@@ -18,8 +20,6 @@ public class FurnaceRecipeProvider extends RecipeProvider {
     private static final int OUTPUT_SLOT_Y = 14;
 
     private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "gui/recipe_backgrounds");
-    private static final int BACKGROUND_X = 0;
-    private static final int BACKGROUND_Y = 0;
     private static final int BACKGROUND_U = 0;
     private static final int BACKGROUND_V = 101;
     private static final int BACKGROUND_W = 100;
@@ -33,7 +33,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
     }
 
     @Override
-    public boolean hasRecipe(ItemStack targetOutput) {
+    public boolean hasRecipe(@Nonnull ItemStack targetOutput) {
         for(ItemStack result : FurnaceRecipes.instance().getSmeltingList().values()) {
             if(result.isItemEqual(targetOutput)) return true;
         }
@@ -41,7 +41,8 @@ public class FurnaceRecipeProvider extends RecipeProvider {
     }
 
     @Override
-    public ProvidedComponents provideRecipeComponents(ItemStack targetOutput, int recipeIndex) {
+    @Nullable
+    public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
         // Ignore recipeIndex because a furnace recipe can show each recipe by alternating the slots
 
         ArrayList<ItemStack> inputStacks = new ArrayList<>();
@@ -74,10 +75,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
             outputSlot.stacks = new ItemStack[inputStacks.size()];
             // Add output stacks for each recipe in the same order as the input ones (in case the item quantities vary)
             for(ItemStack inputStack : inputStacks) {
-                ItemStack output = FurnaceRecipes.instance().getSmeltingResult(inputStack).copy();
-                if(output.isItemStackDamageable()) output.setItemDamage(0);
-                if(output.getMetadata() == OreDictionary.WILDCARD_VALUE && !output.getHasSubtypes()) output.setItemDamage(0);
-                outputStacks.add(output);
+                outputStacks.addAll(copyAndExpand(FurnaceRecipes.instance().getSmeltingResult(inputStack)));
             }
             outputStacks.toArray(outputSlot.stacks);
             outputSlot.x = OUTPUT_SLOT_X + LEFT_OFFSET;
@@ -86,8 +84,8 @@ public class FurnaceRecipeProvider extends RecipeProvider {
             // Set up background image
             Image background = new Image();
             background.textureLocation = BACKGROUND_TEXTURE;
-            background.x = BACKGROUND_X + LEFT_OFFSET;
-            background.y = BACKGROUND_Y;
+            background.x = 0 + LEFT_OFFSET;
+            background.y = 0;
             background.tx = BACKGROUND_U;
             background.ty = BACKGROUND_V;
             background.w = BACKGROUND_W;

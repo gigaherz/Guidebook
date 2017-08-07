@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
@@ -244,7 +243,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
         if (stacks == null || stacks.length == 0)
             return ItemStack.EMPTY;
         long time = System.currentTimeMillis();
-        return stacks[(int) ((time / 1000) % stacks.length)];
+        return stacks[(int) ((time / CYCLE_TIME) % stacks.length)];
     }
 
     @Override

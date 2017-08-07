@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.recipe.RecipeProvider;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.*;
@@ -44,6 +45,11 @@ public class BookRegistry
 
     public static void parseAllBooks(IResourceManager manager)
     {
+        // Reload recipe caches
+        for(RecipeProvider recipeProvider : RecipeProvider.registry.getValues()) {
+            recipeProvider.reloadCache();
+        }
+
         TemplateLibrary.clear();
 
         LOADED_BOOKS.clear();
