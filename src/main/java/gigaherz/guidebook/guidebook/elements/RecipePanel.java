@@ -119,6 +119,8 @@ public class RecipePanel extends Space {
         recipePanel.additionalRenderer = additionalRenderer;
         recipePanel.height = height;
         recipePanel.indent = indent;
+        recipePanel.innerElements.addAll(Arrays.asList(recipePanel.recipeComponents));
+        recipePanel.innerElements.add(recipePanel.background);
         return recipePanel;
     }
 }
