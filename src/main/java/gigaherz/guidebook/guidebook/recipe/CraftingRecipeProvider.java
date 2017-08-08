@@ -137,7 +137,7 @@ class CraftingRecipeProvider {
         }
 
         if(foundRecipe != null) {
-            int constantIndex = foundRecipe.getIngredients().size() == 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
+            int constantIndex = foundRecipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
             ArrayList<Stack> stackComponents = new ArrayList<>();
             IRenderDelegate ird = (nav, top, left) -> { };
             int gridWidth = constantIndex == 0 ? 3 : 2;
