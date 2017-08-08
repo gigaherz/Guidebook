@@ -163,6 +163,78 @@
       <p indent="8" space="8">&lt;stack item=&quot;minecraft:coal&quot; meta=&quot;0&quot; count=&quot;2&quot; /&gt;</p>
       <stack item="minecraft:coal" meta="0" count="2" />
     </page>
+    <page id="recipes">
+      <page_title>
+        <p>Recipes</p>
+      </page_title>
+      <p space="8">Recipe tags let you display the recipe(s) for a specified item of block inside the guidebook.</p>
+      <p space="8" color="505050">They have three attributes: type, which specifies the type of recipe to use; indent, (same as paragraph); index, (See Recipe Indices). </p>
+      <p space="12">Finally, to specify the desired output item, simply include a Stack tag inside of a &lt;recipe.result&gt; sub-tag as follows:</p>
+      <p indent="0" color="505050">&lt;recipe type="shaped"&gt;</p>
+      <p indent="6" color="505050">&lt;recipe.type&gt;</p>
+      <p indent="12" color="505050">&lt;stack item="minecraft:comparator"/&gt;</p>
+      <p indent="6" color="505050">&lt;/recipe.type&gt;</p>
+      <p indent="0" color="505050">&lt;/recipe&gt;</p>
+    </page>
+    <page>
+      <p space="6">Which produces the following RecipePanel:</p>
+      <recipe type="shaped">
+        <recipe.result>
+          <stack item="minecraft:comparator"/>
+        </recipe.result>
+      </recipe>
+      <space height="3"/>
+      <divider/>
+      <p indent="8" color="505050">type="shapeless"</p>
+      <p indent="8" color="505050">item="minecraft:ender_eye"</p>
+      <space height="4"/>
+      <recipe type="shapeless">
+        <recipe.result>
+          <stack item="minecraft:ender_eye"/>
+        </recipe.result>
+      </recipe>
+      <space height="3"/>
+      <divider/>
+      <p indent="8" color="505050">type="furnace"</p>
+      <p indent="8" color="505050">item="minecraft:iron_nugget"</p>
+      <space height="4"/>
+      <recipe type="furnace">
+        <recipe.result>
+          <stack item="minecraft:iron_nugget"/>
+        </recipe.result>
+      </recipe>
+    </page>
+    <page id="recipe_indices">
+      <page_title>
+        <p>Recipe Indices</p>
+      </page_title>
+      <p space="10">Recipe indices let you specify to the recipe search to use a particular occurance of the target result.</p>
+      <p space="10" color="505050">This becomes useful when an item has more than one recipe which produces it.</p>
+      <p>For example, searching for a shaped recipe which produces a gold ingot will result in two possible recipes: One that converts from nuggets to ingots; and another that converts from blocks to ingots. Using the recipe index allows book authors to specify only one of these:</p>
+    </page>
+    <page>
+      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="1E50A0">index="0"</p>
+      <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
+      <space height="8"/>
+      <recipe type="shaped" index="0">
+        <recipe.result>
+          <stack item="minecraft:gold_ingot"/>
+        </recipe.result>
+      </recipe>
+      <space height="7"/>
+      <divider/>
+      <space height="5"/>
+      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="1E50A0">index="1"</p>
+      <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
+      <space height="8"/>
+      <recipe type="shaped" index="1">
+        <recipe.result>
+          <stack item="minecraft:gold_ingot"/>
+        </recipe.result>
+      </recipe>
+    </page>
   </chapter>
   <chapter id="templates">
     <page>
@@ -174,11 +246,9 @@
       <p>Templates can be defined inside template library files, and thosefiles can be included from books.</p>
       <p>Browse this mod's source code on github for an example of use and declaration.</p>
     </page>
-    <page id="recipes">
-      <title>Recipes</title>
-      <p>For now, the only way to show recipes is to declare them using the template system. The result looks as follows:</p>
+    <page>
+      <p>Although the recipe panel system exists, another way to display recipes is to declare them using the template system. The result looks as follows:</p>
       <p>For Items with multiple Id's (for example orange dye - 351:14) use the meta tag as below for bonemeal</p>
-
       <big_recipe>
         <space/>
         <space/>
@@ -204,8 +274,6 @@
         <stack ore="plankWood" />
         <stack item="minecraft:trapdoor" />
       </big_recipe>
-
-      <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
   </chapter>
   <stack-links>
