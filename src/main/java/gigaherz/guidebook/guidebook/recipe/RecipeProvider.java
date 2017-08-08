@@ -37,8 +37,9 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
 
         @SubscribeEvent
         public static void registerDefaults(RegistryEvent.Register<RecipeProvider> event) {
-            event.getRegistry().register(new ShapedRecipeProvider());
-            event.getRegistry().register(new ShapelessRecipeProvider());
+            CraftingRecipeProvider crafting = new CraftingRecipeProvider();
+            event.getRegistry().register(crafting.new ShapedRecipeProvider());
+            event.getRegistry().register(crafting.new ShapelessRecipeProvider());
             event.getRegistry().register(new FurnaceRecipeProvider());
         }
     }
@@ -52,7 +53,7 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
 
     }
 
-    protected List<ItemStack> copyAndExpand(@Nonnull ItemStack stack) {
+    protected static List<ItemStack> copyAndExpand(@Nonnull ItemStack stack) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack base = stack.copy();
         stacks.add(base);

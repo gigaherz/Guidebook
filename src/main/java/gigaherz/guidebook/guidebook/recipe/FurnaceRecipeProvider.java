@@ -48,10 +48,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
         ArrayList<ItemStack> inputStacks = new ArrayList<>();
         for(ItemStack key : FurnaceRecipes.instance().getSmeltingList().keySet()) {
             if(FurnaceRecipes.instance().getSmeltingList().get(key).isItemEqual(targetOutput)) {
-                ItemStack input = key.copy();
-                if(input.isItemStackDamageable()) input.setItemDamage(0);
-                if(input.getMetadata() == OreDictionary.WILDCARD_VALUE && !input.getHasSubtypes()) input.setItemDamage(0);
-                inputStacks.add(input);
+                inputStacks.addAll(copyAndExpand(key));
             }
         }
 

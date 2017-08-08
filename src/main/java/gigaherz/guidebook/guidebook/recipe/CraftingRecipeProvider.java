@@ -7,16 +7,82 @@ import gigaherz.guidebook.guidebook.elements.Stack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.ShapedRecipes;
+import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShapedRecipeProvider extends RecipeProvider {
+class CraftingRecipeProvider {
+    public class ShapedRecipeProvider extends RecipeProvider {
+        ShapedRecipeProvider() {
+            this.setRegistryName(GuidebookMod.MODID, "shaped");
+        }
+
+        @Override
+        public boolean hasRecipe(@Nonnull ItemStack targetOutput) {
+            return hasCraftingRecipe(targetOutput, Type.SHAPED);
+        }
+
+        @Nullable
+        @Override
+        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
+            return provideCraftingRecipeComponents(targetOutput, recipeIndex, Type.SHAPED);
+        }
+    }
+
+    public class ShapelessRecipeProvider extends RecipeProvider {
+        ShapelessRecipeProvider() {
+            this.setRegistryName(GuidebookMod.MODID, "shapeless");
+        }
+
+        @Override
+        public void reloadCache() {
+            reloadCaches();
+        }
+
+        @Override
+        public boolean hasRecipe(@Nonnull ItemStack targetOutput) {
+            return hasCraftingRecipe(targetOutput, Type.SHAPELESS);
+        }
+
+        @Nullable
+        @Override
+        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
+            return provideCraftingRecipeComponents(targetOutput, recipeIndex, Type.SHAPELESS);
+        }
+    }
+
+    public enum Type {
+        SHAPED,
+        SHAPELESS;
+
+        @Override
+        public String toString() {
+            if(this == SHAPED) return "shaped";
+            else return "shapeless";
+        }
+    }
+
+    private ArrayList<IRecipe> shapedRecipes;
+    private ArrayList<IRecipe> shapelessRecipes;
+
+    private void reloadCaches() {
+        shapelessRecipes = new ArrayList<>();
+        shapedRecipes = new ArrayList<>();
+        for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
+            if(recipe instanceof ShapelessOreRecipe) shapelessRecipes.add(recipe);
+            if(recipe instanceof ShapelessRecipes) shapelessRecipes.add(recipe);
+            if(recipe instanceof ShapedRecipes) shapedRecipes.add(recipe);
+            if(recipe instanceof ShapedOreRecipe) shapedRecipes.add(recipe);
+        }
+    }
+
     private static final int[] INPUT_SLOT_BASE_X = {4, 13};
     private static final int[] INPUT_SLOT_BASE_Y = {3, 3};
     private static final int INPUT_SLOT_OFFSET = 19;
@@ -32,62 +98,38 @@ public class ShapedRecipeProvider extends RecipeProvider {
     private static final int[] HEIGHT = BACKGROUND_H;
     private static final int LEFT_OFFSET = 38;
 
-    private ArrayList<ShapedRecipes> shapedRecipes;
-    private ArrayList<ShapedOreRecipe> shapedOreRecipes;
-
-    public ShapedRecipeProvider() {
-        this.setRegistryName(GuidebookMod.MODID, "shaped");
+    private ArrayList<IRecipe> getCacheForType(Type type) {
+        return type == Type.SHAPELESS ? shapelessRecipes : shapedRecipes;
     }
 
-    @Override
-    public void reloadCache() {
-        shapedRecipes = new ArrayList<>();
-        shapedOreRecipes = new ArrayList<>();
-        for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
-            if(recipe instanceof ShapedRecipes) shapedRecipes.add((ShapedRecipes)recipe);
-            if(recipe instanceof ShapedOreRecipe) shapedOreRecipes.add((ShapedOreRecipe)recipe);
-        }
-    }
-
-    @Override
-    public boolean hasRecipe(ItemStack targetOutput) {
+    private boolean hasCraftingRecipe(ItemStack targetOutput, Type type) {
         // Query the shaped and shaped ore recipe caches
-        return queryRecipeCaches(targetOutput, 0) != null;
+        return queryRecipeCaches(targetOutput, 0, getCacheForType(type)) != null;
     }
 
     @Nullable
-    public IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex) {
-        // Query the shaped and shaped ore recipe caches, but return the (recipeIndex + 1)th occurance
-        for(ShapedOreRecipe shapedOreRecipe : shapedOreRecipes) {
-            if(shapedOreRecipe.getRecipeOutput().isItemEqual(targetOutput)) {
+    private IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex, ArrayList<IRecipe> cache) {
+        // Query either the shaped or shapeless recipe cache, but return the (recipeIndex + 1)th occurance
+        for(IRecipe recipe : cache) {
+            if(recipe.getRecipeOutput().isItemEqual(targetOutput)) {
                 if(recipeIndex > 0) {
                     --recipeIndex;
                 } else {
-                    return shapedOreRecipe;
-                }
-            }
-        }
-        for(ShapedRecipes shapedRecipe : shapedRecipes) {
-            if(shapedRecipe.getRecipeOutput().isItemEqual(targetOutput)) {
-                if(recipeIndex > 0) {
-                    --recipeIndex;
-                } else {
-                    return shapedRecipe;
+                    return recipe;
                 }
             }
         }
         return null;
     }
 
-    @Override
     @Nullable
-    public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
+    private RecipeProvider.ProvidedComponents provideCraftingRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex, Type type) {
         IRecipe foundRecipe;
 
-        foundRecipe = queryRecipeCaches(targetOutput, recipeIndex);
+        foundRecipe = queryRecipeCaches(targetOutput, recipeIndex, getCacheForType(type));
         if(foundRecipe == null) {
-            foundRecipe = queryRecipeCaches(targetOutput, 0);
-            GuidebookMod.logger.warn(String.format("<recipe> index '%d' was not found in the list of cached shaped recipes for '%s'. Falling back to the first occurrence.", recipeIndex, targetOutput.toString()));
+            foundRecipe = queryRecipeCaches(targetOutput, 0, getCacheForType(type));
+            GuidebookMod.logger.warn(String.format("<recipe> index '%d' was not found in the list of cached %s recipes for '%s'. Falling back to the first occurrence.", recipeIndex, type.toString(), targetOutput.toString()));
         }
 
         if(foundRecipe != null) {
@@ -116,7 +158,7 @@ public class ShapedRecipeProvider extends RecipeProvider {
             // Set up output slot element
             Stack outputSlot = new Stack();
             stackComponents.add(outputSlot);
-            List<ItemStack> stackList = copyAndExpand(foundRecipe.getRecipeOutput());
+            List<ItemStack> stackList = RecipeProvider.copyAndExpand(foundRecipe.getRecipeOutput());
             outputSlot.stacks = stackList.toArray(new ItemStack[stackList.size()]);
             outputSlot.x = OUTPUT_SLOT_X[constantIndex] + LEFT_OFFSET;
             outputSlot.y = OUTPUT_SLOT_Y[constantIndex];
@@ -132,13 +174,14 @@ public class ShapedRecipeProvider extends RecipeProvider {
             background.h = BACKGROUND_H[constantIndex];
 
             // Set up overall height
-            int     height = HEIGHT[constantIndex];
+            int height = HEIGHT[constantIndex];
 
             Stack[] components = new Stack[stackComponents.size()];
             stackComponents.toArray(components);
-            ProvidedComponents result = new ProvidedComponents(height, components, background, ird);
+            RecipeProvider.ProvidedComponents result = new RecipeProvider.ProvidedComponents(height, components, background, ird);
             return result;
-        } else GuidebookMod.logger.error(String.format("[ShapedRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
+        } else GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
         return null;
     }
+
 }
