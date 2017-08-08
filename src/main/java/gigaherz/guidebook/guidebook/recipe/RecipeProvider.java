@@ -58,12 +58,12 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
     /**
      * Whether the RecipeProvider implementation can provide a recipe that outputs the target item
      * @param targetOutput A target ItemStack that was specified via XML
-     * @return True if the RecipeProvider can provide components for the recipe, and false if not
+     * @return True if the RecipeProvider can provide a recipe & its display components, and false if not
      */
     public abstract boolean hasRecipe(@Nonnull ItemStack targetOutput);
 
     /**
-     * Prepares display of the recipe for the target item (if multiple, the (recipeIndex + 1)th occurrence)) by creating a
+     * Prepares display of the recipe for the target item (if multiple, the (recipeIndex + 1)th occurrence) by creating a
      * ProvidedComponents construct that contains:
      *  - An array of Stack objects to represent ItemStacks to render
      *  - An Image object to represent the background image

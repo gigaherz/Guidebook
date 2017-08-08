@@ -167,13 +167,13 @@
       <page_title>
         <p>Recipes</p>
       </page_title>
-      <p space="8">Recipe tags let you display the recipe(s) for a specified item of block inside the guidebook.</p>
+      <p space="8">Recipe tags let you display the recipe(s) for a specified item or block inside the guidebook.</p>
       <p space="8" color="505050">They have three attributes: type, which specifies the type of recipe to use; indent, (same as paragraph); index, (See Recipe Indices). </p>
       <p space="12">Finally, to specify the desired output item, simply include a Stack tag inside of a &lt;recipe.result&gt; sub-tag as follows:</p>
       <p indent="0" color="505050">&lt;recipe type="shaped"&gt;</p>
-      <p indent="6" color="505050">&lt;recipe.type&gt;</p>
+      <p indent="6" color="505050">&lt;recipe.result&gt;</p>
       <p indent="12" color="505050">&lt;stack item="minecraft:comparator"/&gt;</p>
-      <p indent="6" color="505050">&lt;/recipe.type&gt;</p>
+      <p indent="6" color="505050">&lt;/recipe.result&gt;</p>
       <p indent="0" color="505050">&lt;/recipe&gt;</p>
     </page>
     <page>
@@ -208,7 +208,7 @@
       <page_title>
         <p>Recipe Indices</p>
       </page_title>
-      <p space="10">Recipe indices let you specify to the recipe search to use a particular occurance of the target result.</p>
+      <p space="10">Recipe indices let you specify to the recipe search to use a particular occurrence of the target result.</p>
       <p space="10" color="505050">This becomes useful when an item has more than one recipe which produces it.</p>
       <p>For example, searching for a shaped recipe which produces a gold ingot will result in two possible recipes: One that converts from nuggets to ingots; and another that converts from blocks to ingots. Using the recipe index allows book authors to specify only one of these:</p>
     </page>
