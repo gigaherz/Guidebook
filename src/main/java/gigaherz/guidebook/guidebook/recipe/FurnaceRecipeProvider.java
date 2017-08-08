@@ -7,12 +7,15 @@ import gigaherz.guidebook.guidebook.elements.Stack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 
+/**
+ * @author joazlazer
+ * A class designed to provide furnace recipes for display in Guidebooks
+ */
 public class FurnaceRecipeProvider extends RecipeProvider {
     private static final int INPUT_SLOT_X = 19;
     private static final int INPUT_SLOT_Y = 3;

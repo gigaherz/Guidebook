@@ -12,6 +12,11 @@ import org.w3c.dom.Node;
 
 import java.util.Arrays;
 
+/**
+ * @author joazlazer
+ * A page element that will display a recipe provided by the specified recipe type's RecipeProvider and will render hoverable stacks,
+ * a background image, and additional components to display said recipe
+ */
 public class RecipePanel extends Space {
     public Stack[] recipeComponents;
     public Image background;
@@ -58,6 +63,10 @@ public class RecipePanel extends Space {
         }
     }
 
+    /**
+     * Parses each child node of the <recipe> tag in order to move two tree-layers down to find the <stack> tag
+     * @param element The base <recipe> tag
+     */
     public void parseChildNodes(Node element) {
         for(int i = 0; i < element.getChildNodes().getLength(); ++i) {
             Node childNode = element.getChildNodes().item(i);
@@ -80,6 +89,10 @@ public class RecipePanel extends Space {
         }
     }
 
+    /**
+     * A helper method to load the components needed to display the recipe from the RecipeProvider implementation
+     * @param targetOutput
+     */
     private void retrieveRecipe(ItemStack targetOutput) {
         if(recipeProvider.hasRecipe(targetOutput)) {
             RecipeProvider.ProvidedComponents components = recipeProvider.provideRecipeComponents(targetOutput, recipeIndex);

@@ -22,9 +22,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+/**
+ * @author joazlazer
+ * A class designed to be registered and implemented by any recipe implementations that will be queried for display in a Guidebook. Create and
+ * register one for each different recipe system/machine. The default ones that exist are:
+ *  - FurnaceRecipeProvider
+ *  - CraftingRecipeProvider.ShapedRecipeProvider
+ *  - CraftingRecipeProvider.ShapelessRecipeProvider
+ */
 public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProvider> {
     public static IForgeRegistry<RecipeProvider> registry;
 
+    /**
+     * Handles registry of the RecipeProvider registry to the meta-registry and register the default vanilla RecipeProvider's
+     */
     @Mod.EventBusSubscriber(modid = GuidebookMod.MODID)
     public static class RegistrationHandler {
         @SubscribeEvent
@@ -44,15 +55,43 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
         }
     }
 
+    /**
+     * Whether the RecipeProvider implementation can provide a recipe that outputs the target item
+     * @param targetOutput A target ItemStack that was specified via XML
+     * @return True if the RecipeProvider can provide components for the recipe, and false if not
+     */
     public abstract boolean hasRecipe(@Nonnull ItemStack targetOutput);
 
+    /**
+     * Prepares display of the recipe for the target item (if multiple, the (recipeIndex + 1)th occurrence)) by creating a
+     * ProvidedComponents construct that contains:
+     *  - An array of Stack objects to represent ItemStacks to render
+     *  - An Image object to represent the background image
+     *  - A height int that represents how much space this element should take up on the page
+     *  - An IRenderDelegate instance designed to be used via a lambda that allows a RecipeProvider implementation to draw additional items (i.e. Thaumcraft infusion essentia)
+     * @param targetOutput A target ItemStack that was specified via XML
+     * @param recipeIndex The offset to use when searching for recipes
+     * @return A valid ProvidedComponents object containing the above, and null if the recipe was not found
+     */
     @Nullable
     public abstract ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex);
 
+    /**
+     * An optionally overridable method that gets called before book parsing which allows RecipeProviders to cache
+     * recipes retrieved from global registries (for efficiency).
+     */
     public void reloadCache() {
 
     }
 
+    /**
+     * A helper method designed to validate ItemStacks from recipes with metadata that is OreDictionary.WILDCARD_VALUE
+     * If the input is a tool/armor, sets it to full durability
+     * If the input is a wildcard but doesn't have subtypes, set it to its only metadata
+     * If the input is a wildcard but does have subtypes, expand it by retrieving all valid subtypes
+     * @param stack The ItemStack to inspect, which gets copied from the start and is unaffected
+     * @return Each ItemStack created as a result of copying and expanding the input stack (for cases that lack expansion, the size will be 1)
+     */
     protected static List<ItemStack> copyAndExpand(@Nonnull ItemStack stack) {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack base = stack.copy();
@@ -79,6 +118,9 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
         return stacks;
     }
 
+    /**
+     * A helper packaging class that allows RecipeProvider.provideRecipeComponents(...) to return multiple GUI components and values
+     */
     public static class ProvidedComponents {
         public int height = 0;
         public Stack[] recipeComponents;

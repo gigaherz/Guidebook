@@ -18,6 +18,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author joazlazer
+ * A class designed to provide both shaped and shapeless crafting recipes for display in Guidebooks
+ */
 class CraftingRecipeProvider {
     public class ShapedRecipeProvider extends RecipeProvider {
         ShapedRecipeProvider() {
