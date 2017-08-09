@@ -211,12 +211,12 @@
         <p>Recipe Keys</p>
       </page_title>
       <p space="12">Another way to declare a recipe is to use its registry name. Simply use the key attribute and specify the domain ("minecraft" by default) as well as the path for the json file that the recipe was contained in. For example, the following XML:</p>
-      <p space="12" indent="8" color="505050">&lt;recipe type="shapeless" key="fire_charge"/&gt;</p>
+      <p space="12" indent="8" color="505050">&lt;recipe type="shapeless" key="minecraft:fire_charge"/&gt;</p>
       <recipe type="shapeless" key="minecraft:fire_charge"/>
     </page>
     <page>
       <p indent="8" color="505050">type="shaped"</p>
-      <p space="12" indent="8" color="1E50A0">key="red_stained_hardened_clay"</p>
+      <p space="12" indent="8" color="1E50A0">key="minecraft:red_stained_hardened_clay"</p>
       <recipe type="shaped" key="minecraft:red_stained_hardened_clay"/>
       <space height="12"/>
       <divider/>
