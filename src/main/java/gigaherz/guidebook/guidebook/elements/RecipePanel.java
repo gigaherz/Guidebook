@@ -65,7 +65,11 @@ public class RecipePanel extends Space {
         
         attr = attributes.getNamedItem("index");
         if(attr != null) {
-            recipeIndex = Ints.tryParse(attr.getTextContent());
+            if(recipeComponents != null) {
+                GuidebookMod.logger.warn("Recipe has index attribute '%s' specified but was already loaded via a key attribute. Ignoring index attribute.");
+            } else {
+                recipeIndex = Ints.tryParse(attr.getTextContent());
+            }
         }
     }
 

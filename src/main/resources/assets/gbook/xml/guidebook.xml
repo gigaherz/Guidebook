@@ -163,6 +163,8 @@
       <p indent="8" space="8">&lt;stack item=&quot;minecraft:coal&quot; meta=&quot;0&quot; count=&quot;2&quot; /&gt;</p>
       <stack item="minecraft:coal" meta="0" count="2" />
     </page>
+  </chapter>
+  <chapter id="recipes">
     <page id="recipes">
       <page_title>
         <p>Recipes</p>
@@ -203,6 +205,23 @@
           <stack item="minecraft:iron_nugget"/>
         </recipe.result>
       </recipe>
+    </page>
+    <page id="recipe_keys">
+      <page_title>
+        <p>Recipe Keys</p>
+      </page_title>
+      <p space="12">Another way to declare a recipe is to use its registry name. Simply use the key attribute and specify the domain ("minecraft" by default) as well as the path for the json file that the recipe was contained in. For example, the following XML:</p>
+      <p space="12" indent="8" color="505050">&lt;recipe type="shapeless" key="fire_charge"/&gt;</p>
+      <recipe type="shapeless" key="minecraft:fire_charge"/>
+    </page>
+    <page>
+      <p indent="8" color="505050">type="shaped"</p>
+      <p space="12" indent="8" color="1E50A0">key="red_stained_hardened_clay"</p>
+      <recipe type="shaped" key="minecraft:red_stained_hardened_clay"/>
+      <space height="12"/>
+      <divider/>
+      <space height="6"/>
+      <p color="8C3321">Warning: This feature will NOT work with furnace recipes as they are registered in code and without a registry key. This may be the case with other custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
     </page>
     <page id="recipe_indices">
       <page_title>

@@ -44,6 +44,12 @@ public class FurnaceRecipeProvider extends RecipeProvider {
     }
 
     @Override
+    public boolean hasRecipe(@Nonnull ResourceLocation recipeKey) {
+        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey.toString()));
+        return false;
+    }
+
+    @Override
     @Nullable
     public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
         // Ignore recipeIndex because a furnace recipe can show each recipe by alternating the slots
@@ -96,6 +102,13 @@ public class FurnaceRecipeProvider extends RecipeProvider {
 
             return new ProvidedComponents(height, recipeComponents, background, additionalRenderer);
         } else GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey) {
+        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey.toString()));
         return null;
     }
 }
