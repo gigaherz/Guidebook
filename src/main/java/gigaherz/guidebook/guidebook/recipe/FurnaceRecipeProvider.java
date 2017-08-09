@@ -61,7 +61,6 @@ public class FurnaceRecipeProvider extends RecipeProvider {
             }
         }
 
-        int height = 10; // Defaults to 10
         if(inputStacks.size() > 0) { // Should always be true
             IRenderDelegate additionalRenderer = (nav, left, right) -> { }; // No additional rendering needed
             Stack[] recipeComponents = new Stack[2];
@@ -98,7 +97,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
             background.h = BACKGROUND_H;
 
             // Set up overall height
-            height = HEIGHT;
+            int height = HEIGHT;
 
             return new ProvidedComponents(height, recipeComponents, background, additionalRenderer);
         } else GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
