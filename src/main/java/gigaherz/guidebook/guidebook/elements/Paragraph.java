@@ -1,38 +1,88 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import net.minecraft.util.text.TextFormatting;
+import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.SizedSegment;
+import joptsimple.internal.Strings;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-/**
- * Created by gigaherz on 13/11/2016.
- */
-public class Paragraph implements IPageElement
+import java.util.Collection;
+import java.util.List;
+
+public class Paragraph implements IContainerParagraphElement
 {
-    public final String text;
     public int alignment = 0;
-    public int color = 0xFF000000;
     public int indent = 0;
     public int space = 2;
-    public boolean bold;
-    public boolean italics;
-    public boolean underline;
 
-    public Paragraph(String text)
-    {
-        this.text = text;
-    }
+    public final List<IParagraphElement> spans = Lists.newArrayList();
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top)
+    public int apply(IBookGraphics nav, int left, int top, int width)
     {
-        String textWithFormat = text;
-        if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
-        if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
-        if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
-        return nav.addStringWrapping(left + indent, top, textWithFormat, color, alignment) + space;
+        Size spaceSize = nav.measure(" ");
+        List<IParagraphElement> currentLine = Lists.newArrayList();
+        int currentLineLeft = 0;
+        int currentLineHeight = 0;
+        for(IParagraphElement element : spans)
+        {
+            List<SizedSegment> sizes = element.measure(nav, width, width - currentLineLeft);
+
+            if (sizes.size() < 1)
+                continue;
+
+            int sizesNum = sizes.size();
+            for (int i = 0; i< sizesNum; i++)
+            {
+                SizedSegment first = sizes.get(0);
+                Size firstSize = first.size;
+
+                if (firstSize.height > currentLineHeight)
+                    currentLineHeight = firstSize.height;
+
+                if ((sizesNum > 1 && i < (sizesNum-1)) || currentLineLeft + firstSize.width > width)
+                {
+                    // Flush
+                    flushLine(nav, currentLine, left, top, width, spaceSize.width);
+
+                    currentLine.clear();
+                    currentLine.add(element);
+                    top += currentLineHeight;
+
+                    currentLineLeft = 0;
+                    currentLineHeight = 0;
+                }
+                else
+                {
+                    currentLine.add(element);
+                    currentLineLeft += firstSize.width + spaceSize.width;
+                }
+            }
+        }
+
+        // Flush
+        if (currentLine.size() > 0)
+        {
+            flushLine(nav, currentLine, left, top, width, spaceSize.width);
+            top += currentLineHeight;
+        }
+
+        return top + space;
+    }
+
+    private void flushLine(IBookGraphics nav, Iterable<IParagraphElement> currentLine, int startLeft, int top, int width, int spaceWidth)
+    {
+        int left = startLeft;
+        for(IParagraphElement element : currentLine)
+        {
+            List<SizedSegment> sizes = element.measure(nav, width, width + startLeft - left);
+
+            element.apply(nav, left, top, width + startLeft - left);
+            left += size.width + spaceWidth;
+        }
     }
 
     @Override
@@ -67,68 +117,52 @@ public class Paragraph implements IPageElement
         {
             space = Ints.tryParse(attr.getTextContent());
         }
-
-        attr = attributes.getNamedItem("bold");
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                bold = true;
-        }
-
-        attr = attributes.getNamedItem("italics");
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                italics = true;
-        }
-
-        attr = attributes.getNamedItem("underline");
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                underline = true;
-        }
-
-        attr = attributes.getNamedItem("color");
-        if (attr != null)
-        {
-            String c = attr.getTextContent();
-
-            if (c.startsWith("#"))
-                c = c.substring(1);
-
-            try
-            {
-                if (c.length() <= 6)
-                {
-                    color = 0xFF000000 | Integer.parseInt(c, 16);
-                }
-                else
-                {
-                    color = Integer.parseInt(c, 16);
-                }
-            }
-            catch (NumberFormatException e)
-            {
-                // ignored
-            }
-        }
     }
 
     @Override
     public IPageElement copy()
     {
-        Paragraph paragraph = new Paragraph(text);
+        Paragraph paragraph = new Paragraph();
         paragraph.alignment = alignment;
-        paragraph.color = color;
         paragraph.indent = indent;
         paragraph.space = space;
-        paragraph.bold = bold;
-        paragraph.italics = italics;
-        paragraph.underline = underline;
+        for(IParagraphElement element : spans)
+            paragraph.spans.add(element.copy());
         return paragraph;
     }
+
+    @Override
+    public Collection<IParagraphElement> getChildren()
+    {
+        return spans;
+    }
+
+    public Paragraph addTextSpan(Node elementItem)
+    {
+        String st = elementItem.getTextContent();
+        if (!Strings.isNullOrEmpty(st))
+        {
+            Span s = new Span(st);
+            s.underline = true;
+            s.italics = true;
+
+            if (elementItem.hasAttributes())
+            {
+                s.parse(elementItem.getAttributes());
+            }
+
+            spans.add(s);
+        }
+
+        return this;
+    }
+
+    public static Paragraph of(String text)
+    {
+        Paragraph p = new Paragraph();
+        Span s = new Span(text);
+        p.spans.add(s);
+        return p;
+    }
 }
+

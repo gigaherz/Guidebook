@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Set;
 
-public class Link extends Paragraph implements IClickablePageElement
+public class Link extends Span implements IClickablePageElement
 {
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
 
@@ -92,11 +92,11 @@ public class Link extends Paragraph implements IClickablePageElement
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top)
+    public int apply(IBookGraphics nav, int left, int top, int width)
     {
         bounds = nav.getStringBounds(text, left, top);
 
-        return nav.addStringWrapping(left + indent, top, text, isHovering ? colorHover : color, alignment) + space;
+        return nav.addStringWrapping(left, top, text, isHovering ? colorHover : color, 0);
     }
 
     @Override
@@ -119,13 +119,10 @@ public class Link extends Paragraph implements IClickablePageElement
     }
 
     @Override
-    public IPageElement copy()
+    public IParagraphElement copy()
     {
         Link link = new Link(text);
-        link.alignment = alignment;
         link.color = color;
-        link.indent = indent;
-        link.space = space;
         link.bold = bold;
         link.italics = italics;
         link.underline = underline;

@@ -23,7 +23,7 @@ public class TemplateElement implements IPageElement
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top)
+    public int apply(IBookGraphics nav, int left, int top, int width)
     {
         throw new IllegalStateException("Template elements must not be used directly");
     }

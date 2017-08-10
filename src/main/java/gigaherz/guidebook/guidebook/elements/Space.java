@@ -28,13 +28,13 @@ public class Space implements IContainerPageElement
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top)
+    public int apply(IBookGraphics nav, int left, int top, int width)
     {
         int top0 = top;
 
         for (IPageElement child : innerElements)
         {
-            top0 += child.apply(nav, left, top0);
+            top0 += child.apply(nav, left, top0, width);
         }
 
         return asPercent ? nav.getPageHeight() * space / 100 : space;

@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface IPageElement
 {
-    int apply(IBookGraphics nav, int left, int top);
+    int apply(IBookGraphics nav, int left, int top, int width);
 
     default void findTextures(Set<ResourceLocation> textures)
     {

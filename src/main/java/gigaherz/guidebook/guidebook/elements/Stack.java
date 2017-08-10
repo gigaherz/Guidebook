@@ -1,11 +1,11 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.drawing.Size;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,7 +19,10 @@ import org.lwjgl.util.Rectangle;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class Stack implements IHoverPageElement, IClickablePageElement
+import java.util.Collections;
+import java.util.List;
+
+public class Stack implements IParagraphElement, IHoverPageElement, IClickablePageElement
 {
     public static final int CYCLE_TIME = 1000;//=1s
     public static final String WILDCARD = "*";
@@ -37,7 +40,15 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top)
+    public List<Size> measure(IBookGraphics nav, int _width, int firstLineWidth)
+    {
+        int width = (int) (16 * scale);
+        int height = (int) (16 * scale);
+        return Collections.singletonList(new Size(width,height));
+    }
+
+    @Override
+    public int apply(IBookGraphics nav, int left, int top, int _width)
     {
         left += x;
         top += y;
@@ -201,7 +212,7 @@ public class Stack implements IHoverPageElement, IClickablePageElement
     }
 
     @Override
-    public IPageElement copy()
+    public IParagraphElement copy()
     {
         Stack stack = new Stack();
         if (this.stacks != null)

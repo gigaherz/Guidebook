@@ -10,6 +10,7 @@ import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
+import joptsimple.internal.Strings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -137,8 +138,8 @@ public class BookDocument
         PageData pg = new PageData(0);
         ch.pages.add(pg);
 
-        pg.elements.add(new Paragraph("Error loading book:"));
-        pg.elements.add(new Paragraph(TextFormatting.RED + error));
+        pg.elements.add(Paragraph.of("Error loading book:"));
+        pg.elements.add(Paragraph.of(TextFormatting.RED + error));
     }
 
     public boolean parseBook(InputStream stream)
@@ -315,47 +316,52 @@ public class BookDocument
         {
             Node elementItem = elementsList.item(k);
 
+            IPageElement parsedElement = null;
+
             String nodeName = elementItem.getNodeName();
             if (nodeName.equals("p"))
             {
-                Paragraph p = new Paragraph(elementItem.getTextContent());
-                elements.add(p);
+                Paragraph p = new Paragraph();
+
+                p.addTextSpan(elementItem);
 
                 if (elementItem.hasAttributes())
                 {
                     p.parse(elementItem.getAttributes());
                 }
+
+                parsedElement = p;
             }
             else if (nodeName.equals("title"))
             {
-                Paragraph p = new Paragraph(elementItem.getTextContent());
+                Paragraph p = new Paragraph();
                 p.alignment = 1;
                 p.space = 4;
-                p.underline = true;
-                p.italics = true;
 
-                elements.add(p);
+                p.addTextSpan(elementItem);
 
                 if (elementItem.hasAttributes())
                 {
                     p.parse(elementItem.getAttributes());
                 }
+
+                parsedElement = p;
             }
             else if (nodeName.equals("link"))
             {
                 Link link = new Link(elementItem.getTextContent());
-                elements.add(link);
 
                 if (elementItem.hasAttributes())
                 {
                     link.parse(elementItem.getAttributes());
                 }
+
+                parsedElement = link;
             }
             else if (nodeName.equals("space")
                     || nodeName.equals("group"))
             {
                 Space s = new Space();
-                elements.add(s);
 
                 if (elementItem.hasAttributes())
                 {
@@ -367,36 +373,41 @@ public class BookDocument
                 parseChildElements(elementItem, elementList, templates);
 
                 s.innerElements.addAll(elementList);
+
+                parsedElement = s;
             }
             else if (nodeName.equals("stack"))
             {
                 Stack s = new Stack();
-                elements.add(s);
 
                 if (elementItem.hasAttributes())
                 {
                     s.parse(elementItem.getAttributes());
                 }
+
+                parsedElement = s;
             }
             else if (nodeName.equals("image"))
             {
                 Image i = new Image();
-                elements.add(i);
 
                 if (elementItem.hasAttributes())
                 {
                     i.parse(elementItem.getAttributes());
                 }
+
+                parsedElement = i;
             }
             else if (nodeName.equals("element"))
             {
                 TemplateElement i = new TemplateElement();
-                elements.add(i);
 
                 if (elementItem.hasAttributes())
                 {
                     i.parse(elementItem.getAttributes());
                 }
+
+                parsedElement = i;
             }
             else if (templates.containsKey(nodeName))
             {
@@ -404,8 +415,6 @@ public class BookDocument
 
                 Template t = new Template();
                 t.parse(tDef.attributes);
-
-                elements.add(t);
 
                 if (elementItem.hasAttributes())
                 {
@@ -419,7 +428,30 @@ public class BookDocument
                 List<IPageElement> effectiveList = tDef.applyTemplate(elementList);
 
                 t.innerElements.addAll(effectiveList);
+
+                parsedElement = t;
             }
+            else
+            {
+                // TODO: Log unrecognized
+            }
+
+            if (parsedElement instanceof IParagraphElement)
+            {
+                Paragraph p = new Paragraph();
+
+                if (elementItem.hasAttributes())
+                {
+                    p.parse(elementItem.getAttributes());
+                }
+
+                p.spans.add((IParagraphElement)parsedElement);
+
+                parsedElement = p;
+            }
+
+            if(parsedElement != null)
+                elements.add(parsedElement);
         }
     }
 

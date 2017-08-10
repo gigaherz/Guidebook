@@ -3,13 +3,16 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.drawing.Size;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
-public class Image implements IPageElement
+public class Image implements IParagraphElement
 {
     public ResourceLocation textureLocation;
     public int x = 0;
@@ -27,15 +30,18 @@ public class Image implements IPageElement
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top)
+    public List<Size> measure(IBookGraphics nav, int _width, int firstLineWidth)
     {
-        drawImage(nav, left, top);
-        return 0;
+        int width = (int) (w * scale);
+        int height = (int) (h * scale);
+        return Collections.singletonList(new Size(width,height));
     }
 
-    private void drawImage(IBookGraphics nav, int left, int top)
+    @Override
+    public int apply(IBookGraphics nav, int left, int top, int width)
     {
         nav.drawImage(textureLocation, left + x, top + y, tx, ty, w, h, tw, th, scale);
+        return 0;
     }
 
     @Override
@@ -110,7 +116,7 @@ public class Image implements IPageElement
     }
 
     @Override
-    public IPageElement copy()
+    public IParagraphElement copy()
     {
         Image img = new Image();
 

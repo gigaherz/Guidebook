@@ -1,8 +1,12 @@
 package gigaherz.guidebook.guidebook;
 
+import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.SizedSegment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Rectangle;
+
+import java.util.List;
 
 public interface IBookGraphics
 {
@@ -55,4 +59,8 @@ public interface IBookGraphics
     void drawTooltip(ItemStack stack, int x, int y);
 
     Object owner();
+
+    Size measure(String text);
+
+    List<SizedSegment> measure(String text, int width, int firstLineWidth);
 }

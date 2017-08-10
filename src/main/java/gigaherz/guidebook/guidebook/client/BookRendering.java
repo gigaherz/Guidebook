@@ -1,9 +1,10 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.google.common.collect.Lists;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.BookDocument;
-import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.*;
+import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.SizedSegment;
 import gigaherz.guidebook.guidebook.elements.IClickablePageElement;
 import gigaherz.guidebook.guidebook.elements.IContainerPageElement;
 import gigaherz.guidebook.guidebook.elements.IHoverPageElement;
@@ -22,6 +23,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class BookRendering implements IBookGraphics
 {
@@ -401,8 +404,8 @@ public class BookRendering implements IBookGraphics
         int top = (guiHeight - pageHeight) / 2 - 9;
         int bottom = top + pageHeight - 3;
 
-        drawPage(left, top, currentPair * 2);
-        drawPage(right, top, currentPair * 2 + 1);
+        drawPage(left, top, pageWidth, currentPair * 2);
+        drawPage(right, top, pageWidth, currentPair * 2 + 1);
 
         String cnt = "" + ((book.getChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (book.getTotalPairCount() * 2);
         addStringWrapping(left, bottom, cnt, 0xFF000000, 1);
@@ -413,7 +416,7 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    private void drawPage(int left, int top, int page)
+    private void drawPage(int left, int top, int availableWidth, int page)
     {
         BookDocument.ChapterData ch = book.getChapter(currentChapter);
         if (page >= ch.pages.size())
@@ -423,7 +426,7 @@ public class BookRendering implements IBookGraphics
 
         for (IPageElement e : pg.elements)
         {
-            top += e.apply(this, left, top);
+            top += e.apply(this, left, top, availableWidth);
         }
     }
 
@@ -509,5 +512,43 @@ public class BookRendering implements IBookGraphics
     public Object owner()
     {
         return gui;
+    }
+
+    @Override
+    public Size measure(String text)
+    {
+        FontRenderer font = gui.getFontRenderer();
+        int width = font.getStringWidth(text);
+        return new Size(width, font.FONT_HEIGHT);
+    }
+
+    @Override
+    public List<SizedSegment> measure(String text, int width, int firstLineWidth)
+    {
+        //TODO: Actually measure the string width taking into account the first line in an efficient way.
+        FontRenderer font = gui.getFontRenderer();
+        List<String> lines = font.listFormattedStringToWidth(text, firstLineWidth);
+        if (lines.size() > 1)
+        {
+            List<SizedSegment> sizes = Lists.newArrayList();
+
+            String firstLine = lines.get(0);
+            int width1 = font.getStringWidth(firstLine);
+            sizes.add(new SizedSegment(firstLine, new Size(width1, font.FONT_HEIGHT)));
+
+            String remaining = text.substring(firstLine.length());
+            List<String> lines2 = font.listFormattedStringToWidth(remaining, width);
+            for (String s : lines2)
+            {
+                int width2 = font.getStringWidth(s);
+                sizes.add(new SizedSegment(s, new Size(width2, font.FONT_HEIGHT)));
+            }
+            return sizes;
+        }
+        else
+        {
+            int width1 = font.getStringWidth(text);
+            return Collections.singletonList(new SizedSegment(text, new (width1, font.FONT_HEIGHT * lines.size())));
+        }
     }
 }
