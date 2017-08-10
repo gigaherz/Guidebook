@@ -5,10 +5,12 @@ import com.google.common.primitives.Ints;
 import com.sun.javafx.geom.Vec3f;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.ParseUtils;
-import gigaherz.guidebook.guidebook.multiblock.IMultiblockComponent;
+import gigaherz.guidebook.guidebook.multiblock.MultiblockComponent;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
 
 public class MultiblockPanel implements IPageElement {
     private int height = 256; // Default height
@@ -18,7 +20,8 @@ public class MultiblockPanel implements IPageElement {
     private float spin = 0f;
     private OffsetOrigin offsetOrigin = OffsetOrigin.CENTER;
     private Vec3f offset = new Vec3f(0f, 0f, 0f);
-    private IMultiblockComponent[] components;
+    private int layerGap = 0;
+    private MultiblockComponent[] components;
 
     @Override
     public int apply(IBookGraphics nav, int left, int top) {
@@ -35,6 +38,11 @@ public class MultiblockPanel implements IPageElement {
         attr = attributes.getNamedItem("indent");
         if (attr != null) {
             indent = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = attributes.getNamedItem("layerGap");
+        if (attr != null) {
+            layerGap = Ints.tryParse(attr.getTextContent());
         }
 
         attr = attributes.getNamedItem("poles");
@@ -64,7 +72,15 @@ public class MultiblockPanel implements IPageElement {
     }
 
     public void parseChildren(NodeList childNodes) {
-
+        ArrayList<MultiblockComponent> componentList = new ArrayList<>();
+        for(int i = 0; i < childNodes.getLength(); ++i) {
+            Node componentNode = childNodes.item(i);
+            MultiblockComponent.MultiblockComponentFactory componentFactory = MultiblockComponent.getFactory(componentNode.getNodeName());
+            if(componentFactory != null) {
+                componentList.add(componentFactory.parse(componentNode));
+            }
+        }
+        components = componentList.toArray(new MultiblockComponent[componentList.size()]);
     }
 
     @Override
