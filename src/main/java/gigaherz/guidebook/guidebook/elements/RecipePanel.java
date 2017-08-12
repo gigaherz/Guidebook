@@ -33,6 +33,7 @@ public class RecipePanel extends Space {
         if(recipeComponents != null) {
             left += indent;
             super.apply(nav, left, top);
+            if(additionalRenderer != null) additionalRenderer.render(nav, left, top);
         } // If the recipe was never found, return a height of 10 by default and don't render
         return height;
     }
