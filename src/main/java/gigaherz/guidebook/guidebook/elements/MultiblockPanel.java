@@ -167,11 +167,12 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     private int drawLevelText(IBookGraphics nav, int left, int top) {
         // TODO add in center line
         int x = left + nav.getPageWidth() - BUTTON_PANEL_RIGHT_OFFSET;
-        top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(maxDisplayLayer), Color.darkGray);
+        Color numberColor = new Color(15, 15, 15, 255);
+        top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(maxDisplayLayer), numberColor);
         top += 2;
         top += drawCenterBar(nav, x, top, BUTTON_PANEL_WIDTH);
         top += 5;
-        top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(getCurrentStructureHeight()), Color.darkGray);
+        top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(getCurrentStructureHeight()), numberColor);
         return top + 3;
     }
 
