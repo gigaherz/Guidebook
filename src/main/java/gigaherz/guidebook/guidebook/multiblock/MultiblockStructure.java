@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.multiblock;
 
 import com.sun.javafx.geom.Vec3f;
+import com.sun.javafx.geom.Vec4f;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.Minecraft;
@@ -37,7 +38,9 @@ public class MultiblockStructure {
     private MultiblockComponent[][][] structureMatrix; // 3-d array containing a matrix of MultiblockComponents by position, filled with null by default
     private MultiblockComponent[][][] translucentStructureMatrix; // 3-d array containing a 3-d matrix of translucent blocks to be rendered second
     private BlockPos bounds;
+    private float scale;
     private Vec3f offset;
+    private Vec4f initialRot;
 
     private MultiblockStructure(BlockPos size) {
         this.bounds = size;
@@ -51,6 +54,14 @@ public class MultiblockStructure {
         this.offset = offset;
     }
 
+    public void setInitialRot(Vec4f initialRot) {
+        this.initialRot = initialRot;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
     private void setStructureMatrix(MultiblockComponent[][][] structureMatrix) {
         this.structureMatrix = structureMatrix;
     }
@@ -59,17 +70,10 @@ public class MultiblockStructure {
         this.translucentStructureMatrix = translucentStructureMatrix;
     }
 
-    public void render(int left, int top, float blockScale, float layerGap, int maxDisplayLayer) {
-        float scale = 2f;
-
+    public void render(int left, int top, float blockScale, float layerGap, int maxDisplayLayer, float globalScale) {
         GlStateManager.pushMatrix(); {
             GlStateManager.translate(left, top, 0f);
             TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
-            GlStateManager.pushMatrix(); {
-                // Apply and scale out lighting
-                GlStateManager.scale(24, 24, 24);
-                RenderHelper.enableGUIStandardItemLighting();
-            } GlStateManager.popMatrix();
 
             GlStateManager.pushMatrix(); {
                 // Set texture manager settings
@@ -83,8 +87,23 @@ public class MultiblockStructure {
                 GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 GlStateManager.translate(0, 0, 100.0F);
+
+                GlStateManager.pushMatrix(); {
+                    // Apply and scale out lighting
+                    GlStateManager.scale(24, 24, 24);
+                    RenderHelper.enableGUIStandardItemLighting();
+                } GlStateManager.popMatrix();
+
                 GlStateManager.scale(1.0F, -1.0F, 1.0F); // Flip on y-axis
-                GlStateManager.scale(16.0F * scale, 16.0F * scale, 16.0F * scale);
+                GlStateManager.scale(16.0F, 16.0F, 16.0F);
+                GlStateManager.scale(2.0F, 2.0F, 2.0F);
+                GlStateManager.scale(scale, scale, scale);
+                applyGUITransformationMatrix();
+
+                // Block space transformations:
+                GlStateManager.scale(globalScale, globalScale, globalScale);
+                GlStateManager.translate(offset.x, offset.y, offset.z);
+                GlStateManager.rotate(initialRot.x, initialRot.y, initialRot.z, initialRot.w);
 
                 // TODO render floor & poles
                 renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale);
@@ -107,10 +126,9 @@ public class MultiblockStructure {
 
     private void renderComponents(MultiblockComponent[][][] componentMatrix, int maxDisplayLayer, float layerGap, float blockScale) {
         GlStateManager.pushMatrix(); {
-            applyGUITransformationMatrix();
-            final float offsetX = offset.x;
-            final float offsetY = offset.y - layerGap * ((componentMatrix[0].length - 1) / 2f);
-            final float offsetZ = offset.z;
+            final float offsetX = 0;
+            final float offsetY = -layerGap * ((componentMatrix[0].length - 1) / 2f);
+            final float offsetZ = 0;
 
             // Render each component
             for(int i = 0; i < componentMatrix.length; ++i) {

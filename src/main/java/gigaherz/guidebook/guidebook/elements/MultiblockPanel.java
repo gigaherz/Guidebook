@@ -1,7 +1,9 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import com.sun.javafx.geom.Vec3f;
+import com.sun.javafx.geom.Vec4f;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.ParseUtils;
@@ -30,12 +32,15 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     private PoleMode poles = PoleMode.OFF;
     private FloorMode floor = FloorMode.GRID;
     private Vec3f offset = new Vec3f(0f, 0f, 0f); // A block-space offset for the structure to become the new render origin
+    private Vec4f initialRot = new Vec4f(0f, 0f, 0f, 0f); // A block-space rotation for the structure to be transformed before it is spun / orbited
     private MultiblockStructure[] structures;
     private boolean expanded = false;
     private boolean modeButtonEnabled = true;
     private boolean layerSelectEnabled = true;
+    private float scale = 1f;
+    private float collapsedScale = 1.2f;
     private float expandScale = 0.65f;
-    private float expandLevelGap = 1.2f;
+    private float expandLevelGap = 1f;
 
     public MultiblockPanel() {
         upBounds = new Rectangle();
@@ -54,11 +59,15 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     private int modeSwitchTicks = 0;
     private int maxDisplayLayer = 0;
 
-    private static int CYCLE_TIME = 2000;
+    private static final int CYCLE_TIME = 2000;
     private static final ResourceLocation BOOK_GUI_TEXTURES = GuidebookMod.location("gui/book");
-    private static int MODE_SWITCH_MAX = 10;
-    private static int BUTTON_PANEL_RIGHT_OFFSET = 16;
-    private static int BUTTON_PANEL_WIDTH = 23;
+    private static final int MODE_SWITCH_MAX = 7;
+    private static final int BUTTON_PANEL_RIGHT_OFFSET = 16;
+    private static final int BUTTON_PANEL_WIDTH = 23;
+
+    private float getCollapsedScale() {
+        return MathHelper.clamp(collapsedScale - 1f, 0f, 8f);
+    }
 
     @Override
     public int apply(IBookGraphics nav, int left, int top) {
@@ -67,19 +76,28 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         if(getCurrentStructure() != null) {
             updateLayerSelectLogic();
             renderStructure(getCurrentStructure(), nav,left + (nav.getPageWidth() / 2), top + (height / 2));
+            int buttonY = top + (height / 2) - (getButtonPanelHeight() / 2) - 4;
             if(layerSelectEnabled) {
-                drawUpButton(nav, left, top);
-                drawDownButton(nav, left, top);
-                drawLevelText(nav, left, top);
+                buttonY = drawUpButton(nav, left, buttonY);
+                buttonY = drawLevelText(nav, left, buttonY);
+                buttonY = drawDownButton(nav, left, buttonY);
             }
             if(modeButtonEnabled) {
-                drawModeButton(nav, left, top);
+                drawModeButton(nav, left, buttonY);
             }
         }
         return height;
     }
 
+    private int getButtonPanelHeight() {
+        int end = 0;
+        if(layerSelectEnabled) end += 74;
+        if(modeButtonEnabled) end += 36;
+        return end;
+    }
+
     private void updateLayerSelectLogic() {
+        assert getCurrentStructure() != null; // Sanity check
         // If out of bounds or at bound, clamp position and disable movement button towards that direction
         // Else, re-enable that movement button
         if(maxDisplayLayer >= getCurrentStructure().getBounds().getY()) {
@@ -116,73 +134,81 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         }
     }
 
-    private void drawUpButton(IBookGraphics nav, int left, int top) {
-        // TODO fix maths
+    private int drawUpButton(IBookGraphics nav, int left, int top) {
         int x = left + nav.getPageWidth() - BUTTON_PANEL_RIGHT_OFFSET;
-        int y = top + (height / 2) - 50;
-        upBounds = new Rectangle(x, y, 20, 18);
+        upBounds = new Rectangle(x, top, 20, 18);
         int u = 4;
         if(inBounds(nav.getMouseX(), nav.getMouseY(), upBounds)) u += 25;
         if(!upEnabled) u = 54;
-        nav.drawImage(BOOK_GUI_TEXTURES, x, y, u, 106, 10, 9, 256, 256, 2f);
+        nav.drawImage(BOOK_GUI_TEXTURES, x, top, u, 106, 10, 9, 256, 256, 2f);
+        return top + upBounds.getHeight() + 6;
     }
 
-    private void drawDownButton(IBookGraphics nav, int left, int top) {
-        // TODO fix maths
+    private int drawDownButton(IBookGraphics nav, int left, int top) {
         int x = left + nav.getPageWidth() - BUTTON_PANEL_RIGHT_OFFSET;
-        int y = top + (height / 2);
-        downBounds = new Rectangle(x, y, 20, 18);
+        downBounds = new Rectangle(x, top, 20, 18);
         int u = 4;
         if(inBounds(nav.getMouseX(), nav.getMouseY(), downBounds)) u += 25;
         if(!downEnabled) u = 54;
-        nav.drawImage(BOOK_GUI_TEXTURES, x, y, u, 117, 10, 9, 256, 256, 2f);
+        nav.drawImage(BOOK_GUI_TEXTURES, x, top, u, 117, 10, 9, 256, 256, 2f);
+        return top + downBounds.getHeight() + 10;
     }
 
     private void drawModeButton(IBookGraphics nav, int left, int top) {
-        // TODO fix maths
         int x = left + nav.getPageWidth() - BUTTON_PANEL_RIGHT_OFFSET - 1;
-        int y = top + (height / 2) + 24;
-        modeBounds = new Rectangle(x, y, 23, 26);
+        modeBounds = new Rectangle(x, top, 23, 26);
         int u = 54;
         int v = 2;
         if(inBounds(nav.getMouseX(), nav.getMouseY(), modeBounds)) u += 27;
         if(!expanded) v += 28;
-        nav.drawImage(BOOK_GUI_TEXTURES, x, y, u, v, 23, 26, 256, 256, 1f);
+        nav.drawImage(BOOK_GUI_TEXTURES, x, top, u, v, 23, 26, 256, 256, 1f);
     }
 
-    private void drawLevelText(IBookGraphics nav, int left, int top) {
+    private int drawLevelText(IBookGraphics nav, int left, int top) {
         // TODO add in center line
         int x = left + nav.getPageWidth() - BUTTON_PANEL_RIGHT_OFFSET;
-        int y = top + (height / 2) - 24;
-        y += drawCenteredText(nav, x, y, BUTTON_PANEL_WIDTH, Integer.toString(maxDisplayLayer), Color.darkGray);
-        y += 4;
-        drawCenteredText(nav, x, y, BUTTON_PANEL_WIDTH, Integer.toString(getCurrentStructureHeight()), Color.darkGray);
+        top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(maxDisplayLayer), Color.darkGray);
+        top += 2;
+        top += drawCenterBar(nav, x, top, BUTTON_PANEL_WIDTH);
+        top += 5;
+        top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(getCurrentStructureHeight()), Color.darkGray);
+        return top + 3;
+    }
+
+    private int drawCenterBar(IBookGraphics nav, int x, int y, int panelWidth) {
+        x += panelWidth / 2;
+        x -= 12;
+        nav.drawImage(BOOK_GUI_TEXTURES, x, y, 104, 0, 12, 1, 256, 256, 2f);
+        return 2;
     }
 
     private int drawCenteredText(IBookGraphics nav, int x, int y, int panelWidth, String text, Color color) {
         x += panelWidth / 2;
         x -= Minecraft.getMinecraft().fontRenderer.getStringWidth(text) / 2;
-        return nav.addStringWrapping(x, y, text, color.getRGB(), 0);
+        return nav.addStringWrapping(x, y, text, color.getRGB(), 0, 1f );
     }
 
     private void renderStructure(MultiblockStructure structure, IBookGraphics nav, int left, int top) {
-        float expandBlockScale, expandLevelAmount;
+        float expandBlockScale, expandLevelAmount, globalScale;
         if(expanding || collapsing) {
             final float expandMu = MathHelper.clamp((modeSwitchTicks + nav.getPartialTicks()) / MODE_SWITCH_MAX, 0f, 1f);
             final float expandSinAlpha = getSinInterp(expandMu, 0f, 1f);
             expandBlockScale = 1f - (expandSinAlpha * (1f - expandScale));
             expandLevelAmount = expandSinAlpha * expandLevelGap;
+            globalScale = 1f + getCollapsedScale() * (1f - expandSinAlpha);
         } else {
             if(expanded) {
                 expandBlockScale = expandScale;
                 expandLevelAmount = expandLevelGap;
+                globalScale = 1f;
             } else {
                 expandBlockScale = 1f;
                 expandLevelAmount = 0f;
+                globalScale = 1f + getCollapsedScale();
             }
         }
         // TODO render floor & poles
-        structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer);
+        structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer, globalScale);
     }
 
     @Override
@@ -191,6 +217,12 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         if (attr != null) {
             Integer parsedHeight = Ints.tryParse(attr.getTextContent());
             if(parsedHeight != null) height = parsedHeight;
+        }
+
+        attr = attributes.getNamedItem("scale");
+        if (attr != null) {
+            Float parsedScale = Floats.tryParse(attr.getTextContent());
+            if(parsedScale != null) scale = parsedScale;
         }
 
         attr = attributes.getNamedItem("poles");
@@ -207,6 +239,12 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         if (attr != null) {
             Vec3f parsedOffset = ParseUtils.parseVec3f(attr.getTextContent());
             if(parsedOffset != null) this.offset = parsedOffset;
+        }
+
+        attr = attributes.getNamedItem("initialRot");
+        if (attr != null) {
+            Vec4f parsedRot = ParseUtils.parseVec4f(attr.getTextContent());
+            if(parsedRot != null) this.initialRot = parsedRot;
         }
 
         // TODO additional attributes
@@ -234,6 +272,8 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
             if (newStructure != null) {
                 loadedStructures.add(newStructure);
                 newStructure.setOffset(this.offset);
+                newStructure.setInitialRot(this.initialRot);
+                newStructure.setScale(this.scale);
                 this.maxDisplayLayer = newStructure.getBounds().getY(); // Initialize the maxDisplayLayer to the max y of the last structure loaded
             }
         }
@@ -288,6 +328,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
      * @param y2 The y value at mu=1f
      * @return Between [y1, y2]
      */
+    @SuppressWarnings("SameParameterValue")
     private float getSinInterp(float mu, float y1, float y2) {
         mu = net.minecraft.util.math.MathHelper.clamp(mu, 0.0f, 1.0f);
         // Calculate the alpha value at mu

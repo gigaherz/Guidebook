@@ -207,10 +207,18 @@
 
       <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
-    <page>
-      <multiblock structures="[gbook:furnace_brick,gbook:furnace_nether_brick]" offset="0,-1,0"/>
+  </chapter>
+  <chapter id="multiblocks">
+    <page id="multiblocks">
+      <page_title>
+        <p>Multiblock Structures</p>
+      </page_title>
+      <p space="14">Multiblock tags allow you to display complex multiblock structures within guidebooks.</p>
+      <space height="4"/>
+      <multiblock structures="[gbook:furnace_brick,gbook:furnace_nether_brick]" offset="2,-1.25,2" initialRot="180,0,1,0"/>
+      <space height="8"/>
+      <divider/>
     </page>
-    <page/>
     <page/>
   </chapter>
   <stack-links>

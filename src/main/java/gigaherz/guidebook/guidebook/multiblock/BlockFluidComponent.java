@@ -73,7 +73,7 @@ public class BlockFluidComponent extends BlockComponent {
         double x1 = 0d;
         double x2 = 1d;
         double y1 = 0d;
-        double y2 = 0.8d;
+        double y2 = 0.8125d; // Fluid block height
         double z1 = 0d;
         double z2 = 1d;
 
