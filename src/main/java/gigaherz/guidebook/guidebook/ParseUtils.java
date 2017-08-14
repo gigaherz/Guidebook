@@ -6,6 +6,7 @@ import gigaherz.guidebook.GuidebookMod;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * @author joazlazer
@@ -16,7 +17,7 @@ public class ParseUtils {
     /**
      * Parses a vector from the input String that is either in the format of 'Xf' or 'Xf,Yf,Zf'
      * @param toParse The input String
-     * @return A Vec3f containing the parsed information if valid, and <code>null</code> if parsing failed
+     * @return A Vec3f containing the parsed information if valid, or <code>null</code> if parsing failed
      */
     @Nullable
     public static Vec3f parseVec3f(@Nonnull String toParse) {
@@ -25,7 +26,7 @@ public class ParseUtils {
                 // Parse as comment-separated x,y,z vector
                 float x = Float.parseFloat(toParse.substring(0, toParse.indexOf(',')));
                 float y = Float.parseFloat(toParse.substring(toParse.indexOf(',') + 1, toParse.lastIndexOf(',')));
-                float z = Float.parseFloat(toParse.substring(toParse.lastIndexOf(',')));
+                float z = Float.parseFloat(toParse.substring(toParse.lastIndexOf(',') + 1));
                 return new Vec3f(x, y, z);
 
             } else {
@@ -34,7 +35,7 @@ public class ParseUtils {
                 return new Vec3f(s, s, s);
             }
         } catch (NumberFormatException ex) {
-            GuidebookMod.logger.warn(String.format("Input Vector3f string '%s' cannot be parsed: %s", toParse, ex.getMessage()));
+            GuidebookMod.logger.warn(String.format("Input Vector3f(x,y,z) string '%s' cannot be parsed: %s", toParse, ex.getMessage()));
             return null;
         }
     }
@@ -42,7 +43,7 @@ public class ParseUtils {
     /**
      * Parses a vector from the input String that is either in the format of 'Xi' or 'Xi,Yi'
      * @param toParse The input String
-     * @return A Point containing the parsed information if valid, and <code>null</code> if parsing failed
+     * @return A Point containing the parsed information if valid, or <code>null</code> if parsing failed
      */
     @Nullable
     public static Point parsePoint(@Nonnull String toParse) {
@@ -59,6 +60,45 @@ public class ParseUtils {
             }
         } catch (NumberFormatException ex) {
             GuidebookMod.logger.warn(String.format("Input Point(x,y) string '%s' cannot be parsed: %s", toParse, ex.getMessage()));
+            return null;
+        }
+    }
+
+    /**
+     * Parses an array of Strings from the input String that is in the format 'str' or '[str]' or '[str,str...]'
+     * @param toParse The input String
+     * @return An array of Strings containing elements from the parsed data, or <code>null</code> if parsing failed
+     */
+    @Nullable
+    public static String[] parseArray(@Nonnull String toParse) {
+        try {
+            if(toParse.indexOf('[') != -1) {
+                // Parse as comment-separated array with capping [ and ]
+                String insideArea = toParse.substring(toParse.indexOf('[') + 1, toParse.lastIndexOf(']'));
+                ArrayList<String> arrayBuilder = new ArrayList<>();
+                boolean hasNext = insideArea.trim().length() >= 1;
+                while(hasNext) {
+                    String entry;
+                    if(insideArea.indexOf(',') != -1) {
+                        // Has more entries after current
+                        entry = insideArea.substring(0, insideArea.indexOf(','));
+                        insideArea = insideArea.substring(insideArea.indexOf(',') + 1);
+                    } else {
+                        // Has no more entries after current
+                        entry = insideArea;
+                        hasNext = false;
+                    }
+                    if(!entry.isEmpty()) {
+                        arrayBuilder.add(entry);
+                    }
+                }
+                return arrayBuilder.toArray(new String[arrayBuilder.size()]);
+            } else {
+                // Parse as single-entry array with no special characters
+                return new String[]{ toParse };
+            }
+        } catch (NumberFormatException ex) {
+            GuidebookMod.logger.warn(String.format("Input Array[,] string '%s' cannot be parsed: %s", toParse, ex.getMessage()));
             return null;
         }
     }

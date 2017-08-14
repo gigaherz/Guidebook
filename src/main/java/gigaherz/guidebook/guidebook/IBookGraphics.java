@@ -38,7 +38,7 @@ public interface IBookGraphics
 
     boolean mouseHover(int mouseX, int mouseY);
 
-    void drawCurrentPages();
+    void drawCurrentPages(float partialTicks);
 
     BookDocument getBook();
 
@@ -55,4 +55,12 @@ public interface IBookGraphics
     void drawTooltip(ItemStack stack, int x, int y);
 
     Object owner();
+
+    int getMouseX();
+
+    int getMouseY();
+
+    void updateCurrentPageElements();
+
+    float getPartialTicks();
 }

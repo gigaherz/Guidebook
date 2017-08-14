@@ -207,6 +207,11 @@
 
       <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
+    <page>
+      <multiblock structures="[gbook:furnace_brick,gbook:furnace_nether_brick]" offset="0,-1,0"/>
+    </page>
+    <page/>
+    <page/>
   </chapter>
   <stack-links>
     <stack item="minecraft:coal">:recipes</stack>
