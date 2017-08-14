@@ -102,6 +102,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 // If done with expanding, stop and ensure ticks is clamped
                 modeSwitchTicks = MODE_SWITCH_MAX;
                 expanding = false;
+                expanded = true;
             }
         } else if(collapsing) {
             expanding = false;
@@ -110,6 +111,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 // If done with collapsing, stop and ensure ticks is clamped
                 modeSwitchTicks = 0;
                 collapsing = false;
+                expanded = false;
             }
         }
     }
@@ -164,10 +166,21 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     }
 
     private void renderStructure(MultiblockStructure structure, IBookGraphics nav, int left, int top) {
-        final float expandMu = MathHelper.clamp((modeSwitchTicks + nav.getPartialTicks()) / MODE_SWITCH_MAX, 0f, 1f);
-        final float expandSinAlpha = getSinInterp(expandMu, 0f, 1f);
-        final float expandBlockScale = 1f - (expandSinAlpha * (1f - expandScale));
-        final float expandLevelAmount = expandSinAlpha * expandLevelGap;
+        float expandBlockScale, expandLevelAmount;
+        if(expanding || collapsing) {
+            final float expandMu = MathHelper.clamp((modeSwitchTicks + nav.getPartialTicks()) / MODE_SWITCH_MAX, 0f, 1f);
+            final float expandSinAlpha = getSinInterp(expandMu, 0f, 1f);
+            expandBlockScale = 1f - (expandSinAlpha * (1f - expandScale));
+            expandLevelAmount = expandSinAlpha * expandLevelGap;
+        } else {
+            if(expanded) {
+                expandBlockScale = expandScale;
+                expandLevelAmount = expandLevelGap;
+            } else {
+                expandBlockScale = 1f;
+                expandLevelAmount = 0f;
+            }
+        }
         // TODO render floor & poles
         structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer);
     }
@@ -246,10 +259,8 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
             // Switch modes and begin the collapsing/expanding animation
             if(expanded) {
                 collapsing = true;
-                expanded = false;
             } else {
                 expanding = true;
-                expanded = true;
             }
         }
     }
