@@ -12,10 +12,13 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import org.lwjgl.opengl.GL11;
+
+import javax.vecmath.Vector3f;
 import java.awt.Color;
 
 /**
@@ -47,6 +50,10 @@ public class BlockFluidComponent extends BlockComponent {
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
+
+            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            GlStateManager.translate(offset, 0f, offset);
+
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder renderer = tessellator.getBuffer();
             Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -54,118 +61,16 @@ public class BlockFluidComponent extends BlockComponent {
             TextureAtlasSprite flowing = Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getFlowing().toString());
             Color color = new Color(fluid.getColor());
 
-            drawTexturedQuad(renderer, still, EnumFacing.DOWN, color, false);
-            drawTexturedQuad(renderer, flowing, EnumFacing.NORTH, color, true);
-            drawTexturedQuad(renderer, flowing, EnumFacing.EAST, color, true);
-            drawTexturedQuad(renderer, flowing, EnumFacing.SOUTH, color, true);
-            drawTexturedQuad(renderer, flowing, EnumFacing.WEST, color, true);
-            drawTexturedQuad(renderer, still, EnumFacing.UP, color, false);
+            Vector3f location = new Vector3f(0f, 0f, 0f);
+            Vector3f dimensions = new Vector3f(1f, 0.8125f, 1f);  // Fluid block height
+            MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, still, EnumFacing.DOWN, color, false);
+            MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.NORTH, color, true);
+            MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.EAST, color, true);
+            MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.SOUTH, color, true);
+            MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.WEST, color, true);
+            MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, still, EnumFacing.UP, color, false);
 
             GlStateManager.enableLighting();
         } GlStateManager.popMatrix();
-    }
-
-    private void drawTexturedQuad(BufferBuilder renderer, TextureAtlasSprite sprite, EnumFacing face, Color color, boolean flowing) {
-        if(sprite == null) return;
-        double minU, maxU, minV, maxV;
-        double size = 16f;
-        if(flowing) size = 8f;
-        double x1 = 0d;
-        double x2 = 1d;
-        double y1 = 0d;
-        double y2 = 0.8125d; // Fluid block height
-        double z1 = 0d;
-        double z2 = 1d;
-
-        int r = color.getRed();
-        int g = color.getGreen();
-        int b = color.getBlue();
-        int a = color.getAlpha();
-
-        double xt1 = x1 % 1d;
-        double xt2 = xt1 + 1d;
-        while(xt2 > 1f) xt2 -= 1f;
-        double yt1 = y1 % 1d;
-        double yt2 = yt1 + 1d;
-        while(yt2 > 1f) yt2 -= 1f;
-        double zt1 = z1 % 1d;
-        double zt2 = zt1 + 1d;
-        while(zt2 > 1f) zt2 -= 1f;
-
-        if(flowing) {
-            double tmp = 1d - yt1;
-            yt1 = 1d - yt2;
-            yt2 = tmp;
-        }
-
-        switch(face) {
-            case DOWN:
-            case UP:
-                minU = sprite.getInterpolatedU(xt1 * size);
-                maxU = sprite.getInterpolatedU(xt2 * size);
-                minV = sprite.getInterpolatedV(zt1 * size);
-                maxV = sprite.getInterpolatedV(zt2 * size);
-                break;
-            case NORTH:
-            case SOUTH:
-                minU = sprite.getInterpolatedU(xt1 * size);
-                maxU = sprite.getInterpolatedU(xt2 * size);
-                minV = sprite.getInterpolatedV(yt1 * size);
-                maxV = sprite.getInterpolatedV(yt2 * size);
-                break;
-            case WEST:
-            case EAST:
-                minU = sprite.getInterpolatedU(zt1 * size);
-                maxU = sprite.getInterpolatedU(zt2 * size);
-                minV = sprite.getInterpolatedV(yt1 * size);
-                maxV = sprite.getInterpolatedV(yt2 * size);
-                break;
-            default:
-                minU = sprite.getMinU();
-                maxU = sprite.getMaxU();
-                minV = sprite.getMinV();
-                maxV = sprite.getMaxV();
-        }
-
-        renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
-        switch(face) {
-            case DOWN:
-                renderer.pos(x1, y1, z1).tex(minU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y1, z1).tex(maxU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y1, z2).tex(maxU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y1, z2).tex(minU, maxV).color(r, g, b, a).endVertex();
-                break;
-            case UP:
-                renderer.pos(x1, y2, z1).tex(minU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y2, z2).tex(minU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y2, z2).tex(maxU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y2, z1).tex(maxU, minV).color(r, g, b, a).endVertex();
-                break;
-            case NORTH:
-                renderer.pos(x1, y1, z1).tex(minU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y2, z1).tex(minU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y2, z1).tex(maxU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y1, z1).tex(maxU, maxV).color(r, g, b, a).endVertex();
-                break;
-            case SOUTH:
-                renderer.pos(x1, y1, z2).tex(maxU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y1, z2).tex(minU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y2, z2).tex(minU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y2, z2).tex(maxU, minV).color(r, g, b, a).endVertex();
-                break;
-            case WEST:
-                renderer.pos(x1, y1, z1).tex(maxU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y1, z2).tex(minU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y2, z2).tex(minU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x1, y2, z1).tex(maxU, minV).color(r, g, b, a).endVertex();
-                break;
-            case EAST:
-                renderer.pos(x2, y1, z1).tex(minU, maxV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y2, z1).tex(minU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y2, z2).tex(maxU, minV).color(r, g, b, a).endVertex();
-                renderer.pos(x2, y1, z2).tex(maxU, maxV).color(r, g, b, a).endVertex();
-                break;
-        }
-        Tessellator.getInstance().draw();
     }
 }

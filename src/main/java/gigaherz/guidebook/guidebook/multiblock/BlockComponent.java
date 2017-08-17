@@ -10,6 +10,8 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.MathHelper;
+
 import java.util.List;
 
 /**
@@ -38,6 +40,10 @@ public class BlockComponent extends MultiblockComponent {
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
+
+            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            GlStateManager.translate(offset, 0f, offset);
+
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferbuilder = tessellator.getBuffer();
             bufferbuilder.begin(7, DefaultVertexFormats.ITEM);

@@ -215,7 +215,7 @@
       </page_title>
       <p space="14">Multiblock tags allow you to display complex multiblock structures within guidebooks.</p>
       <space height="4"/>
-      <multiblock structures="[gbook:furnace_brick,gbook:furnace_nether_brick]" offset="2,-1.25,2" initialRot="180,0,1,0"/>
+      <multiblock structures="[gbook:furnace_brick,gbook:furnace_nether_brick]" offset="-1,-1,-1" initialRot="180,0,1,0"/>
       <space height="8"/>
       <divider/>
     </page>

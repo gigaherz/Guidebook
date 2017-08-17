@@ -29,8 +29,8 @@ import java.util.ArrayList;
  */
 public class MultiblockPanel implements IHoverPageElement, IClickablePageElement, ITickable {
     private int height = 150; // Default height
-    private PoleMode poles = PoleMode.OFF;
-    private FloorMode floor = FloorMode.GRID;
+    private PoleMode poles = PoleMode.ON;
+    private FloorMode floor = FloorMode.ADJACENT;
     private Vec3f offset = new Vec3f(0f, 0f, 0f); // A block-space offset for the structure to become the new render origin
     private Vec4f initialRot = new Vec4f(0f, 0f, 0f, 0f); // A block-space rotation for the structure to be transformed before it is spun / orbited
     private MultiblockStructure[] structures;
@@ -41,6 +41,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     private float collapsedScale = 1.2f;
     private float expandScale = 0.65f;
     private float expandLevelGap = 1f;
+    private float spinSpeed = 0f;
 
     public MultiblockPanel() {
         upBounds = new Rectangle();
@@ -58,6 +59,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     private boolean collapsing = false;
     private int modeSwitchTicks = 0;
     private int maxDisplayLayer = 0;
+    private int spinAngle = 0;
 
     private static final int CYCLE_TIME = 2000;
     private static final ResourceLocation BOOK_GUI_TEXTURES = GuidebookMod.location("gui/book");
@@ -132,6 +134,8 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 expanded = false;
             }
         }
+
+        spinAngle += spinSpeed;
     }
 
     private int drawUpButton(IBookGraphics nav, int left, int top) {
@@ -165,7 +169,6 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     }
 
     private int drawLevelText(IBookGraphics nav, int left, int top) {
-        // TODO add in center line
         int x = left + nav.getPageWidth() - BUTTON_PANEL_RIGHT_OFFSET;
         Color numberColor = new Color(15, 15, 15, 255);
         top += drawCenteredText(nav, x, top, BUTTON_PANEL_WIDTH, Integer.toString(maxDisplayLayer), numberColor);
@@ -208,8 +211,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 globalScale = 1f + getCollapsedScale();
             }
         }
-        // TODO render floor & poles
-        structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer, globalScale);
+        structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer, globalScale, spinAngle + (nav.getPartialTicks() * spinSpeed));
     }
 
     @Override
@@ -275,6 +277,8 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 newStructure.setOffset(this.offset);
                 newStructure.setInitialRot(this.initialRot);
                 newStructure.setScale(this.scale);
+                newStructure.setFloorMode(this.floor);
+                newStructure.setPoleMode(this.poles);
                 this.maxDisplayLayer = newStructure.getBounds().getY(); // Initialize the maxDisplayLayer to the max y of the last structure loaded
             }
         }
@@ -303,6 +307,8 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
             } else {
                 expanding = true;
             }
+        } else {
+            // TODO drag orbit
         }
     }
 
@@ -322,6 +328,17 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         return mouseX >= bounds.getX() && mouseY >= bounds.getY() && mouseX < bounds.getX() + bounds.getWidth() && mouseY < bounds.getY() + bounds.getHeight();
     }
 
+    private MultiblockStructure getCurrentStructure() {
+        if (structures == null || structures.length == 0)
+            return null;
+        long time = System.currentTimeMillis();
+        return structures[(int) ((time / CYCLE_TIME) % structures.length)];
+    }
+
+    private int getCurrentStructureHeight() {
+        return (getCurrentStructure() == null) ? 1 : getCurrentStructure().getBounds().getY();
+    }
+
     /**
      * Util method that returns a number between y1 and y2 according to an interpolation based off of the transformed sine value at mu
      * @param mu Between [0.0f, 1.0f]
@@ -337,18 +354,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         return (y2 - y1) * alpha + y1;
     }
 
-    private MultiblockStructure getCurrentStructure() {
-        if (structures == null || structures.length == 0)
-            return null;
-        long time = System.currentTimeMillis();
-        return structures[(int) ((time / CYCLE_TIME) % structures.length)];
-    }
-
-    private int getCurrentStructureHeight() {
-        return (getCurrentStructure() == null) ? 1 : getCurrentStructure().getBounds().getY();
-    }
-
-    private enum PoleMode {
+    public enum PoleMode {
         OFF, ON, BELOW_ITEMS;
         private static PoleMode parse(String string) {
             if(string.equalsIgnoreCase("corners")) return ON;
@@ -357,12 +363,13 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         }
     }
 
-    private enum FloorMode {
-        OFF, UNDER, ADJACENT, GRID;
+    public enum FloorMode {
+        OFF, UNDER, ADJACENT, GRID, AROUND;
         private static FloorMode parse(String string) {
             if(string.equalsIgnoreCase("grid")) return GRID;
             else if(string.equalsIgnoreCase("under")) return UNDER;
             else if(string.equalsIgnoreCase("adjacent")) return ADJACENT;
+            else if(string.equalsIgnoreCase("around")) return AROUND;
             else return OFF; // default
         }
     }

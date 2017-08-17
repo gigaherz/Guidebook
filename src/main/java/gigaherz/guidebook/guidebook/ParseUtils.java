@@ -42,7 +42,7 @@ public class ParseUtils {
     }
 
     /**
-     * Parses a vector from the input String that is either in the format of 'Wf' or 'Wf,Xf,Yf,Zf'
+     * Parses a vector from the input String that is either in the format of 'Xf' or 'Xf,Yf,Zf,Wf'
      * @param toParse The input String
      * @return A Vec4f containing the parsed information if valid, or <code>null</code> if parsing failed
      */
