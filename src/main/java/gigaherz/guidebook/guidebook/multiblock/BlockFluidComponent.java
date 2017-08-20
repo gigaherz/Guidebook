@@ -9,14 +9,13 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import org.lwjgl.opengl.GL11;
 
 import javax.vecmath.Vector3f;
 import java.awt.Color;
@@ -44,7 +43,7 @@ public class BlockFluidComponent extends BlockComponent {
     }
 
     @Override
-    public void render(float x, float y, float z, float scale) {
+    public AxisAlignedBB render(float x, float y, float z, float scale) {
         GlStateManager.pushMatrix(); {
             GlStateManager.disableLighting();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
@@ -72,5 +71,27 @@ public class BlockFluidComponent extends BlockComponent {
 
             GlStateManager.enableLighting();
         } GlStateManager.popMatrix();
+        return new AxisAlignedBB(x, y, z, x + 1f, y + 0.8125f, z + 1f);
+    }
+
+    @Override
+    public String getTooltip() {
+        return String.format("Fluid:%s, BlockState:%s", fluid.toString(), blockState.toString());
+    }
+
+    public static class Factory extends BlockComponent.Factory {
+        public Factory() {
+            this.setRegistryName(GuidebookMod.MODID, "blockFluid");
+        }
+
+        @Override
+        public Class<?>[] getMappings() {
+            return new Class<?>[] { BlockLiquid.class, BlockFluidBase.class };
+        }
+
+        @Override
+        public BlockFluidComponent create(IBlockState blockState) {
+            return new BlockFluidComponent(blockState);
+        }
     }
 }

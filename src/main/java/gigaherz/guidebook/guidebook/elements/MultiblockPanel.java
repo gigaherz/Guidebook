@@ -314,7 +314,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
 
     @Override
     public void mouseOver(IBookGraphics info, int x, int y) {
-        // TODO hover tooltips
+        getCurrentStructure().mouseOver(info, x, y);
     }
 
     @Override

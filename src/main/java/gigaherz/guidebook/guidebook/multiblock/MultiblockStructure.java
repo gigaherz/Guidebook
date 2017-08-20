@@ -3,8 +3,10 @@ package gigaherz.guidebook.guidebook.multiblock;
 import com.sun.javafx.geom.Vec3f;
 import com.sun.javafx.geom.Vec4f;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.MultiblockPanel;
-import net.minecraft.block.BlockLiquid;
+import javafx.util.Pair;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -20,24 +22,24 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.model.TRSRTransformation;
-import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Point2d;
-import javax.vecmath.Point2i;
-import javax.vecmath.Vector3f;
+import javax.vecmath.*;
 import java.awt.*;
 import java.io.InputStream;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +52,7 @@ import java.util.List;
 public class MultiblockStructure {
     private MultiblockComponent[][][] structureMatrix; // 3-d array containing a matrix of MultiblockComponents by position, filled with null by default
     private MultiblockComponent[][][] translucentStructureMatrix; // 3-d array containing a 3-d matrix of translucent blocks to be rendered second
+    private List<Pair<AxisAlignedBB, String>> tooltipBBs;
     private Point2i[] floorLocations;
     private Vec3i[] poleLocations;
     private BlockPos bounds;
@@ -58,12 +61,16 @@ public class MultiblockStructure {
     private Vec4f initialRot;
     private MultiblockPanel.FloorMode floorMode;
     private MultiblockPanel.PoleMode poleMode;
+    private FloatBuffer modelViewCache;
+    private FloatBuffer projectionCache;
+    private IntBuffer viewportCache;
 
     private static final ResourceLocation FLOOR_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_floor.png");
     private static final ResourceLocation POLE_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_beacon.png");
 
     private MultiblockStructure(BlockPos size) {
         this.bounds = size;
+        tooltipBBs = new ArrayList<>();
     }
 
     public BlockPos getBounds() {
@@ -113,6 +120,7 @@ public class MultiblockStructure {
             TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
 
             GlStateManager.pushMatrix(); {
+
                 // Set up OpenGL settings
                 GlStateManager.enableRescaleNormal();
                 GlStateManager.enableAlpha();
@@ -122,8 +130,8 @@ public class MultiblockStructure {
                 GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-                GlStateManager.translate(left, top, 0f); // Screen-space transform to the specified x,y
-                GlStateManager.translate(-18f, 0f, 100.0F); // Screen-space transform to the left 18 pixels (necessary arbitrary offset) and forward on the z-axis by 100 units
+                translate(left, top, 0f); // Screen-space transform to the specified x,y
+                translate(-18f, 0f, 100.0F); // Screen-space transform to the left 18 pixels (necessary arbitrary offset) and forward on the z-axis by 100 units
 
                 GlStateManager.pushMatrix(); {
                     // Apply and scale out lighting
@@ -131,18 +139,20 @@ public class MultiblockStructure {
                     RenderHelper.enableGUIStandardItemLighting();
                 } GlStateManager.popMatrix();
 
-                GlStateManager.scale(1.0F, -1.0F, 1.0F); // Screen-space flip on y-axis
-                GlStateManager.scale(16.0F, 16.0F, 16.0F); // Screen-space scale by 16 units in each direction to make the multiblock appear larger
+                scale(1.0F, -1.0F, 1.0F); // Screen-space flip on y-axis
+                scale(16.0F, 16.0F, 16.0F); // Screen-space scale by 16 units in each direction to make the multiblock appear larger
                 applyGUITransformationMatrix(); // Screens-space -> Block-space
 
                 // Block space transformations:
-                GlStateManager.scale(2.0F, 2.0F, 2.0F); // Scale each block up by a hard 2x in each direction
-                GlStateManager.scale(scale, scale, scale); // Then, scale by the specified parsed scale in each direction
-                GlStateManager.scale(globalScale, globalScale, globalScale); // Finally, scale by the interpolated value used for scaling down during expansion
-                GlStateManager.rotate(spinAngle, 0f, 1f, 0f); // Rotate the structure by the interpolated spin angle
+                scale(2.0F, 2.0F, 2.0F); // Scale each block up by a hard 2x in each direction
+                scale(scale, scale, scale); // Then, scale by the specified parsed scale in each direction
+                scale(globalScale, globalScale, globalScale); // Finally, scale by the interpolated value used for scaling down during expansion
+                rotate(spinAngle, 0f, 1f, 0f); // Rotate the structure by the interpolated spin angle
                 //noinspection SuspiciousNameCombination
-                GlStateManager.rotate(initialRot.x, initialRot.y, initialRot.z, initialRot.w); // Rotate by the specified parsed scale in each direction
-                GlStateManager.translate(offset.x, offset.y, offset.z); // Transform by the specified parsed offset
+                rotate(initialRot.x, initialRot.y, initialRot.z, initialRot.w); // Rotate by the specified parsed scale in each direction
+                translate(offset.x, offset.y, offset.z); // Transform by the specified parsed offset
+
+                storeViewModelPerspective();
 
                 renderPoles(layerGap, blockScale, maxDisplayLayer); // Draw the poles and lazily initialize if null
                 renderFloor(layerGap); // Draw the floor and lazily initialize if null
@@ -151,6 +161,7 @@ public class MultiblockStructure {
                 textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
                 textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
 
+                tooltipBBs.clear();
                 renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw opaque blocks
                 renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
 
@@ -168,6 +179,81 @@ public class MultiblockStructure {
 
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();
+    }
+
+    private void storeViewModelPerspective() {
+        modelViewCache = BufferUtils.createFloatBuffer(16);
+        projectionCache = BufferUtils.createFloatBuffer(16);
+        viewportCache = BufferUtils.createIntBuffer(16);
+
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelViewCache);
+        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionCache);
+        GL11.glGetInteger(GL11.GL_VIEWPORT, viewportCache);
+    }
+
+    private void scale(float x, float y, float z) {
+        GlStateManager.scale(x, y, z);
+    }
+
+    private void rotate(float angle, float x, float y, float z) {
+        GlStateManager.rotate(angle, x, y, z);
+    }
+
+    private void translate(float x, float y, float z) {
+        GlStateManager.translate(x, y, z);
+    }
+
+    /**
+     *
+     * @param info
+     * @param mouseX
+     * @param mouseY
+     */
+    public void mouseOver(IBookGraphics info, int mouseX, int mouseY) {
+        Pair<Vector3f, Vector3f> mouseRay = getMouseRay(mouseX, mouseY, this.modelViewCache, this.projectionCache, this.viewportCache);
+        System.out.println(String.format("start[x:%f,y:%f,z:%f]", mouseRay.getKey().x, mouseRay.getKey().y, mouseRay.getKey().z));
+        System.out.println(String.format("end[x:%f,y:%f,z:%f]", mouseRay.getValue().x, mouseRay.getValue().y, mouseRay.getValue().z));
+
+        List<Pair<RayTraceResult, String>> results = new ArrayList<>();
+        for(Pair<AxisAlignedBB, String> bbStringPair : tooltipBBs) {
+            RayTraceResult result = bbStringPair.getKey().calculateIntercept(toVec3d(mouseRay.getKey()), toVec3d(mouseRay.getValue()));
+            if(result != null && result.typeOfHit != RayTraceResult.Type.MISS) {
+                results.add(new Pair<>(result, bbStringPair.getValue()));
+            }
+        }
+
+        if(results.size() != 0) {
+            Pair<RayTraceResult, String> minDistance = results.get(0);
+            for(Pair<RayTraceResult, String> result : results) {
+                if(result == minDistance) continue;
+                if(minDistance.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())) > result.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey()))) minDistance = result;
+            }
+            System.out.println(String.format("firstHit[x:%f,y:%f,z:%f]", minDistance.getKey().hitVec.x, minDistance.getKey().hitVec.y, minDistance.getKey().hitVec.z));
+        }
+    }
+
+    private Vec3d toVec3d(Vector3f vecIn) {
+        return new Vec3d(vecIn.x, vecIn.y, vecIn.z);
+    }
+
+    /**
+     *
+     * @param mouseX
+     * @param mouseY
+     * @param modelView
+     * @param projection
+     * @param viewport
+     * @return
+     */
+    public static Pair<Vector3f, Vector3f> getMouseRay(int mouseX, int mouseY, FloatBuffer modelView, FloatBuffer projection, IntBuffer viewport) {
+        float winX, winY;
+        FloatBuffer startPos = BufferUtils.createFloatBuffer(3);
+        FloatBuffer endPos = BufferUtils.createFloatBuffer(3);
+        winX = (float) mouseX;
+        winY = (float) viewport.get(2) - (float) mouseY;
+        GLU.gluUnProject(winX, winY, 0f, modelView, projection, viewport, startPos);
+        GLU.gluUnProject(winX, winY, 1f, modelView, projection, viewport, endPos);
+        return new Pair<>(new Vector3f(startPos.get(0), startPos.get(1), startPos.get(2)), new Vector3f(endPos.get(0), endPos.get(1), endPos.get(2)));
     }
 
     /**
@@ -258,7 +344,7 @@ public class MultiblockStructure {
                     if(j + 1 <= maxDisplayLayer) { // If the current layer should be rendered according to the display layer slider
                         for (int k = 0; k < componentMatrix[i][j].length; ++k) {
                             if (componentMatrix[i][j][k] != null) { // Ensure there isn't air at the position
-                                componentMatrix[i][j][k].render(i, j + offsetY + (layerGap * j), k, blockScale); // Finally, call MultiblockComponent.render(...)
+                                tooltipBBs.add(new Pair<>(componentMatrix[i][j][k].render(i, j + offsetY + (layerGap * j), k, blockScale), componentMatrix[i][j][k].getTooltip()));
                             }
                         }
                     }
@@ -479,8 +565,8 @@ public class MultiblockStructure {
             // Loop through each block in the structure
             for(Template.BlockInfo block : blocks) {
                 BlockComponent component;
-                if(block.blockState.getBlock() instanceof BlockFluidBase || block.blockState.getBlock() instanceof BlockLiquid) component = new BlockFluidComponent(block.blockState);
-                else component = new BlockComponent(block.blockState);
+                component = makeBlockComponent(block.blockState); // Retrieve the correct block component type instance
+
                 // If necessary, initialize the y-array at the x-position
                 if(structureMatrix[block.pos.getX()] == null) structureMatrix[block.pos.getX()] = new MultiblockComponent[structure.getBounds().getY()][];
                 if(translucentStructureMatrix[block.pos.getX()] == null) translucentStructureMatrix[block.pos.getX()] = new MultiblockComponent[structure.getBounds().getY()][];
@@ -507,6 +593,27 @@ public class MultiblockStructure {
             GuidebookMod.logger.warn(String.format("Structure '%s.nbt' not found in assets/%s/structures/! Ignoring!", structureRL.getResourcePath(), structureRL.getResourceDomain()));
             return null;
         }
+    }
+
+    /**
+     * Creates a BlockComponent based off of the BlockState's block
+     * Uses BlockComponent.Factory.registry to create mapped instances
+     * @param blockState The block state that was parsed from the template
+     * @return A specialized BlockComponent subclass if a registered Factory has the block mapped, or a BlockComponent if not
+     */
+    private static BlockComponent makeBlockComponent(IBlockState blockState) {
+        // Loop through each factory
+        for(BlockComponent.Factory componentFactory : BlockComponent.Factory.registry.getValues()) {
+            // Loop through each of its class mappings
+            for(Class<?> blockClass : componentFactory.getMappings()) {
+                // If the BlockState's block is an instance of one of the class mappings, create a new instance of that type of BlockComponent and return it
+                if(blockClass.isInstance(blockState.getBlock())) {
+                    return componentFactory.create(blockState);
+                }
+            }
+        }
+        // If no mapping was needed, use the default BlockComponent
+        return new BlockComponent(blockState);
     }
 
     /**
