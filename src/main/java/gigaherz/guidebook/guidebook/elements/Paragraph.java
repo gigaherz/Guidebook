@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import net.minecraft.util.text.TextFormatting;
@@ -16,6 +17,7 @@ public class Paragraph implements IPageElement
     public int color = 0xFF000000;
     public int indent = 0;
     public int space = 2;
+    public float scale = 1f;
     public boolean bold;
     public boolean italics;
     public boolean underline;
@@ -32,7 +34,7 @@ public class Paragraph implements IPageElement
         if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
         if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
         if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
-        return nav.addStringWrapping(left + indent, top, textWithFormat, color, alignment) + space;
+        return nav.addStringWrapping(left + indent, top, textWithFormat, color, alignment, scale) + space;
     }
 
     @Override
@@ -66,6 +68,11 @@ public class Paragraph implements IPageElement
         if (attr != null)
         {
             space = Ints.tryParse(attr.getTextContent());
+        }
+
+        attr = attributes.getNamedItem("scale");
+        if(attr != null) {
+            scale = Floats.tryParse(attr.getTextContent());
         }
 
         attr = attributes.getNamedItem("bold");
@@ -129,6 +136,7 @@ public class Paragraph implements IPageElement
         paragraph.bold = bold;
         paragraph.italics = italics;
         paragraph.underline = underline;
+        paragraph.scale = scale;
         return paragraph;
     }
 }

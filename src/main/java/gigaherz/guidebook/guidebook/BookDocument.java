@@ -332,7 +332,8 @@ public class BookDocument
                 p.alignment = 1;
                 p.space = 4;
                 p.underline = true;
-                p.italics = true;
+                p.italics = false;
+                p.scale = 1.5f;
 
                 elements.add(p);
 
