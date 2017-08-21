@@ -86,7 +86,7 @@ public class BlockComponent extends MultiblockComponent {
 
     @Override
     public void renderHighlight(float x, float y, float z, float scale) {
-
+        // TODO cache AxisAlignedBB for the bounds of the IBakedModel's quads and expanded by .025f
     }
 
     @Override

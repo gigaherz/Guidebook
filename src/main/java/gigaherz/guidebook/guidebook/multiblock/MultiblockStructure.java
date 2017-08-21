@@ -54,7 +54,7 @@ public class MultiblockStructure {
     private List<Pair<AxisAlignedBB, String>> tooltipBBs;
     private Point2i[] floorLocations;
     private Vec3i[] poleLocations;
-    private Vec3i hoveredPos = new Vec3i(1, 1, 1);
+    private Vec3i hoveredPos = new Vec3i(1, 1, 1); // TODO update
     private BlockPos bounds;
     private float scale;
     private Vec3f offset;
@@ -233,7 +233,7 @@ public class MultiblockStructure {
             }
             info.drawHoverText(mouseX, mouseY, 101, minDistance.getValue());
         }
-        BlockComponent bc = getBlockAt(0, 0, 0);
+        BlockComponent bc = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ());
         info.drawHoverText(mouseX, mouseY, 101, bc != null ? bc.getTooltip() : "");
     }
 
