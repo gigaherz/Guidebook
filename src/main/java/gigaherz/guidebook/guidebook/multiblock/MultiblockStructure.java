@@ -28,7 +28,6 @@ import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -55,6 +54,7 @@ public class MultiblockStructure {
     private List<Pair<AxisAlignedBB, String>> tooltipBBs;
     private Point2i[] floorLocations;
     private Vec3i[] poleLocations;
+    private Vec3i hoveredPos = new Vec3i(1, 1, 1);
     private BlockPos bounds;
     private float scale;
     private Vec3f offset;
@@ -165,6 +165,11 @@ public class MultiblockStructure {
                 renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw opaque blocks
                 renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
 
+                MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
+                if(hoveredComponent != null) {
+                    hoveredComponent.renderHighlight(1, 1 + (-layerGap * (bounds.getY() - 1) / 2f) + (layerGap * 1), 1, blockScale);
+                }
+
                 // Reset texture manager settings
                 textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
                 textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
@@ -211,8 +216,6 @@ public class MultiblockStructure {
      */
     public void mouseOver(IBookGraphics info, int mouseX, int mouseY) {
         Pair<Vector3f, Vector3f> mouseRay = getMouseRay(mouseX, mouseY, this.modelViewCache, this.projectionCache, this.viewportCache);
-        System.out.println(String.format("start[x:%f,y:%f,z:%f]", mouseRay.getKey().x, mouseRay.getKey().y, mouseRay.getKey().z));
-        System.out.println(String.format("end[x:%f,y:%f,z:%f]", mouseRay.getValue().x, mouseRay.getValue().y, mouseRay.getValue().z));
 
         List<Pair<RayTraceResult, String>> results = new ArrayList<>();
         for(Pair<AxisAlignedBB, String> bbStringPair : tooltipBBs) {
@@ -228,8 +231,10 @@ public class MultiblockStructure {
                 if(result == minDistance) continue;
                 if(minDistance.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())) > result.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey()))) minDistance = result;
             }
-            System.out.println(String.format("firstHit[x:%f,y:%f,z:%f]", minDistance.getKey().hitVec.x, minDistance.getKey().hitVec.y, minDistance.getKey().hitVec.z));
+            info.drawHoverText(mouseX, mouseY, 101, minDistance.getValue());
         }
+        BlockComponent bc = getBlockAt(0, 0, 0);
+        info.drawHoverText(mouseX, mouseY, 101, bc != null ? bc.getTooltip() : "");
     }
 
     private Vec3d toVec3d(Vector3f vecIn) {
@@ -627,7 +632,7 @@ public class MultiblockStructure {
      * @param face The face of the cuboid to render
      * @param color The glColor color
      */
-    private static void drawTexturedQuad(Vector3f location, Vector3f dimensions, BufferBuilder renderer, ResourceLocation texture, Point2d UV, Point2d WH, EnumFacing face, Color color) {
+    static void drawTexturedQuad(Vector3f location, Vector3f dimensions, BufferBuilder renderer, ResourceLocation texture, Point2d UV, Point2d WH, EnumFacing face, Color color) {
         if(UV == null || WH == null) return;
         double minU, maxU, minV, maxV;
         double x1 = location.x;

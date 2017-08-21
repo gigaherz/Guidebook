@@ -10,6 +10,11 @@ public class ItemComponent extends MultiblockComponent {
     }
 
     @Override
+    public void renderHighlight(float x, float y, float z, float scale) {
+
+    }
+
+    @Override
     public String getTooltip() {
         return null;
     }

@@ -471,6 +471,12 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
+    public void drawHoverText(int left, int top, int z, String text)
+    {
+        gui.drawHoveringText(text, left, top);
+    }
+
+    @Override
     public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
     {
         int sw = tw != 0 ? tw : 256;

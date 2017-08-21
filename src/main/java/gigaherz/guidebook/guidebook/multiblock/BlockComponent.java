@@ -10,6 +10,9 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -20,7 +23,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
+import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,11 +38,23 @@ public class BlockComponent extends MultiblockComponent {
     /** The type of block in this particular spot in the structure. */
     protected final IBlockState blockState;
     protected final IBakedModel bakedModel;
+    protected final String tooltipCache;
 
     BlockComponent(IBlockState stateIn) {
         this.blockState = stateIn;
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
         bakedModel = dispatcher.getModelForState(this.blockState);
+
+        // Cache tooltip
+        ItemStack is = new ItemStack(Item.getItemFromBlock(blockState.getBlock()), 1, blockState.getBlock().damageDropped(blockState));
+        List<String> retrievedTooltip = is.getTooltip(null, ITooltipFlag.TooltipFlags.NORMAL);
+        StringBuilder formatted = new StringBuilder();
+        for(int i = 0; i < retrievedTooltip.size(); ++i) {
+            if(i != 0) formatted.append("\n");
+            formatted.append(retrievedTooltip.get(i));
+        }
+        tooltipCache = formatted.toString();
+
     }
 
     IBlockState getBlockState() {
@@ -56,12 +73,11 @@ public class BlockComponent extends MultiblockComponent {
 
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferbuilder = tessellator.getBuffer();
-            bufferbuilder.begin(7, DefaultVertexFormats.ITEM);
 
+            bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
             for (EnumFacing enumfacing : EnumFacing.values()) {
                 this.renderQuads(bufferbuilder, bakedModel.getQuads(this.blockState, enumfacing, 0L));
             }
-
             this.renderQuads(bufferbuilder, bakedModel.getQuads(this.blockState, null, 0L));
             tessellator.draw();
         } GlStateManager.popMatrix();
@@ -69,8 +85,13 @@ public class BlockComponent extends MultiblockComponent {
     }
 
     @Override
+    public void renderHighlight(float x, float y, float z, float scale) {
+
+    }
+
+    @Override
     public String getTooltip() {
-        return blockState.toString();
+        return tooltipCache;
     }
 
     private void renderQuads(BufferBuilder bufferBuilder, List<BakedQuad> quads) {

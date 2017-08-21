@@ -74,7 +74,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     @Override
     public int apply(IBookGraphics nav, int left, int top) {
         // Update bounds
-        bounds = new Rectangle(left, top, BookRendering.DEFAULT_BOOK_WIDTH, height);
+        bounds = new Rectangle(left, top, nav.getPageWidth() + 6, height); // Arbitrary width offset '6' needed to allow buttonPanel to be activated when outside of normal pageWidth bounds
         if(getCurrentStructure() != null) {
             updateLayerSelectLogic();
             renderStructure(getCurrentStructure(), nav,left + (nav.getPageWidth() / 2), top + (height / 2));

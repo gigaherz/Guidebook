@@ -17,6 +17,7 @@ import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 
+import javax.vecmath.Point2d;
 import javax.vecmath.Vector3f;
 import java.awt.Color;
 
@@ -68,15 +69,42 @@ public class BlockFluidComponent extends BlockComponent {
             MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.SOUTH, color, true);
             MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.WEST, color, true);
             MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, still, EnumFacing.UP, color, false);
-
             GlStateManager.enableLighting();
         } GlStateManager.popMatrix();
         return new AxisAlignedBB(x, y, z, x + 1f, y + 0.8125f, z + 1f);
     }
 
     @Override
+    public void renderHighlight(float x, float y, float z, float scale) {
+        GlStateManager.pushMatrix(); {
+            GlStateManager.disableLighting();
+            GlStateManager.translate(-0.5F, -0.5F, -0.5F);
+            GlStateManager.translate(x, y, z);
+            GlStateManager.scale(scale, scale, scale);
+
+            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            GlStateManager.translate(offset, 0f, offset);
+
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder renderer = tessellator.getBuffer();
+            Vector3f highlightLocation = new Vector3f(-0.025f, -0.025f, -0.025f);
+            Vector3f highlightDimensions = new Vector3f(1.05f, 0.8625f, 1.05f);
+            Point2d UV = new Point2d(0d, 0d);
+            Point2d WH = new Point2d(1d, 1d);
+            Color color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
+            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.DOWN, color);
+            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.NORTH, color);
+            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.EAST, color);
+            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.SOUTH, color);
+            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.WEST, color);
+            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.UP, color);
+            GlStateManager.enableLighting();
+        } GlStateManager.popMatrix();
+    }
+
+    @Override
     public String getTooltip() {
-        return String.format("Fluid:%s, BlockState:%s", fluid.toString(), blockState.toString());
+        return String.format("Fluid: %s", fluid.getName());
     }
 
     public static class Factory extends BlockComponent.Factory {
