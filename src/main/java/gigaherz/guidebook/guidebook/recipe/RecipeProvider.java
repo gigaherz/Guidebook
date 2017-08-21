@@ -30,17 +30,20 @@ import java.util.List;
  *  - CraftingRecipeProvider.ShapedRecipeProvider
  *  - CraftingRecipeProvider.ShapelessRecipeProvider
  */
-public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProvider> {
+public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProvider>
+{
     public static IForgeRegistry<RecipeProvider> registry;
 
     /**
      * Handles registry of the RecipeProvider registry to the meta-registry and register the default vanilla RecipeProvider's
      */
     @Mod.EventBusSubscriber(modid = GuidebookMod.MODID)
-    public static class RegistrationHandler {
+    public static class RegistrationHandler
+    {
         @SubscribeEvent
         @SuppressWarnings("unchecked")
-        public static void registerRegistries(RegistryEvent.NewRegistry event) {
+        public static void registerRegistries(RegistryEvent.NewRegistry event)
+        {
             RegistryBuilder rb = new RegistryBuilder<RecipeProvider>();
             rb.setType(RecipeProvider.class);
             rb.setName(new ResourceLocation(GuidebookMod.MODID, "recipe_provider"));
@@ -48,7 +51,8 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
         }
 
         @SubscribeEvent
-        public static void registerDefaults(RegistryEvent.Register<RecipeProvider> event) {
+        public static void registerDefaults(RegistryEvent.Register<RecipeProvider> event)
+        {
             CraftingRecipeProvider crafting = new CraftingRecipeProvider();
             event.getRegistry().register(crafting.new ShapedRecipeProvider());
             event.getRegistry().register(crafting.new ShapelessRecipeProvider());
@@ -99,7 +103,8 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
      * An optionally overridable method that gets called before book parsing which allows RecipeProviders to cache
      * recipes retrieved from global registries (for efficiency).
      */
-    public void reloadCache() {
+    public void reloadCache()
+    {
 
     }
 
@@ -111,14 +116,16 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
      * @param stack The ItemStack to inspect, which gets copied from the start and is unaffected
      * @return Each ItemStack created as a result of copying and expanding the input stack (for cases that lack expansion, the size will be 1)
      */
-    protected static List<ItemStack> copyAndExpand(@Nonnull ItemStack stack) {
+    protected static List<ItemStack> copyAndExpand(@Nonnull ItemStack stack)
+    {
         NonNullList<ItemStack> stacks = NonNullList.create();
         ItemStack base = stack.copy();
         stacks.add(base);
 
         if(base.isItemStackDamageable()) base.setItemDamage(0);
         if(base.getMetadata() == OreDictionary.WILDCARD_VALUE && !base.getHasSubtypes()) base.setItemDamage(0);
-        else if(base.getMetadata() == OreDictionary.WILDCARD_VALUE && base.getHasSubtypes()){
+        else if(base.getMetadata() == OreDictionary.WILDCARD_VALUE && base.getHasSubtypes())
+        {
             Item item = base.getItem();
             int stackSize = base.getCount();
             NBTTagCompound tag = (base.hasTagCompound() && base.getTagCompound() != null) ? base.getTagCompound().copy() : null;
@@ -126,11 +133,12 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
             NonNullList<ItemStack> subItems = NonNullList.create();
             item.getSubItems(CreativeTabs.SEARCH, subItems);
 
-            for (ItemStack subitem : subItems) {
-                subitem = subitem.copy();
-                subitem.setCount(stackSize);
-                subitem.setTagCompound(tag);
-                processed_items.add(subitem);
+            for (ItemStack subItem : subItems)
+            {
+                subItem = subItem.copy();
+                subItem.setCount(stackSize);
+                subItem.setTagCompound(tag);
+                processed_items.add(subItem);
             }
             stacks = subItems;
         }
@@ -140,12 +148,14 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
     /**
      * A helper packaging class that allows RecipeProvider.provideRecipeComponents(...) to return multiple GUI components and values
      */
-    public static class ProvidedComponents {
+    public static class ProvidedComponents
+    {
         public int height = 0;
         public Stack[] recipeComponents;
         public Image background;
         public IRenderDelegate delegate;
-        public ProvidedComponents(int h, Stack[] rc, Image bkgrd, IRenderDelegate ird) {
+        public ProvidedComponents(int h, Stack[] rc, Image bkgrd, IRenderDelegate ird)
+        {
             height = h;
             recipeComponents = rc;
             background = bkgrd;

@@ -22,75 +22,91 @@ import java.util.List;
  * @author joazlazer
  * A class designed to provide both shaped and shapeless crafting recipes for display in Guidebooks
  */
-class CraftingRecipeProvider {
-    public class ShapedRecipeProvider extends RecipeProvider {
-        ShapedRecipeProvider() {
+class CraftingRecipeProvider
+{
+    public class ShapedRecipeProvider extends RecipeProvider
+    {
+        ShapedRecipeProvider()
+        {
             this.setRegistryName(GuidebookMod.MODID, "shaped");
         }
 
         @Override
-        public boolean hasRecipe(@Nonnull ItemStack targetOutput) {
+        public boolean hasRecipe(@Nonnull ItemStack targetOutput)
+        {
             return hasCraftingRecipe(targetOutput, Type.SHAPED);
         }
 
         @Override
-        public boolean hasRecipe(@Nonnull ResourceLocation recipeKey) {
+        public boolean hasRecipe(@Nonnull ResourceLocation recipeKey)
+        {
             return hasCraftingRecipe(recipeKey, Type.SHAPED);
         }
 
         @Nullable
         @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
+        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex)
+        {
             return provideCraftingRecipeComponents(findRecipe(targetOutput, recipeIndex, Type.SHAPED), Type.SHAPED);
         }
 
         @Nullable
         @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey) {
+        public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey)
+        {
             return provideCraftingRecipeComponents(findRecipe(recipeKey), Type.SHAPED);
         }
     }
 
-    public class ShapelessRecipeProvider extends RecipeProvider {
-        ShapelessRecipeProvider() {
+    public class ShapelessRecipeProvider extends RecipeProvider
+    {
+        ShapelessRecipeProvider()
+        {
             this.setRegistryName(GuidebookMod.MODID, "shapeless");
         }
 
         @Override
-        public void reloadCache() {
+        public void reloadCache()
+        {
             // Only reload cache once
             reloadCaches();
         }
 
         @Override
-        public boolean hasRecipe(@Nonnull ItemStack targetOutput) {
+        public boolean hasRecipe(@Nonnull ItemStack targetOutput)
+        {
             return hasCraftingRecipe(targetOutput, Type.SHAPELESS);
         }
 
         @Override
-        public boolean hasRecipe(@Nonnull ResourceLocation recipeKey) {
+        public boolean hasRecipe(@Nonnull ResourceLocation recipeKey)
+        {
             return hasCraftingRecipe(recipeKey, Type.SHAPELESS);
         }
 
         @Nullable
         @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex) {
+        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex)
+        {
             return provideCraftingRecipeComponents(findRecipe(targetOutput, recipeIndex, Type.SHAPELESS), Type.SHAPELESS);
         }
 
         @Nullable
         @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey) {
+        public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey)
+        {
             return provideCraftingRecipeComponents(findRecipe(recipeKey), Type.SHAPELESS);
         }
     }
 
-    public enum Type {
+    public enum Type
+    {
         SHAPED,
         SHAPELESS;
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             if(this == SHAPED) return "shaped";
             else return "shapeless";
         }
@@ -99,10 +115,12 @@ class CraftingRecipeProvider {
     private ArrayList<IRecipe> shapedRecipes;
     private ArrayList<IRecipe> shapelessRecipes;
 
-    private void reloadCaches() {
+    private void reloadCaches()
+    {
         shapelessRecipes = new ArrayList<>();
         shapedRecipes = new ArrayList<>();
-        for(IRecipe recipe : ForgeRegistries.RECIPES.getValues()) {
+        for(IRecipe recipe : ForgeRegistries.RECIPES.getValues())
+        {
             if(recipe instanceof ShapelessOreRecipe) shapelessRecipes.add(recipe);
             if(recipe instanceof ShapelessRecipes) shapelessRecipes.add(recipe);
             if(recipe instanceof ShapedRecipes) shapedRecipes.add(recipe);
@@ -125,28 +143,36 @@ class CraftingRecipeProvider {
     private static final int[] HEIGHT = BACKGROUND_H;
     private static final int LEFT_OFFSET = 38;
 
-    private ArrayList<IRecipe> getCacheForType(Type type) {
+    private ArrayList<IRecipe> getCacheForType(Type type)
+    {
         return type == Type.SHAPELESS ? shapelessRecipes : shapedRecipes;
     }
 
-    private boolean hasCraftingRecipe(ItemStack targetOutput, Type type) {
+    private boolean hasCraftingRecipe(ItemStack targetOutput, Type type)
+    {
         // Query the shaped and shaped ore recipe caches
         return queryRecipeCaches(targetOutput, 0, getCacheForType(type)) != null;
     }
 
-    private boolean hasCraftingRecipe(ResourceLocation recipeKey, Type type) {
+    private boolean hasCraftingRecipe(ResourceLocation recipeKey, Type type)
+    {
         // Query the recipe registry to find the specified registry key
-        if(type == Type.SHAPED && ForgeRegistries.RECIPES.containsKey(recipeKey)) {
+        if(type == Type.SHAPED && ForgeRegistries.RECIPES.containsKey(recipeKey))
+        {
             IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeKey);
             if(recipe instanceof ShapedRecipes || recipe instanceof ShapedOreRecipe) return true;
-            else {
+            else
+            {
                 GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] Specified recipe '%s' was registered, but is not in the recipe category '%s'. Ignoring.", recipeKey, type.toString()));
                 return false;
             }
-        } else if (type == Type.SHAPELESS && ForgeRegistries.RECIPES.containsKey(recipeKey)) {
+        }
+        else if (type == Type.SHAPELESS && ForgeRegistries.RECIPES.containsKey(recipeKey))
+        {
             IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeKey);
             if(recipe instanceof ShapelessRecipes || recipe instanceof ShapelessOreRecipe) return true;
-            else {
+            else
+            {
                 GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] Specified recipe '%s' was registered, but is not in the recipe category '%s'. Ignoring.", recipeKey, type.toString()));
                 return false;
             }
@@ -155,13 +181,19 @@ class CraftingRecipeProvider {
     }
 
     @Nullable
-    private IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex, ArrayList<IRecipe> cache) {
+    private IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex, ArrayList<IRecipe> cache)
+    {
         // Query either the shaped or shapeless recipe cache, but return the (recipeIndex + 1)th occurance
-        for(IRecipe recipe : cache) {
-            if(recipe.getRecipeOutput().isItemEqual(targetOutput)) {
-                if(recipeIndex > 0) {
+        for(IRecipe recipe : cache)
+        {
+            if(recipe.getRecipeOutput().isItemEqual(targetOutput))
+            {
+                if(recipeIndex > 0)
+                {
                     --recipeIndex;
-                } else {
+                }
+                else
+                {
                     return recipe;
                 }
             }
@@ -170,14 +202,17 @@ class CraftingRecipeProvider {
     }
 
     @Nullable
-    private IRecipe findRecipe(@Nonnull ResourceLocation recipeKey) {
+    private IRecipe findRecipe(@Nonnull ResourceLocation recipeKey)
+    {
         return ForgeRegistries.RECIPES.getValue(recipeKey);
     }
 
     @Nullable
-    private IRecipe findRecipe(@Nonnull ItemStack targetOutput, int recipeIndex, Type type) {
+    private IRecipe findRecipe(@Nonnull ItemStack targetOutput, int recipeIndex, Type type)
+    {
         IRecipe foundRecipe = queryRecipeCaches(targetOutput, recipeIndex, getCacheForType(type));
-        if(foundRecipe == null) {
+        if(foundRecipe == null)
+        {
             foundRecipe = queryRecipeCaches(targetOutput, 0, getCacheForType(type));
             GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] <recipe> index '%d' was not found in the list of cached %s recipes for '%s'. Falling back to the first occurrence.", recipeIndex, type.toString(), targetOutput.toString()));
         }
@@ -185,22 +220,26 @@ class CraftingRecipeProvider {
     }
 
     @Nullable
-    private RecipeProvider.ProvidedComponents provideCraftingRecipeComponents(@Nullable IRecipe recipe, Type type) {
-        if(recipe != null) {
+    private RecipeProvider.ProvidedComponents provideCraftingRecipeComponents(@Nullable IRecipe recipe, Type type)
+    {
+        if(recipe != null)
+        {
             int constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
             ArrayList<Stack> stackComponents = new ArrayList<>();
             IRenderDelegate ird = (nav, top, left) -> { };
             int gridWidth = constantIndex == 0 ? 3 : 2;
 
             // Set up input slots
-            for(int i = 0; i < recipe.getIngredients().size(); ++i) {
+            for(int i = 0; i < recipe.getIngredients().size(); ++i)
+            {
                 Stack inputSlot = new Stack();
                 ItemStack[] matching = recipe.getIngredients().get(i).getMatchingStacks();
                 if(matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
                 // Copy each stack
                 inputSlot.stacks = new ItemStack[matching.length];
-                for (int j = 0; j < matching.length; ++j) {
+                for (int j = 0; j < matching.length; ++j)
+                {
                     inputSlot.stacks[j] = matching[j].copy();
                 }
 
@@ -235,8 +274,8 @@ class CraftingRecipeProvider {
             Stack[] components = new Stack[stackComponents.size()];
             stackComponents.toArray(components);
             return new RecipeProvider.ProvidedComponents(height, components, background, ird);
-        } else GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found although hasRecipe(...) returned true. Something is wrong!", type.toString()));
+        }
+        else GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found although hasRecipe(...) returned true. Something is wrong!", type.toString()));
         return null;
     }
-
 }

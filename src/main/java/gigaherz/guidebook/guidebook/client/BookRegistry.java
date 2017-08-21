@@ -46,7 +46,8 @@ public class BookRegistry
     public static void parseAllBooks(IResourceManager manager)
     {
         // Reload recipe caches
-        for(RecipeProvider recipeProvider : RecipeProvider.registry.getValues()) {
+        for(RecipeProvider recipeProvider : RecipeProvider.registry.getValues())
+        {
             recipeProvider.reloadCache();
         }
 
