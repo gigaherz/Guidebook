@@ -166,7 +166,7 @@ public class MultiblockStructure {
                 renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
 
                 MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
-                if(hoveredComponent != null) {
+                if(hoveredComponent != null && hoveredPos.getY() + 1 <= maxDisplayLayer) {
                     hoveredComponent.renderHighlight(1, 1 + (-layerGap * (bounds.getY() - 1) / 2f) + (layerGap * 1), 1, blockScale);
                 }
 
