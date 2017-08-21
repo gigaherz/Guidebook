@@ -18,12 +18,12 @@ import java.util.Arrays;
  * a background image, and additional components to display said recipe
  */
 public class RecipePanel extends Space {
-    public Stack[] recipeComponents;
-    public Image background;
-    public int recipeIndex = 0; // An index to use to specify a certain recipe when multiple ones exist for the target output item
-    public IRenderDelegate additionalRenderer;
-    public int indent = 0;
-    public int height = 10;
+    private Stack[] recipeComponents;
+    private Image background;
+    private int recipeIndex = 0; // An index to use to specify a certain recipe when multiple ones exist for the target output item
+    private IRenderDelegate additionalRenderer;
+    private int indent = 0;
+    private int height = 10;
 
     // Only used to communicate across parsing methods at resource load; not needed to be duplicated
     private RecipeProvider recipeProvider;
@@ -50,7 +50,7 @@ public class RecipePanel extends Space {
             ResourceLocation recipeProviderKey = new ResourceLocation((registryName.indexOf(':') == -1 ? GuidebookMod.MODID + ":" : "") + registryName);
             if(RecipeProvider.registry.containsKey(recipeProviderKey)) {
                 recipeProvider = RecipeProvider.registry.getValue(recipeProviderKey);
-            } else GuidebookMod.logger.warn(String.format("<recipe> type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey.toString()));
+            } else GuidebookMod.logger.warn(String.format("<recipe> type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey));
         }
 
         attr = attributes.getNamedItem("key");
@@ -61,7 +61,8 @@ public class RecipePanel extends Space {
 
         attr = attributes.getNamedItem("indent");
         if(attr != null) {
-            indent = Ints.tryParse(attr.getTextContent());
+            Integer indentObj = Ints.tryParse(attr.getTextContent());
+            if(indentObj != null) indent = indentObj;
         }
         
         attr = attributes.getNamedItem("index");
@@ -69,7 +70,8 @@ public class RecipePanel extends Space {
             if(recipeComponents != null) {
                 GuidebookMod.logger.warn("Recipe has index attribute '%s' specified but was already loaded via a key attribute. Ignoring index attribute.");
             } else {
-                recipeIndex = Ints.tryParse(attr.getTextContent());
+                Integer recipeIndexObj = Ints.tryParse(attr.getTextContent());
+                if(recipeIndexObj != null) recipeIndex = recipeIndexObj;
             }
         }
     }
@@ -106,11 +108,12 @@ public class RecipePanel extends Space {
 
     /**
      * A helper method to load the components needed to display the recipe from the RecipeProvider implementation
-     * @param targetOutput
+     * @param targetOutput The target ItemStack to retrieve a recipe display for
      */
     private void retrieveRecipe(ItemStack targetOutput) {
         if(recipeProvider.hasRecipe(targetOutput)) {
             RecipeProvider.ProvidedComponents components = recipeProvider.provideRecipeComponents(targetOutput, recipeIndex);
+            assert components != null; // Sanity assertion
             this.height = components.height;
             this.background = components.background;
             this.additionalRenderer = components.delegate;
@@ -119,7 +122,7 @@ public class RecipePanel extends Space {
             // Add to child element list in order to support hover
             this.innerElements.add(background);
             this.innerElements.addAll(Arrays.asList(recipeComponents));
-        } else GuidebookMod.logger.warn(String.format("<recipe>'s specified output item '%s' does not have a recipe for type '%s'", targetOutput.toString(), recipeProvider.getRegistryName().toString()));
+        } else GuidebookMod.logger.warn(String.format("<recipe>'s specified output item '%s' does not have a recipe for type '%s'", targetOutput, recipeProvider.getRegistryName()));
     }
     
     /**
@@ -129,6 +132,7 @@ public class RecipePanel extends Space {
     private void retrieveRecipe(ResourceLocation recipeKey) {
         if(recipeProvider.hasRecipe(recipeKey)) {
             RecipeProvider.ProvidedComponents components = recipeProvider.provideRecipeComponents(recipeKey);
+            assert components != null; // Sanity assertion
             this.height = components.height;
             this.background = components.background;
             this.additionalRenderer = components.delegate;
@@ -137,7 +141,7 @@ public class RecipePanel extends Space {
             // Add to child element list in order to support hover
             this.innerElements.add(background);
             this.innerElements.addAll(Arrays.asList(recipeComponents));
-        } else GuidebookMod.logger.warn(String.format("<recipe>'s specified key '%s' does not exist for type '%s'", recipeKey.toString(), recipeProvider.getRegistryName().toString()));
+        } else GuidebookMod.logger.warn(String.format("<recipe>'s specified key '%s' does not exist for type '%s'", recipeKey, recipeProvider.getRegistryName()));
     }
 
     @Override

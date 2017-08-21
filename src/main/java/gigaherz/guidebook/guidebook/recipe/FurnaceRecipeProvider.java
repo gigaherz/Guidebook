@@ -31,7 +31,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
     private static final int HEIGHT = BACKGROUND_H;
     private static final int LEFT_OFFSET = 38;
 
-    public FurnaceRecipeProvider() {
+    FurnaceRecipeProvider() {
         this.setRegistryName(new ResourceLocation(GuidebookMod.MODID, "furnace"));
     }
 
@@ -45,7 +45,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
 
     @Override
     public boolean hasRecipe(@Nonnull ResourceLocation recipeKey) {
-        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey.toString()));
+        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey));
         return false;
     }
 
@@ -80,6 +80,7 @@ public class FurnaceRecipeProvider extends RecipeProvider {
             outputSlot.stacks = new ItemStack[inputStacks.size()];
             // Add output stacks for each recipe in the same order as the input ones (in case the item quantities vary)
             for(ItemStack inputStack : inputStacks) {
+                // Use copyAndExpand utility method to fix WILDCARD_VALUE stack meta's and low-durability tools
                 outputStacks.addAll(copyAndExpand(FurnaceRecipes.instance().getSmeltingResult(inputStack)));
             }
             outputStacks.toArray(outputSlot.stacks);
@@ -89,25 +90,22 @@ public class FurnaceRecipeProvider extends RecipeProvider {
             // Set up background image
             Image background = new Image();
             background.textureLocation = BACKGROUND_TEXTURE;
-            background.x = 0 + LEFT_OFFSET;
+            background.x = LEFT_OFFSET;
             background.y = 0;
             background.tx = BACKGROUND_U;
             background.ty = BACKGROUND_V;
             background.w = BACKGROUND_W;
             background.h = BACKGROUND_H;
 
-            // Set up overall height
-            int height = HEIGHT;
-
-            return new ProvidedComponents(height, recipeComponents, background, additionalRenderer);
-        } else GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput.toString()));
+            return new ProvidedComponents(HEIGHT, recipeComponents, background, additionalRenderer);
+        } else GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput));
         return null;
     }
 
     @Nullable
     @Override
     public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey) {
-        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey.toString()));
+        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey));
         return null;
     }
 }

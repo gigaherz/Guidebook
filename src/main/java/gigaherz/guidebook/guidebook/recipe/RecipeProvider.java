@@ -39,6 +39,7 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
     @Mod.EventBusSubscriber(modid = GuidebookMod.MODID)
     public static class RegistrationHandler {
         @SubscribeEvent
+        @SuppressWarnings("unchecked")
         public static void registerRegistries(RegistryEvent.NewRegistry event) {
             RegistryBuilder rb = new RegistryBuilder<RecipeProvider>();
             rb.setType(RecipeProvider.class);
@@ -120,7 +121,7 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
         else if(base.getMetadata() == OreDictionary.WILDCARD_VALUE && base.getHasSubtypes()){
             Item item = base.getItem();
             int stackSize = base.getCount();
-            NBTTagCompound tag = base.hasTagCompound() ? base.getTagCompound().copy() : null;
+            NBTTagCompound tag = (base.hasTagCompound() && base.getTagCompound() != null) ? base.getTagCompound().copy() : null;
             NonNullList<ItemStack> processed_items = NonNullList.create();
             NonNullList<ItemStack> subItems = NonNullList.create();
             item.getSubItems(CreativeTabs.SEARCH, subItems);

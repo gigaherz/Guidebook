@@ -58,6 +58,7 @@ class CraftingRecipeProvider {
 
         @Override
         public void reloadCache() {
+            // Only reload cache once
             reloadCaches();
         }
 
@@ -196,11 +197,13 @@ class CraftingRecipeProvider {
                 Stack inputSlot = new Stack();
                 ItemStack[] matching = recipe.getIngredients().get(i).getMatchingStacks();
                 if(matching.length == 0) continue; // If the recipe area is blank, continue and ignore
-                ArrayList<ItemStack> copyStacks = new ArrayList<>();
+
+                // Copy each stack
+                inputSlot.stacks = new ItemStack[matching.length];
                 for (int j = 0; j < matching.length; ++j) {
-                    copyStacks.add(matching[j].copy());
+                    inputSlot.stacks[j] = matching[j].copy();
                 }
-                inputSlot.stacks = copyStacks.toArray(new ItemStack[copyStacks.size()]);
+
                 int posX = i % gridWidth;
                 int posY = i / gridWidth;
                 inputSlot.x = INPUT_SLOT_BASE_X[constantIndex] + (posX * INPUT_SLOT_OFFSET) + LEFT_OFFSET;
@@ -231,9 +234,8 @@ class CraftingRecipeProvider {
 
             Stack[] components = new Stack[stackComponents.size()];
             stackComponents.toArray(components);
-            RecipeProvider.ProvidedComponents result = new RecipeProvider.ProvidedComponents(height, components, background, ird);
-            return result;
-        } else GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", type.toString(), recipe.toString()));
+            return new RecipeProvider.ProvidedComponents(height, components, background, ird);
+        } else GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found although hasRecipe(...) returned true. Something is wrong!", type.toString()));
         return null;
     }
 
