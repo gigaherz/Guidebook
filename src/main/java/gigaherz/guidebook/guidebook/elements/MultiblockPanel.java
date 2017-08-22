@@ -211,7 +211,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 globalScale = 1f + getCollapsedScale();
             }
         }
-        structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer, globalScale, spinAngle + (nav.getPartialTicks() * spinSpeed));
+        structure.render(nav, this, left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer, globalScale, spinAngle + (nav.getPartialTicks() * spinSpeed));
     }
 
     @Override
@@ -324,7 +324,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         } else return bounds;
     }
 
-    private boolean inBounds(int mouseX, int mouseY, Rectangle bounds) {
+    public boolean inBounds(int mouseX, int mouseY, Rectangle bounds) {
         return mouseX >= bounds.getX() && mouseY >= bounds.getY() && mouseX < bounds.getX() + bounds.getWidth() && mouseY < bounds.getY() + bounds.getHeight();
     }
 

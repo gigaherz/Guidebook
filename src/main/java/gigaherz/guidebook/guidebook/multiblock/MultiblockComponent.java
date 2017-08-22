@@ -1,8 +1,16 @@
 package gigaherz.guidebook.guidebook.multiblock;
 
 import gigaherz.guidebook.GuidebookMod;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
+
+import javax.vecmath.Point2d;
+import javax.vecmath.Vector3f;
+import java.awt.*;
 
 /**
  * @author joazlazer
@@ -17,7 +25,7 @@ public abstract class MultiblockComponent {
 
     /**
      * Renders the component at the specific position and at the specific scale
-     * Note: Implementations are responsible for the matrix transformations specified via the parameters (in order to support flexibility)
+     * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
      * @param x X location in the structure
      * @param y Y location in the structure
      * @param z Z location in the structure
@@ -28,7 +36,7 @@ public abstract class MultiblockComponent {
 
     /**
      * Renders the highlight for the component at the specific position and at the specific scale
-     * Note: Implementations are responsible for the matrix transformations specified via the parameters (in order to support flexibility)
+     * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
      * @param x X location in the structure
      * @param y Y location in the structure
      * @param z Z location in the structure
@@ -40,4 +48,28 @@ public abstract class MultiblockComponent {
      * @return A formatted String to render when hovered
      */
     public abstract String getTooltip();
+
+    /**
+     * A utility method to draw a highlight box around the component
+     * Note: Implementations are responsible for performing the matrix transformations to render the box at (in order to support flexibility)
+     * @param box
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected void renderHighlightBox(AxisAlignedBB box)
+    {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder renderer = tessellator.getBuffer();
+        Vector3f highlightLocation = new Vector3f((float) box.minX, (float) box.minY, (float) box.minZ);
+        Vector3f highlightDimensions = new Vector3f((float) (box.maxX - box.minX), (float) (box.maxY - box.minY), (float) (box.maxZ - box.minZ));
+        Point2d UV = new Point2d(0d, 0d);
+        Point2d WH = new Point2d(1d, 1d);
+        Color color = new Color(1.0f, 1.0f, 1.0f, 0.15f);
+        MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.DOWN, color);
+        MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.NORTH, color);
+        MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.EAST, color);
+        MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.SOUTH, color);
+        MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.WEST, color);
+        MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.UP, color);
+        GlStateManager.enableLighting();
+    }
 }

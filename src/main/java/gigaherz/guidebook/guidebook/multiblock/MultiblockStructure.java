@@ -23,6 +23,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.*;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.model.TRSRTransformation;
@@ -54,7 +55,7 @@ public class MultiblockStructure {
     private List<Pair<AxisAlignedBB, String>> tooltipBBs;
     private Point2i[] floorLocations;
     private Vec3i[] poleLocations;
-    private Vec3i hoveredPos = new Vec3i(1, 1, 1); // TODO update
+    private Vec3i hoveredPos = new Vec3i(-1, -1, -1);
     private BlockPos bounds;
     private float scale;
     private Vec3f offset;
@@ -64,6 +65,7 @@ public class MultiblockStructure {
     private FloatBuffer modelViewCache;
     private FloatBuffer projectionCache;
     private IntBuffer viewportCache;
+    private StructureBlockAccess structureBlockAccess;
 
     private static final ResourceLocation FLOOR_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_floor.png");
     private static final ResourceLocation POLE_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_beacon.png");
@@ -71,10 +73,15 @@ public class MultiblockStructure {
     private MultiblockStructure(BlockPos size) {
         this.bounds = size;
         tooltipBBs = new ArrayList<>();
+        structureBlockAccess = new StructureBlockAccess(size);
     }
 
     public BlockPos getBounds() {
         return bounds;
+    }
+
+    public IBlockAccess getBlockAccess() {
+        return structureBlockAccess;
     }
 
     public void setOffset(Vec3f offset) {
@@ -99,10 +106,25 @@ public class MultiblockStructure {
 
     private void setStructureMatrix(MultiblockComponent[][][] structureMatrix) {
         this.structureMatrix = structureMatrix;
+        addToStructureBlockAccess(structureMatrix);
     }
 
     private void setTranslucentStructureMatrix(MultiblockComponent[][][] translucentStructureMatrix) {
         this.translucentStructureMatrix = translucentStructureMatrix;
+        addToStructureBlockAccess(translucentStructureMatrix);
+    }
+
+    private void addToStructureBlockAccess(MultiblockComponent[][][] componentMatrix) {
+        for(int x = 0; x < componentMatrix.length; ++x) {
+            for(int y = 0; y < componentMatrix[x].length; ++y) {
+                for(int z = 0; z < componentMatrix[x][y].length; ++z) {
+                    MultiblockComponent component = componentMatrix[x][y][z];
+                    if(component instanceof BlockComponent) {
+                        structureBlockAccess.getBlockComponents()[x][y][z] = (BlockComponent) component;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -115,7 +137,7 @@ public class MultiblockStructure {
      * @param globalScale Interpolated and animated scale for the multiblock as a whole
      * @param spinAngle Interpolated and animated angle for spinning the multiblock
      */
-    public void render(int left, int top, float blockScale, float layerGap, int maxDisplayLayer, float globalScale, float spinAngle) {
+    public void render(IBookGraphics nav, MultiblockPanel parent, int left, int top, float blockScale, float layerGap, int maxDisplayLayer, float globalScale, float spinAngle) {
         GlStateManager.pushMatrix(); {
             TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
 
@@ -164,11 +186,8 @@ public class MultiblockStructure {
                 tooltipBBs.clear();
                 renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw opaque blocks
                 renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
-
-                MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
-                if(hoveredComponent != null && hoveredPos.getY() + 1 <= maxDisplayLayer) {
-                    hoveredComponent.renderHighlight(1, 1 + (-layerGap * (bounds.getY() - 1) / 2f) + (layerGap * 1), 1, blockScale);
-                }
+                // TODO reset hover state when cursor not over panel
+                renderHighlight(blockScale, layerGap, maxDisplayLayer); // Draw the block highlight
 
                 // Reset texture manager settings
                 textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -194,6 +213,14 @@ public class MultiblockStructure {
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelViewCache);
         GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionCache);
         GL11.glGetInteger(GL11.GL_VIEWPORT, viewportCache);
+    }
+
+    private void renderHighlight(float blockScale, float layerGap, int maxDisplayLayer) {
+        MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
+        if(hoveredComponent != null && hoveredPos.getY() + 1 <= maxDisplayLayer) {
+            final float offsetY = -layerGap * (bounds.getY() - 1) / 2f; // Calculate the y offset to account for expansion and move back down by half of the amount moved up by the layer gap
+            hoveredComponent.renderHighlight(hoveredPos.getX(), hoveredPos.getY() + offsetY + (layerGap * hoveredPos.getY()), hoveredPos.getZ(), blockScale);
+        }
     }
 
     private void scale(float x, float y, float z) {
@@ -235,6 +262,13 @@ public class MultiblockStructure {
         }
         BlockComponent bc = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ());
         info.drawHoverText(mouseX, mouseY, 101, bc != null ? bc.getTooltip() : "");
+
+        // TODO Solve mouseOver algorithm
+        this.hoveredPos = new BlockPos(0, 0, 2);
+    }
+
+    private void resetHover() {
+        this.hoveredPos = new BlockPos(-1, -1, -1);
     }
 
     private Vec3d toVec3d(Vector3f vecIn) {
@@ -516,7 +550,7 @@ public class MultiblockStructure {
      */
     private boolean hasBlockAt(int x, int y, int z) {
         // TODO Fix with the translucent block restructure
-        return (structureMatrix[x][y][z] != null || translucentStructureMatrix[x][y][z] != null);
+        return (x < this.bounds.getX() && y < this.bounds.getY() && z < this.getBounds().getZ() && x > -1 && y > -1 && z > -1 && (structureMatrix[x][y][z] != null || translucentStructureMatrix[x][y][z] != null));
     }
 
     /**
@@ -570,7 +604,7 @@ public class MultiblockStructure {
             // Loop through each block in the structure
             for(Template.BlockInfo block : blocks) {
                 BlockComponent component;
-                component = makeBlockComponent(block.blockState); // Retrieve the correct block component type instance
+                component = makeBlockComponent(block.blockState, structure.getBlockAccess(), block.pos); // Retrieve the correct block component type instance
 
                 // If necessary, initialize the y-array at the x-position
                 if(structureMatrix[block.pos.getX()] == null) structureMatrix[block.pos.getX()] = new MultiblockComponent[structure.getBounds().getY()][];
@@ -606,19 +640,19 @@ public class MultiblockStructure {
      * @param blockState The block state that was parsed from the template
      * @return A specialized BlockComponent subclass if a registered Factory has the block mapped, or a BlockComponent if not
      */
-    private static BlockComponent makeBlockComponent(IBlockState blockState) {
+    private static BlockComponent makeBlockComponent(IBlockState blockState, IBlockAccess blockAccess, BlockPos position) {
         // Loop through each factory
         for(BlockComponent.Factory componentFactory : BlockComponent.Factory.registry.getValues()) {
             // Loop through each of its class mappings
             for(Class<?> blockClass : componentFactory.getMappings()) {
                 // If the BlockState's block is an instance of one of the class mappings, create a new instance of that type of BlockComponent and return it
                 if(blockClass.isInstance(blockState.getBlock())) {
-                    return componentFactory.create(blockState);
+                    return componentFactory.create(blockState, blockAccess, position);
                 }
             }
         }
         // If no mapping was needed, use the default BlockComponent
-        return new BlockComponent(blockState);
+        return new BlockComponent(blockState, blockAccess, position);
     }
 
     /**

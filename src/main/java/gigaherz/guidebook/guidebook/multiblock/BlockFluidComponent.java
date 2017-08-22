@@ -12,7 +12,9 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -28,8 +30,8 @@ import java.awt.Color;
  */
 public class BlockFluidComponent extends BlockComponent {
     private Fluid fluid;
-    BlockFluidComponent(IBlockState stateIn) {
-        super(stateIn);
+    BlockFluidComponent(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
+        super(stateIn, blockAccess, position);
         if(stateIn.getBlock() instanceof BlockLiquid) {
             if(stateIn.getBlock() == Blocks.WATER || stateIn.getBlock() == Blocks.FLOWING_WATER) {
                 fluid = FluidRegistry.WATER;
@@ -41,6 +43,11 @@ public class BlockFluidComponent extends BlockComponent {
         } else {
             GuidebookMod.logger.warn(String.format("Invalid block fluid component part of multiblock structure: '%s' is not an instanceof BlockLiquid or BlockFluidBase", stateIn.getBlock().getRegistryName()));
         }
+    }
+
+    @Override
+    protected AxisAlignedBB getBounds(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
+        return new AxisAlignedBB(0d, 0d, 0d, 1d, 0.8125d, 1d);
     }
 
     @Override
@@ -71,35 +78,7 @@ public class BlockFluidComponent extends BlockComponent {
             MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, still, EnumFacing.UP, color, false);
             GlStateManager.enableLighting();
         } GlStateManager.popMatrix();
-        return new AxisAlignedBB(x, y, z, x + 1f, y + 0.8125f, z + 1f);
-    }
-
-    @Override
-    public void renderHighlight(float x, float y, float z, float scale) {
-        GlStateManager.pushMatrix(); {
-            GlStateManager.disableLighting();
-            GlStateManager.translate(-0.5F, -0.5F, -0.5F);
-            GlStateManager.translate(x, y, z);
-            GlStateManager.scale(scale, scale, scale);
-
-            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
-            GlStateManager.translate(offset, 0f, offset);
-
-            Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder renderer = tessellator.getBuffer();
-            Vector3f highlightLocation = new Vector3f(-0.025f, -0.025f, -0.025f);
-            Vector3f highlightDimensions = new Vector3f(1.05f, 0.8625f, 1.05f);
-            Point2d UV = new Point2d(0d, 0d);
-            Point2d WH = new Point2d(1d, 1d);
-            Color color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
-            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.DOWN, color);
-            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.NORTH, color);
-            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.EAST, color);
-            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.SOUTH, color);
-            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.WEST, color);
-            MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.UP, color);
-            GlStateManager.enableLighting();
-        } GlStateManager.popMatrix();
+        return cachedBounds;
     }
 
     @Override
@@ -118,8 +97,8 @@ public class BlockFluidComponent extends BlockComponent {
         }
 
         @Override
-        public BlockFluidComponent create(IBlockState blockState) {
-            return new BlockFluidComponent(blockState);
+        public BlockFluidComponent create(IBlockState blockState, IBlockAccess blockAccess, BlockPos position) {
+            return new BlockFluidComponent(blockState, blockAccess, position);
         }
     }
 }

@@ -16,7 +16,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -25,7 +28,11 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.lwjgl.opengl.GL11;
 
+import javax.vecmath.Point2d;
+import javax.vecmath.Vector3f;
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,8 +46,12 @@ public class BlockComponent extends MultiblockComponent {
     protected final IBlockState blockState;
     protected final IBakedModel bakedModel;
     protected final String tooltipCache;
+    protected final AxisAlignedBB cachedBounds;
+    protected final AxisAlignedBB cachedHighlightBounds;
 
-    BlockComponent(IBlockState stateIn) {
+    protected static final double HIGHLIGHT_EXPAND = 0.025d;
+
+    BlockComponent(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
         this.blockState = stateIn;
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
         bakedModel = dispatcher.getModelForState(this.blockState);
@@ -54,7 +65,12 @@ public class BlockComponent extends MultiblockComponent {
             formatted.append(retrievedTooltip.get(i));
         }
         tooltipCache = formatted.toString();
+        cachedBounds = getBounds(blockState, blockAccess, position);
+        cachedHighlightBounds = cachedBounds.grow(HIGHLIGHT_EXPAND, HIGHLIGHT_EXPAND, HIGHLIGHT_EXPAND);
+    }
 
+    protected AxisAlignedBB getBounds(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
+        return stateIn.getBoundingBox(blockAccess, position);
     }
 
     IBlockState getBlockState() {
@@ -81,12 +97,27 @@ public class BlockComponent extends MultiblockComponent {
             this.renderQuads(bufferbuilder, bakedModel.getQuads(this.blockState, null, 0L));
             tessellator.draw();
         } GlStateManager.popMatrix();
-        return new AxisAlignedBB(x, y, z, x + 1f, y + 1f, z + 1f);
+        return cachedBounds;
     }
 
     @Override
-    public void renderHighlight(float x, float y, float z, float scale) {
-        // TODO cache AxisAlignedBB for the bounds of the IBakedModel's quads and expanded by .025f
+    public void renderHighlight(float x, float y, float z, float scale)
+    {
+        GlStateManager.pushMatrix();
+        {
+            GlStateManager.disableLighting();
+
+            GlStateManager.translate(-0.5F, -0.5F, -0.5F);
+            GlStateManager.translate(x, y, z);
+            GlStateManager.scale(scale, scale, scale);
+            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            GlStateManager.translate(offset, 0f, offset);
+
+            this.renderHighlightBox(cachedHighlightBounds);
+
+            GlStateManager.enableLighting();
+        }
+        GlStateManager.popMatrix();
     }
 
     @Override
@@ -94,7 +125,7 @@ public class BlockComponent extends MultiblockComponent {
         return tooltipCache;
     }
 
-    private void renderQuads(BufferBuilder bufferBuilder, List<BakedQuad> quads) {
+    protected void renderQuads(BufferBuilder bufferBuilder, List<BakedQuad> quads) {
         for (BakedQuad bakedquad : quads) {
             bufferBuilder.addVertexData(bakedquad.getVertexData());
         }
@@ -125,6 +156,6 @@ public class BlockComponent extends MultiblockComponent {
         }
 
         public abstract Class<?>[] getMappings();
-        public abstract BlockComponent create(IBlockState blockState);
+        public abstract BlockComponent create(IBlockState blockState, IBlockAccess blockAccess, BlockPos position);
     }
 }
