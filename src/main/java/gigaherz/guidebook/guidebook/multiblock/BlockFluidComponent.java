@@ -19,56 +19,71 @@ import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 
-import javax.vecmath.Point2d;
 import javax.vecmath.Vector3f;
 import java.awt.Color;
 
 /**
  * @author joazlazer
- *
- * Extends BlockComponent and supports the rendering of both vanilla and Forge fluids within a GUI multiblock structure. Gets rendered after every other block to avoid render pass artifacts.
+ * <p>
+ * Extends BlockComponent and supports the rendering of both vanilla and Forge fluids within a GUI multiblock structure. Gets rendered (if transparent) after every other block to avoid render pass artifacts.
  */
-public class BlockFluidComponent extends BlockComponent {
+public class BlockFluidComponent extends BlockComponent
+{
     private Fluid fluid;
-    BlockFluidComponent(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
+
+    BlockFluidComponent(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position)
+    {
         super(stateIn, blockAccess, position);
-        if(stateIn.getBlock() instanceof BlockLiquid) {
-            if(stateIn.getBlock() == Blocks.WATER || stateIn.getBlock() == Blocks.FLOWING_WATER) {
+        if (stateIn.getBlock() instanceof BlockLiquid)
+        {
+            if (stateIn.getBlock() == Blocks.WATER || stateIn.getBlock() == Blocks.FLOWING_WATER)
+            {
                 fluid = FluidRegistry.WATER;
-            } else {
+            }
+            else
+            {
                 fluid = FluidRegistry.LAVA;
             }
-        } else if(stateIn.getBlock() instanceof BlockFluidBase){
-            fluid = ((BlockFluidBase)stateIn.getBlock()).getFluid();
-        } else {
+        }
+        else if (stateIn.getBlock() instanceof BlockFluidBase)
+        {
+            fluid = ((BlockFluidBase) stateIn.getBlock()).getFluid();
+        }
+        else
+        {
             GuidebookMod.logger.warn(String.format("Invalid block fluid component part of multiblock structure: '%s' is not an instanceof BlockLiquid or BlockFluidBase", stateIn.getBlock().getRegistryName()));
         }
     }
 
     /**
      * Gets the bounding box of the specified block state
-     * @param stateIn The IBlockState of the object
+     *
+     * @param stateIn     The IBlockState of the object
      * @param blockAccess Access to the block's surrounding blocks
-     * @param position The block's position in the 'world'
+     * @param position    The block's position in the 'world'
      * @return A cached bounding box
      */
     @Override
-    protected AxisAlignedBB getBounds(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
+    protected AxisAlignedBB getBounds(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position)
+    {
         return new AxisAlignedBB(0d, 0d, 0d, 1d, 0.8125d, 1d);
     }
 
     /**
      * Renders the component at the specific position and at the specific scale
      * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
-     * @param x X location in the structure
-     * @param y Y location in the structure
-     * @param z Z location in the structure
+     *
+     * @param x     X location in the structure
+     * @param y     Y location in the structure
+     * @param z     Z location in the structure
      * @param scale Current scale to render at (to support expanding/collapsing)
      * @return A bounding box for mouse ray collision for tooltip rendering
      */
     @Override
-    public AxisAlignedBB render(float x, float y, float z, float scale) {
-        GlStateManager.pushMatrix(); {
+    public AxisAlignedBB render(float x, float y, float z, float scale)
+    {
+        GlStateManager.pushMatrix();
+        {
             GlStateManager.disableLighting();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
@@ -93,45 +108,54 @@ public class BlockFluidComponent extends BlockComponent {
             MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, flowing, EnumFacing.WEST, color, true);
             MultiblockStructure.drawTexturedQuad(location, dimensions, renderer, still, EnumFacing.UP, color, false);
             GlStateManager.enableLighting();
-        } GlStateManager.popMatrix();
+        }
+        GlStateManager.popMatrix();
         return cachedBounds;
     }
 
     /**
      * Gets the tooltip of the component to draw when hovered over
+     *
      * @return A formatted String to render when hovered
      */
     @Override
-    public String getTooltip() {
+    public String getTooltip()
+    {
         return String.format("Fluid: %s", fluid.getName());
     }
 
     /**
      * A factory to produce BlockFluidComponents for blocks that extend either BlockLiquid or BlockFluidBase
      */
-    public static class Factory extends BlockComponent.Factory {
-        Factory() {
+    public static class Factory extends BlockComponent.Factory
+    {
+        Factory()
+        {
             this.setRegistryName(GuidebookMod.MODID, "blockFluid");
         }
 
         /**
          * Gets the class mappings that the factory will be used with
+         *
          * @return An array of Class objects that each should extend Block
          */
         @Override
-        public Class<?>[] getMappings() {
-            return new Class<?>[] { BlockLiquid.class, BlockFluidBase.class };
+        public Class<?>[] getMappings()
+        {
+            return new Class<?>[]{BlockLiquid.class, BlockFluidBase.class};
         }
 
         /**
          * Initializes a new instance of the factor's target type
-         * @param blockState The block's block state
+         *
+         * @param blockState  The block's block state
          * @param blockAccess Access to the block's neighbors
-         * @param position The block's position in the multiblock
+         * @param position    The block's position in the multiblock
          * @return The custom BlockComponent implementation
          */
         @Override
-        public BlockFluidComponent create(IBlockState blockState, IBlockAccess blockAccess, BlockPos position) {
+        public BlockFluidComponent create(IBlockState blockState, IBlockAccess blockAccess, BlockPos position)
+        {
             return new BlockFluidComponent(blockState, blockAccess, position);
         }
     }

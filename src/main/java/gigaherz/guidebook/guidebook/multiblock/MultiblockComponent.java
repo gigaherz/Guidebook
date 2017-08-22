@@ -14,10 +14,11 @@ import java.awt.*;
 
 /**
  * @author joazlazer
- *
+ * <p>
  * Base class for a renderable object within a multiblock structure
  */
-public abstract class MultiblockComponent {
+public abstract class MultiblockComponent
+{
     /**
      * The texture location of the hover overlay texture
      */
@@ -27,9 +28,10 @@ public abstract class MultiblockComponent {
     /**
      * Renders the component at the specific position and at the specific scale
      * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
-     * @param x X location in the structure
-     * @param y Y location in the structure
-     * @param z Z location in the structure
+     *
+     * @param x     X location in the structure
+     * @param y     Y location in the structure
+     * @param z     Z location in the structure
      * @param scale Current scale to render at (to support expanding/collapsing)
      * @return A bounding box for mouse ray collision for tooltip rendering
      */
@@ -38,6 +40,7 @@ public abstract class MultiblockComponent {
     /**
      * Renders the highlight for the component at the specific position and at the specific scale
      * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
+     *
      * @param x X location in the structure
      * @param y Y location in the structure
      * @param z Z location in the structure
@@ -46,13 +49,22 @@ public abstract class MultiblockComponent {
 
     /**
      * Gets the tooltip of the component to draw when hovered over
+     *
      * @return A formatted String to render when hovered
      */
     public abstract String getTooltip();
 
     /**
+     * Whether the current multiblock component should be ordered and rendered in another pass
+     *
+     * @return If the component has translucent features (and needs to support alpha blending)
+     */
+    public abstract boolean isTranslucent();
+
+    /**
      * A utility method to draw a highlight box around the component
      * Note: Implementations are responsible for performing the matrix transformations to render the box at (in order to support flexibility)
+     *
      * @param box The bounding box to render each quad around
      */
     @SuppressWarnings("WeakerAccess")
