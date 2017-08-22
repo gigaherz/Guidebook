@@ -21,6 +21,7 @@ public abstract class MultiblockComponent {
     /**
      * The texture location of the hover overlay texture
      */
+    @SuppressWarnings("WeakerAccess")
     protected static final ResourceLocation HOVER_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_hover.png");
 
     /**
@@ -52,7 +53,7 @@ public abstract class MultiblockComponent {
     /**
      * A utility method to draw a highlight box around the component
      * Note: Implementations are responsible for performing the matrix transformations to render the box at (in order to support flexibility)
-     * @param box
+     * @param box The bounding box to render each quad around
      */
     @SuppressWarnings("WeakerAccess")
     protected void renderHighlightBox(AxisAlignedBB box)

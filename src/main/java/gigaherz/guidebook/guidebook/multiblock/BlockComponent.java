@@ -69,6 +69,13 @@ public class BlockComponent extends MultiblockComponent {
         cachedHighlightBounds = cachedBounds.grow(HIGHLIGHT_EXPAND, HIGHLIGHT_EXPAND, HIGHLIGHT_EXPAND);
     }
 
+    /**
+     * Gets the bounding box of the specified block state
+     * @param stateIn The IBlockState of the object
+     * @param blockAccess Access to the block's surrounding blocks
+     * @param position The block's position in the 'world'
+     * @return A cached bounding box
+     */
     protected AxisAlignedBB getBounds(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position) {
         return stateIn.getBoundingBox(blockAccess, position);
     }
@@ -77,6 +84,15 @@ public class BlockComponent extends MultiblockComponent {
         return blockState;
     }
 
+    /**
+     * Renders the component at the specific position and at the specific scale
+     * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
+     * @param x X location in the structure
+     * @param y Y location in the structure
+     * @param z Z location in the structure
+     * @param scale Current scale to render at (to support expanding/collapsing)
+     * @return A bounding box for mouse ray collision for tooltip rendering
+     */
     @Override
     public AxisAlignedBB render(float x, float y, float z, float scale) {
         GlStateManager.pushMatrix(); {
@@ -100,6 +116,13 @@ public class BlockComponent extends MultiblockComponent {
         return cachedBounds;
     }
 
+    /**
+     * Renders the highlight for the component at the specific position and at the specific scale
+     * Note: Implementations are responsible for performing the matrix transformations specified via the parameters (in order to support flexibility)
+     * @param x X location in the structure
+     * @param y Y location in the structure
+     * @param z Z location in the structure
+     */
     @Override
     public void renderHighlight(float x, float y, float z, float scale)
     {
@@ -120,17 +143,31 @@ public class BlockComponent extends MultiblockComponent {
         GlStateManager.popMatrix();
     }
 
+    /**
+     * Gets the tooltip of the component to draw when hovered over
+     * @return A formatted String to render when hovered
+     */
     @Override
     public String getTooltip() {
         return tooltipCache;
     }
 
+    /**
+     * Helper method to draw each quad in a list of BakedQuads to the buffer
+     * @param bufferBuilder The specified buffer instance
+     * @param quads A list of BakedQuads to render
+     */
     protected void renderQuads(BufferBuilder bufferBuilder, List<BakedQuad> quads) {
         for (BakedQuad bakedquad : quads) {
             bufferBuilder.addVertexData(bakedquad.getVertexData());
         }
     }
 
+    /**
+     * A registrable factory-type class that initializes specific implementations of BlockComponent according to certain special Block mappings
+     * Default implementations:
+     *  - BlockFluidComponent which is mapped to BlockFluidBase and BlockLiquid instances
+     */
     @SuppressWarnings("unused")
     public static abstract class Factory extends IForgeRegistryEntry.Impl<Factory> {
         static IForgeRegistry<Factory> registry;
@@ -155,7 +192,19 @@ public class BlockComponent extends MultiblockComponent {
             }
         }
 
+        /**
+         * Gets the class mappings that the factory will be used with
+         * @return An array of Class objects that each should extend Block
+         */
         public abstract Class<?>[] getMappings();
+
+        /**
+         * Initializes a new instance of the factor's target type
+         * @param blockState The block's block state
+         * @param blockAccess Access to the block's neighbors
+         * @param position The block's position in the multiblock
+         * @return The custom BlockComponent implementation
+         */
         public abstract BlockComponent create(IBlockState blockState, IBlockAccess blockAccess, BlockPos position);
     }
 }

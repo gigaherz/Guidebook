@@ -52,7 +52,7 @@ import java.util.List;
 public class MultiblockStructure {
     private MultiblockComponent[][][] structureMatrix; // 3-d array containing a matrix of MultiblockComponents by position, filled with null by default
     private MultiblockComponent[][][] translucentStructureMatrix; // 3-d array containing a 3-d matrix of translucent blocks to be rendered second
-    private List<Pair<AxisAlignedBB, String>> tooltipBBs;
+    private List<Pair<AxisAlignedBB, String>> tooltipBBs; // Each bounding box for mouse collision as well as the formatted string to draw when hovered over
     private Point2i[] floorLocations;
     private Vec3i[] poleLocations;
     private Vec3i hoveredPos = new Vec3i(-1, -1, -1);
@@ -66,9 +66,11 @@ public class MultiblockStructure {
     private FloatBuffer projectionCache;
     private IntBuffer viewportCache;
     private StructureBlockAccess structureBlockAccess;
+    private boolean doRenderHighlight = false;
 
     private static final ResourceLocation FLOOR_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_floor.png");
     private static final ResourceLocation POLE_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_beacon.png");
+    private static final BlockPos DEFAULT_HOVER_POSITION = new BlockPos(-1, -1, -1);
 
     private MultiblockStructure(BlockPos size) {
         this.bounds = size;
@@ -80,7 +82,7 @@ public class MultiblockStructure {
         return bounds;
     }
 
-    public IBlockAccess getBlockAccess() {
+    private IBlockAccess getBlockAccess() {
         return structureBlockAccess;
     }
 
@@ -114,6 +116,10 @@ public class MultiblockStructure {
         addToStructureBlockAccess(translucentStructureMatrix);
     }
 
+    /**
+     * Utility method to load in the specified 3-d component matrix to the StructureBlockAccess instance if each component is a BlockComponent
+     * @param componentMatrix A 3-dimensional jagged array representing a matrix of MultiblockComponents
+     */
     private void addToStructureBlockAccess(MultiblockComponent[][][] componentMatrix) {
         for(int x = 0; x < componentMatrix.length; ++x) {
             for(int y = 0; y < componentMatrix[x].length; ++y) {
@@ -186,8 +192,8 @@ public class MultiblockStructure {
                 tooltipBBs.clear();
                 renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw opaque blocks
                 renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
-                // TODO reset hover state when cursor not over panel
-                renderHighlight(blockScale, layerGap, maxDisplayLayer); // Draw the block highlight
+                if(doRenderHighlight) renderHighlight(blockScale, layerGap, maxDisplayLayer); // Draw the block highlight
+                else resetHover();
 
                 // Reset texture manager settings
                 textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -205,6 +211,21 @@ public class MultiblockStructure {
         GlStateManager.disableDepth();
     }
 
+    /**
+     * Draws the highlight for the specified component at the hovered position, and resets the highlight render state to be updated next frame if need be
+     * @param blockScale Interpolated and animated scale for each individual block
+     * @param layerGap Y-layer gap
+     * @param maxDisplayLayer The maximum layer to display, hides others
+     */
+    private void renderHighlight(float blockScale, float layerGap, int maxDisplayLayer) {
+        MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
+        if(hoveredComponent != null && hoveredPos.getY() + 1 <= maxDisplayLayer) {
+            final float offsetY = -layerGap * (bounds.getY() - 1) / 2f; // Calculate the y offset to account for expansion and move back down by half of the amount moved up by the layer gap
+            hoveredComponent.renderHighlight(hoveredPos.getX(), hoveredPos.getY() + offsetY + (layerGap * hoveredPos.getY()), hoveredPos.getZ(), blockScale);
+        }
+        doRenderHighlight = false;
+    }
+
     private void storeViewModelPerspective() {
         modelViewCache = BufferUtils.createFloatBuffer(16);
         projectionCache = BufferUtils.createFloatBuffer(16);
@@ -213,14 +234,6 @@ public class MultiblockStructure {
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelViewCache);
         GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionCache);
         GL11.glGetInteger(GL11.GL_VIEWPORT, viewportCache);
-    }
-
-    private void renderHighlight(float blockScale, float layerGap, int maxDisplayLayer) {
-        MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
-        if(hoveredComponent != null && hoveredPos.getY() + 1 <= maxDisplayLayer) {
-            final float offsetY = -layerGap * (bounds.getY() - 1) / 2f; // Calculate the y offset to account for expansion and move back down by half of the amount moved up by the layer gap
-            hoveredComponent.renderHighlight(hoveredPos.getX(), hoveredPos.getY() + offsetY + (layerGap * hoveredPos.getY()), hoveredPos.getZ(), blockScale);
-        }
     }
 
     private void scale(float x, float y, float z) {
@@ -236,10 +249,10 @@ public class MultiblockStructure {
     }
 
     /**
-     *
-     * @param info
-     * @param mouseX
-     * @param mouseY
+     * Renders tooltips and other mouse interactions and is called each frame
+     * @param info A reference to a book graphics renderer
+     * @param mouseX Mouse's screen-space x position
+     * @param mouseY Mouse's screen-space y position
      */
     public void mouseOver(IBookGraphics info, int mouseX, int mouseY) {
         Pair<Vector3f, Vector3f> mouseRay = getMouseRay(mouseX, mouseY, this.modelViewCache, this.projectionCache, this.viewportCache);
@@ -265,26 +278,35 @@ public class MultiblockStructure {
 
         // TODO Solve mouseOver algorithm
         this.hoveredPos = new BlockPos(0, 0, 2);
+        doRenderHighlight = true;
     }
 
+    /**
+     * Resets the position of the hovered component to -1,-1,-1 in order for the highlight to not be rendered
+     */
     private void resetHover() {
-        this.hoveredPos = new BlockPos(-1, -1, -1);
+        this.hoveredPos = DEFAULT_HOVER_POSITION;
     }
 
+    /**
+     * Utility method to convert between java vec-math and minecraft vec-math
+     * @param vecIn The java vec-math Vector
+     * @return The minecraft vec-math Vector
+     */
     private Vec3d toVec3d(Vector3f vecIn) {
         return new Vec3d(vecIn.x, vecIn.y, vecIn.z);
     }
 
     /**
-     *
-     * @param mouseX
-     * @param mouseY
-     * @param modelView
-     * @param projection
-     * @param viewport
-     * @return
+     * Gets a ray extending from the mouse position
+     * @param mouseX Mouse's screen-space x position
+     * @param mouseY Mouse's screen-space y position
+     * @param modelView The model and view transformation matrices (combined to one)
+     * @param projection The projection transformation matrix
+     * @param viewport The current viewport
+     * @return A pair of 3-d vectors representing the Start & End coordinates of the ray
      */
-    public static Pair<Vector3f, Vector3f> getMouseRay(int mouseX, int mouseY, FloatBuffer modelView, FloatBuffer projection, IntBuffer viewport) {
+    private static Pair<Vector3f, Vector3f> getMouseRay(int mouseX, int mouseY, FloatBuffer modelView, FloatBuffer projection, IntBuffer viewport) {
         float winX, winY;
         FloatBuffer startPos = BufferUtils.createFloatBuffer(3);
         FloatBuffer endPos = BufferUtils.createFloatBuffer(3);
@@ -368,7 +390,7 @@ public class MultiblockStructure {
 
     /**
      * Draws each MultiblockComponent in the given componentMatrix
-     * @param componentMatrix A 3-deep jagged array representing a matrix of MultiblockComponents
+     * @param componentMatrix A 3-dimensional jagged array representing a matrix of MultiblockComponents
      * @param maxDisplayLayer The maximum layer to display, hides others
      * @param layerGap Y-layer gap
      * @param blockScale Interpolated and animated scale for each individual block
@@ -383,7 +405,7 @@ public class MultiblockStructure {
                     if(j + 1 <= maxDisplayLayer) { // If the current layer should be rendered according to the display layer slider
                         for (int k = 0; k < componentMatrix[i][j].length; ++k) {
                             if (componentMatrix[i][j][k] != null) { // Ensure there isn't air at the position
-                                tooltipBBs.add(new Pair<>(componentMatrix[i][j][k].render(i, j + offsetY + (layerGap * j), k, blockScale), componentMatrix[i][j][k].getTooltip()));
+                                tooltipBBs.add(new Pair<>(componentMatrix[i][j][k].render(i, j + offsetY + (layerGap * j), k, blockScale), componentMatrix[i][j][k].getTooltip())); // Only add tooltip bounds to visible elements
                             }
                         }
                     }
