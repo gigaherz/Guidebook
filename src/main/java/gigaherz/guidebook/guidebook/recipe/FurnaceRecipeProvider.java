@@ -40,9 +40,9 @@ public class FurnaceRecipeProvider extends RecipeProvider
     @Override
     public boolean hasRecipe(@Nonnull ItemStack targetOutput)
     {
-        for(ItemStack result : FurnaceRecipes.instance().getSmeltingList().values())
+        for (ItemStack result : FurnaceRecipes.instance().getSmeltingList().values())
         {
-            if(result.isItemEqual(targetOutput)) return true;
+            if (result.isItemEqual(targetOutput)) return true;
         }
         return false;
     }
@@ -61,17 +61,19 @@ public class FurnaceRecipeProvider extends RecipeProvider
         // Ignore recipeIndex because a furnace recipe can show each recipe by alternating the slots
 
         ArrayList<ItemStack> inputStacks = new ArrayList<>();
-        for(ItemStack key : FurnaceRecipes.instance().getSmeltingList().keySet())
+        for (ItemStack key : FurnaceRecipes.instance().getSmeltingList().keySet())
         {
-            if(FurnaceRecipes.instance().getSmeltingList().get(key).isItemEqual(targetOutput))
+            if (FurnaceRecipes.instance().getSmeltingList().get(key).isItemEqual(targetOutput))
             {
                 inputStacks.addAll(copyAndExpand(key));
             }
         }
 
-        if(inputStacks.size() > 0) // Should always be true
+        if (inputStacks.size() > 0) // Should always be true
         {
-            IRenderDelegate additionalRenderer = (nav, left, right) -> { }; // No additional rendering needed
+            IRenderDelegate additionalRenderer = (nav, left, right) ->
+            {
+            }; // No additional rendering needed
             Stack[] recipeComponents = new Stack[2];
 
             // Set up input slot element
@@ -88,7 +90,7 @@ public class FurnaceRecipeProvider extends RecipeProvider
             ArrayList<ItemStack> outputStacks = new ArrayList<>();
             outputSlot.stacks = new ItemStack[inputStacks.size()];
             // Add output stacks for each recipe in the same order as the input ones (in case the item quantities vary)
-            for(ItemStack inputStack : inputStacks)
+            for (ItemStack inputStack : inputStacks)
             {
                 // Use copyAndExpand utility method to fix WILDCARD_VALUE stack meta's and low-durability tools
                 outputStacks.addAll(copyAndExpand(FurnaceRecipes.instance().getSmeltingResult(inputStack)));
@@ -109,7 +111,8 @@ public class FurnaceRecipeProvider extends RecipeProvider
 
             return new ProvidedComponents(HEIGHT, recipeComponents, background, additionalRenderer);
         }
-        else GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput));
+        else
+            GuidebookMod.logger.error(String.format("[FurnaceRecipeProvider] Recipe not found for '%s' although hasRecipe(...) returned true. Something is wrong!", targetOutput));
         return null;
     }
 

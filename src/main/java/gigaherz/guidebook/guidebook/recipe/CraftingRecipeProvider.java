@@ -107,7 +107,7 @@ class CraftingRecipeProvider
         @Override
         public String toString()
         {
-            if(this == SHAPED) return "shaped";
+            if (this == SHAPED) return "shaped";
             else return "shapeless";
         }
     }
@@ -119,12 +119,12 @@ class CraftingRecipeProvider
     {
         shapelessRecipes = new ArrayList<>();
         shapedRecipes = new ArrayList<>();
-        for(IRecipe recipe : ForgeRegistries.RECIPES.getValues())
+        for (IRecipe recipe : ForgeRegistries.RECIPES.getValues())
         {
-            if(recipe instanceof ShapelessOreRecipe) shapelessRecipes.add(recipe);
-            if(recipe instanceof ShapelessRecipes) shapelessRecipes.add(recipe);
-            if(recipe instanceof ShapedRecipes) shapedRecipes.add(recipe);
-            if(recipe instanceof ShapedOreRecipe) shapedRecipes.add(recipe);
+            if (recipe instanceof ShapelessOreRecipe) shapelessRecipes.add(recipe);
+            if (recipe instanceof ShapelessRecipes) shapelessRecipes.add(recipe);
+            if (recipe instanceof ShapedRecipes) shapedRecipes.add(recipe);
+            if (recipe instanceof ShapedOreRecipe) shapedRecipes.add(recipe);
         }
     }
 
@@ -157,10 +157,10 @@ class CraftingRecipeProvider
     private boolean hasCraftingRecipe(ResourceLocation recipeKey, Type type)
     {
         // Query the recipe registry to find the specified registry key
-        if(type == Type.SHAPED && ForgeRegistries.RECIPES.containsKey(recipeKey))
+        if (type == Type.SHAPED && ForgeRegistries.RECIPES.containsKey(recipeKey))
         {
             IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeKey);
-            if(recipe instanceof ShapedRecipes || recipe instanceof ShapedOreRecipe) return true;
+            if (recipe instanceof ShapedRecipes || recipe instanceof ShapedOreRecipe) return true;
             else
             {
                 GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] Specified recipe '%s' was registered, but is not in the recipe category '%s'. Ignoring.", recipeKey, type.toString()));
@@ -170,7 +170,7 @@ class CraftingRecipeProvider
         else if (type == Type.SHAPELESS && ForgeRegistries.RECIPES.containsKey(recipeKey))
         {
             IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeKey);
-            if(recipe instanceof ShapelessRecipes || recipe instanceof ShapelessOreRecipe) return true;
+            if (recipe instanceof ShapelessRecipes || recipe instanceof ShapelessOreRecipe) return true;
             else
             {
                 GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] Specified recipe '%s' was registered, but is not in the recipe category '%s'. Ignoring.", recipeKey, type.toString()));
@@ -183,12 +183,12 @@ class CraftingRecipeProvider
     @Nullable
     private IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex, ArrayList<IRecipe> cache)
     {
-        // Query either the shaped or shapeless recipe cache, but return the (recipeIndex + 1)th occurance
-        for(IRecipe recipe : cache)
+        // Query either the shaped or shapeless recipe cache, but return the (recipeIndex + 1)th occurrence
+        for (IRecipe recipe : cache)
         {
-            if(recipe.getRecipeOutput().isItemEqual(targetOutput))
+            if (recipe.getRecipeOutput().isItemEqual(targetOutput))
             {
-                if(recipeIndex > 0)
+                if (recipeIndex > 0)
                 {
                     --recipeIndex;
                 }
@@ -211,7 +211,7 @@ class CraftingRecipeProvider
     private IRecipe findRecipe(@Nonnull ItemStack targetOutput, int recipeIndex, Type type)
     {
         IRecipe foundRecipe = queryRecipeCaches(targetOutput, recipeIndex, getCacheForType(type));
-        if(foundRecipe == null)
+        if (foundRecipe == null)
         {
             foundRecipe = queryRecipeCaches(targetOutput, 0, getCacheForType(type));
             GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] <recipe> index '%d' was not found in the list of cached %s recipes for '%s'. Falling back to the first occurrence.", recipeIndex, type.toString(), targetOutput.toString()));
@@ -222,19 +222,21 @@ class CraftingRecipeProvider
     @Nullable
     private RecipeProvider.ProvidedComponents provideCraftingRecipeComponents(@Nullable IRecipe recipe, Type type)
     {
-        if(recipe != null)
+        if (recipe != null)
         {
             int constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
             ArrayList<Stack> stackComponents = new ArrayList<>();
-            IRenderDelegate ird = (nav, top, left) -> { };
+            IRenderDelegate ird = (nav, top, left) ->
+            {
+            };
             int gridWidth = constantIndex == 0 ? 3 : 2;
 
             // Set up input slots
-            for(int i = 0; i < recipe.getIngredients().size(); ++i)
+            for (int i = 0; i < recipe.getIngredients().size(); ++i)
             {
                 Stack inputSlot = new Stack();
                 ItemStack[] matching = recipe.getIngredients().get(i).getMatchingStacks();
-                if(matching.length == 0) continue; // If the recipe area is blank, continue and ignore
+                if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
                 // Copy each stack
                 inputSlot.stacks = new ItemStack[matching.length];
@@ -275,7 +277,8 @@ class CraftingRecipeProvider
             stackComponents.toArray(components);
             return new RecipeProvider.ProvidedComponents(height, components, background, ird);
         }
-        else GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found although hasRecipe(...) returned true. Something is wrong!", type.toString()));
+        else
+            GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found although hasRecipe(...) returned true. Something is wrong!", type.toString()));
         return null;
     }
 }
