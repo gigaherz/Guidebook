@@ -147,6 +147,11 @@ public class GuiGuidebook extends GuiScreen
             mc.displayGuiScreen(null);
 
         updateButtonStates();
+
+        if (background.isFullyOpen())
+        {
+            book.updateCurrentPageElements();
+        }
     }
 
     @Override
@@ -195,7 +200,7 @@ public class GuiGuidebook extends GuiScreen
 
         if (background.isFullyOpen())
         {
-            book.drawCurrentPages();
+            book.drawCurrentPages(partialTicks);
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);

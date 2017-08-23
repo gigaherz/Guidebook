@@ -399,6 +399,21 @@ public class BookDocument
                     i.parse(elementItem.getAttributes());
                 }
             }
+            else if (nodeName.equals("multiblock"))
+            {
+                MultiblockPanel mp = new MultiblockPanel();
+                elements.add(mp);
+
+                if(elementItem.hasAttributes())
+                {
+                    mp.parse(elementItem.getAttributes());
+                }
+
+                if(elementItem.hasChildNodes())
+                {
+                    mp.parseChildren(elementItem.getChildNodes());
+                }
+             }
             else if (templates.containsKey(nodeName))
             {
                 TemplateDefinition tDef = templates.get(nodeName);

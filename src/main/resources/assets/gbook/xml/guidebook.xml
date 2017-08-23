@@ -217,6 +217,24 @@
       <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
   </chapter>
+  <chapter id="multiblocks">
+    <page id="multiblocks">
+      <page_title>
+        <p>Multiblock Structures</p>
+      </page_title>
+      <p space="14">Multiblock tags allow you to display complex multiblock structures within guidebooks.</p>
+      <space height="4"/>
+      <multiblock structures="[gbook:furnace_brick,gbook:furnace_nether_brick]" transformation="t[-1,-1.35,-1] q[0,1,0,0] s[0.9]">
+        <stack position="0,4,0" item="minecraft:chest" transformation="s[1.1]"/>
+        <stack position="2,4,0" item="minecraft:bucket" transformation="s[1.1] q[0,-0.383,0,0.924]"/>
+        <stack position="2,4,2" item="minecraft:dye" meta="10" transformation="s[1.1]"/>
+        <stack position="0,4,2" item="minecraft:iron_ore" transformation="t[0,-0.09,0] s[1.6]"/>
+      </multiblock>
+      <space height="8"/>
+      <divider/>
+    </page>
+    <page/>
+  </chapter>
   <stack-links>
     <stack item="minecraft:coal">:recipes</stack>
   </stack-links>

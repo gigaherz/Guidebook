@@ -15,6 +15,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
@@ -22,6 +23,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
 import java.util.Collection;
+import java.util.List;
 
 public class BookRendering implements IBookGraphics
 {
@@ -51,6 +53,7 @@ public class BookRendering implements IBookGraphics
     private int currentPair = 0;
     private boolean hasScale;
 
+    private float partialTicks;
     private float scalingFactor;
 
     BookRendering(BookDocument book, GuiGuidebook gui)
@@ -344,21 +347,18 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public boolean mouseHover(int mouseX, int mouseY)
+    public void mouseHover(int mouseX, int mouseY)
     {
         BookDocument.ChapterData ch = book.getChapter(currentChapter);
         BookDocument.PageData pg = ch.pages.get(currentPair * 2);
         if (mouseHoverPage(mouseX, mouseY, pg))
-            return true;
+            return;
 
         if (currentPair * 2 + 1 < ch.pages.size())
         {
             pg = ch.pages.get(currentPair * 2 + 1);
-            if (mouseHoverPage(mouseX, mouseY, pg))
-                return true;
+            mouseHoverPage(mouseX, mouseY, pg);
         }
-
-        return false;
     }
 
     private boolean mouseHoverPage(int mouseX, int mouseY, BookDocument.PageData pg)
@@ -396,8 +396,9 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawCurrentPages()
+    public void drawCurrentPages(float partialTicks)
     {
+        this.partialTicks = partialTicks;
         int guiWidth = gui.width;
         int guiHeight = gui.height;
 
@@ -482,6 +483,12 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
+    public void drawHoverText(int left, int top, int z, List<String> text)
+    {
+        gui.drawHoveringText(text, left, top);
+    }
+
+    @Override
     public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
     {
         int sw = tw != 0 ? tw : 256;
@@ -523,5 +530,47 @@ public class BookRendering implements IBookGraphics
     public Object owner()
     {
         return gui;
+    }
+
+    @Override
+    public int getMouseX()
+    {
+        Minecraft mc = Minecraft.getMinecraft();
+        int dw = hasScale ? scaledWidth : gui.width;
+        return Mouse.getX() * dw / mc.displayWidth;
+    }
+
+    @Override
+    public int getMouseY()
+    {
+        Minecraft mc = Minecraft.getMinecraft();
+        int dh = hasScale ? scaledHeight : gui.height;
+        return dh - Mouse.getY() * dh / mc.displayHeight;
+    }
+
+    public void updatePageElements(int page)
+    {
+        BookDocument.ChapterData ch = book.getChapter(currentChapter);
+        if (page >= ch.pages.size())
+            return;
+
+        BookDocument.PageData pg = ch.pages.get(page);
+
+        for (IPageElement e : pg.elements)
+        {
+            if(e instanceof ITickable) ((ITickable) e).update();
+        }
+    }
+
+    @Override
+    public void updateCurrentPageElements()
+    {
+        updatePageElements(currentPair * 2);
+        updatePageElements(currentPair * 2 + 1);
+    }
+
+    @Override
+    public float getPartialTicks() {
+        return partialTicks;
     }
 }
