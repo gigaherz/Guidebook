@@ -13,7 +13,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
@@ -21,6 +20,9 @@ import net.minecraftforge.fluids.FluidRegistry;
 
 import javax.vecmath.Vector3f;
 import java.awt.Color;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author joazlazer
@@ -89,7 +91,7 @@ public class BlockFluidComponent extends BlockComponent
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
 
-            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            final float offset = this.getOffsetForScale(scale);
             GlStateManager.translate(offset, 0f, offset);
 
             Tessellator tessellator = Tessellator.getInstance();
@@ -116,12 +118,12 @@ public class BlockFluidComponent extends BlockComponent
     /**
      * Gets the tooltip of the component to draw when hovered over
      *
-     * @return A formatted String to render when hovered
+     * @return A list of Strings that represent each line
      */
     @Override
-    public String getTooltip()
+    public List<String> getTooltip()
     {
-        return String.format("Fluid: %s", fluid.getName());
+        return Collections.singletonList(String.format("Fluid: %s", fluid.getName()));
     }
 
     /**

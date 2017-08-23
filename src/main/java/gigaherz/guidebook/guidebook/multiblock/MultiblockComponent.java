@@ -2,15 +2,16 @@ package gigaherz.guidebook.guidebook.multiblock;
 
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 
+import javax.annotation.Nonnull;
 import javax.vecmath.Point2d;
 import javax.vecmath.Vector3f;
-import java.awt.*;
+import java.awt.Color;
+import java.util.List;
 
 /**
  * @author joazlazer
@@ -24,6 +25,17 @@ public abstract class MultiblockComponent
      */
     @SuppressWarnings("WeakerAccess")
     protected static final ResourceLocation HOVER_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_hover.png");
+
+    /**
+     * The amount to expand by for hover highlight boxes
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected static final double HIGHLIGHT_EXPAND = 0.025d;
+
+    /**
+     * An arbitrary offset to fix highlight box alignment issues
+     */
+    private static final float OFFSET = (float) -HIGHLIGHT_EXPAND / 2f;
 
     /**
      * Renders the component at the specific position and at the specific scale
@@ -50,9 +62,9 @@ public abstract class MultiblockComponent
     /**
      * Gets the tooltip of the component to draw when hovered over
      *
-     * @return A formatted String to render when hovered
+     * @return A list of Strings that represent each line
      */
-    public abstract String getTooltip();
+    public abstract List<String> getTooltip();
 
     /**
      * Whether the current multiblock component should be ordered and rendered in another pass
@@ -72,17 +84,47 @@ public abstract class MultiblockComponent
     {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder renderer = tessellator.getBuffer();
-        Vector3f highlightLocation = new Vector3f((float) box.minX, (float) box.minY, (float) box.minZ);
-        Vector3f highlightDimensions = new Vector3f((float) (box.maxX - box.minX), (float) (box.maxY - box.minY), (float) (box.maxZ - box.minZ));
+        Vector3f highlightLocation = new Vector3f((float) box.minX + OFFSET, (float) box.minY + OFFSET, (float) box.minZ + OFFSET);
+        Vector3f highlightDimensions = new Vector3f((float) (box.maxX - box.minX) + OFFSET, (float) (box.maxY - box.minY) + OFFSET, (float) (box.maxZ - box.minZ) + OFFSET);
         Point2d UV = new Point2d(0d, 0d);
         Point2d WH = new Point2d(1d, 1d);
-        Color color = new Color(1.0f, 1.0f, 1.0f, 0.15f);
+        Color color = new Color(1.0f, 1.0f, 1.0f, 0.2f);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.DOWN, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.NORTH, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.EAST, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.SOUTH, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.WEST, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.UP, color);
-        GlStateManager.enableLighting();
+    }
+
+    /**
+     * A utility method to combine a String list into one String delimited with newlines
+     *
+     * @param lines A list of Strings representing lines of text
+     * @return A formatted String
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Nonnull
+    protected String getFormattedString(List<String> lines)
+    {
+        StringBuilder formatted = new StringBuilder();
+        for (int i = 0; i < lines.size(); ++i)
+        {
+            if (i != 0) formatted.append("\n");
+            formatted.append(lines.get(i));
+        }
+        return formatted.toString();
+    }
+
+    /**
+     * Gets the offset to modify the position of rendered components according to their scaling
+     *
+     * @param scale The same scale applied to the model rendering
+     * @return An x-y offset to use with a glTransform
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected float getOffsetForScale(float scale)
+    {
+        return 0.75f * (1f - scale);
     }
 }

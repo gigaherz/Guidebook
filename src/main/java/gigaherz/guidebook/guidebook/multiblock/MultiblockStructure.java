@@ -1,7 +1,5 @@
 package gigaherz.guidebook.guidebook.multiblock;
 
-import com.sun.javafx.geom.Vec3f;
-import com.sun.javafx.geom.Vec4f;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.MultiblockPanel;
@@ -31,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Quaternion;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,7 +56,7 @@ public class MultiblockStructure
     private BlockPos bounds;
 
     // Hover variables
-    private List<Pair<AxisAlignedBB, String>> tooltipBBs; // Each bounding box for mouse collision as well as the formatted string to draw when hovered over
+    private List<Pair<AxisAlignedBB, List<String>>> tooltipBBs; // Each bounding box for mouse collision as well as the formatted string to draw when hovered over
     private Vec3i hoveredPos = new Vec3i(-1, -1, -1);
 
     // Floor and Poles
@@ -67,9 +66,7 @@ public class MultiblockStructure
     private MultiblockPanel.PoleMode poleMode;
 
     // Initial render transforms
-    private float scale;
-    private Vec3f offset;
-    private Vec4f initialRot;
+    private TRSRTransformation transformation;
 
     // Transformation matrix caches
     private FloatBuffer modelViewCache;
@@ -100,19 +97,14 @@ public class MultiblockStructure
         return structureBlockAccess;
     }
 
-    public void setOffset(Vec3f offset)
+    public TRSRTransformation getTransformation()
     {
-        this.offset = offset;
+        return transformation;
     }
 
-    public void setInitialRot(Vec4f initialRot)
+    public void setTransformation(TRSRTransformation transformation)
     {
-        this.initialRot = initialRot;
-    }
-
-    public void setScale(float scale)
-    {
-        this.scale = scale;
+        this.transformation = transformation;
     }
 
     public void setPoleMode(MultiblockPanel.PoleMode poleMode)
@@ -181,12 +173,12 @@ public class MultiblockStructure
 
                 // Block space transformations:
                 scale(2.0F, 2.0F, 2.0F); // Scale each block up by a hard 2x in each direction
-                scale(scale, scale, scale); // Then, scale by the specified parsed scale in each direction
+                scale(transformation.getScale().x, transformation.getScale().y, transformation.getScale().z); // Then, scale by the specified parsed scale in each direction
                 scale(globalScale, globalScale, globalScale); // Finally, scale by the interpolated value used for scaling down during expansion
                 rotate(spinAngle, 0f, 1f, 0f); // Rotate the structure by the interpolated spin angle
                 //noinspection SuspiciousNameCombination
-                rotate(initialRot.x, initialRot.y, initialRot.z, initialRot.w); // Rotate by the specified parsed scale in each direction
-                translate(offset.x, offset.y, offset.z); // Transform by the specified parsed offset
+                rotate(new Quaternion(transformation.getLeftRot().x, transformation.getLeftRot().y, transformation.getLeftRot().z, transformation.getLeftRot().w)); // Rotate by the specified parsed scale in each direction
+                translate(transformation.getTranslation().x, transformation.getTranslation().y, transformation.getTranslation().z); // Transform by the specified parsed offset
 
                 storeViewModelPerspective();
 
@@ -231,7 +223,7 @@ public class MultiblockStructure
      */
     private void renderHighlight(float blockScale, float layerGap, int maxDisplayLayer)
     {
-        MultiblockComponent hoveredComponent = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
+        MultiblockComponent hoveredComponent = getComponentAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ()); // If applicable, draw the hover highlight for the highlighted component
         if (hoveredComponent != null && hoveredPos.getY() + 1 <= maxDisplayLayer)
         {
             final float offsetY = -layerGap * (bounds.getY() - 1) / 2f; // Calculate the y offset to account for expansion and move back down by half of the amount moved up by the layer gap
@@ -263,6 +255,11 @@ public class MultiblockStructure
         GlStateManager.rotate(angle, x, y, z);
     }
 
+    private void rotate(Quaternion quat)
+    {
+        GlStateManager.rotate(quat);
+    }
+
     private void translate(float x, float y, float z)
     {
         GlStateManager.translate(x, y, z);
@@ -279,8 +276,9 @@ public class MultiblockStructure
     {
         Pair<Vector3f, Vector3f> mouseRay = getMouseRay(mouseX, mouseY, this.modelViewCache, this.projectionCache, this.viewportCache);
 
-        List<Pair<RayTraceResult, String>> results = new ArrayList<>();
-        for (Pair<AxisAlignedBB, String> bbStringPair : tooltipBBs)
+        if (mouseRay == null) return;
+        List<Pair<RayTraceResult, List<String>>> results = new ArrayList<>();
+        for (Pair<AxisAlignedBB, List<String>> bbStringPair : tooltipBBs)
         {
             RayTraceResult result = bbStringPair.getKey().calculateIntercept(toVec3d(mouseRay.getKey()), toVec3d(mouseRay.getValue()));
             if (result != null && result.typeOfHit != RayTraceResult.Type.MISS)
@@ -291,8 +289,8 @@ public class MultiblockStructure
 
         if (results.size() != 0)
         {
-            Pair<RayTraceResult, String> minDistance = results.get(0);
-            for (Pair<RayTraceResult, String> result : results)
+            Pair<RayTraceResult, List<String>> minDistance = results.get(0);
+            for (Pair<RayTraceResult, List<String>> result : results)
             {
                 if (result == minDistance) continue;
                 if (minDistance.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())) > result.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())))
@@ -300,11 +298,13 @@ public class MultiblockStructure
             }
             info.drawHoverText(mouseX, mouseY, 101, minDistance.getValue());
         }
-        BlockComponent bc = getBlockAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ());
-        info.drawHoverText(mouseX, mouseY, 101, bc != null ? bc.getTooltip() : "");
+        MultiblockComponent mc = getComponentAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ());
+        if(mc != null) {
+            info.drawHoverText(mouseX, mouseY, 101, mc.getTooltip());
+        }
 
         // TODO Solve mouseOver algorithm
-        this.hoveredPos = new BlockPos(0, 0, 2);
+        this.hoveredPos = new BlockPos(2, 4, 2);
         doRenderHighlight = true;
     }
 
@@ -337,8 +337,10 @@ public class MultiblockStructure
      * @param viewport   The current viewport
      * @return A pair of 3-d vectors representing the Start & End coordinates of the ray
      */
+    @Nullable
     private static Pair<Vector3f, Vector3f> getMouseRay(int mouseX, int mouseY, FloatBuffer modelView, FloatBuffer projection, IntBuffer viewport)
     {
+        if (modelView == null || projection == null || viewport == null) return null;
         float winX, winY;
         FloatBuffer startPos = BufferUtils.createFloatBuffer(3);
         FloatBuffer endPos = BufferUtils.createFloatBuffer(3);
@@ -668,6 +670,20 @@ public class MultiblockStructure
     private boolean hasBlockAt(int x, int y, int z)
     {
         // TODO Fix with the translucent block restructure
+        return (x < this.bounds.getX() && y < this.bounds.getY() && z < this.getBounds().getZ() &&
+                x > -1 && y > -1 && z > -1 &&
+                ((structureMatrix[x][y][z] != null && structureMatrix[x][y][z] instanceof BlockComponent) ||
+                        (translucentStructureMatrix[x][y][z] != null && translucentStructureMatrix[x][y][z] instanceof BlockComponent)));
+    }
+
+    /**
+     * @param x relative x
+     * @param y relative y
+     * @param z relative z
+     * @return Whether there is a component at the given x,y,z coordinate in the multiblock structure
+     */
+    private boolean hasComponentAt(int x, int y, int z)
+    {
         return (x < this.bounds.getX() && y < this.bounds.getY() && z < this.getBounds().getZ() && x > -1 && y > -1 && z > -1 && (structureMatrix[x][y][z] != null || translucentStructureMatrix[x][y][z] != null));
     }
 
@@ -685,6 +701,22 @@ public class MultiblockStructure
             return (BlockComponent) structureMatrix[x][y][z];
         if (translucentStructureMatrix[x][y][z] != null && translucentStructureMatrix[x][y][z] instanceof BlockComponent)
             return (BlockComponent) translucentStructureMatrix[x][y][z];
+        return null;
+    }
+
+    /**
+     * @param x relative x
+     * @param y relative y
+     * @param z relative z
+     * @return The MultiblockComponent at the given x,y,z coordinate, or <code>null</code> if none exist there
+     */
+    private MultiblockComponent getComponentAt(int x, int y, int z)
+    {
+        if (!hasComponentAt(x, y, z)) return null;
+        if (structureMatrix[x][y][z] != null)
+            return structureMatrix[x][y][z];
+        if (translucentStructureMatrix[x][y][z] != null)
+            return translucentStructureMatrix[x][y][z];
         return null;
     }
 
@@ -759,10 +791,12 @@ public class MultiblockStructure
         {
             // TODO Redo with translucency restructure
             translucentStructureMatrix[x][y][z] = component;
+            structureMatrix[x][y][z] = null;
         }
         else
         {
             structureMatrix[x][y][z] = component;
+            translucentStructureMatrix[x][y][z] = null;
         }
 
         // Adds the component to the IBlockAccess if it is a block

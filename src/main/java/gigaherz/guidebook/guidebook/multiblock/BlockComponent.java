@@ -18,7 +18,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -43,11 +42,9 @@ public class BlockComponent extends MultiblockComponent
      */
     protected final IBlockState blockState;
     protected final IBakedModel bakedModel;
-    protected final String tooltipCache;
+    protected final List<String> tooltipCache;
     protected final AxisAlignedBB cachedBounds;
     protected final AxisAlignedBB cachedHighlightBounds;
-
-    protected static final double HIGHLIGHT_EXPAND = 0.025d;
 
     BlockComponent(IBlockState stateIn, IBlockAccess blockAccess, BlockPos position)
     {
@@ -57,14 +54,8 @@ public class BlockComponent extends MultiblockComponent
 
         // Cache tooltip
         ItemStack is = new ItemStack(Item.getItemFromBlock(blockState.getBlock()), 1, blockState.getBlock().damageDropped(blockState));
-        List<String> retrievedTooltip = is.getTooltip(null, ITooltipFlag.TooltipFlags.NORMAL);
-        StringBuilder formatted = new StringBuilder();
-        for (int i = 0; i < retrievedTooltip.size(); ++i)
-        {
-            if (i != 0) formatted.append("\n");
-            formatted.append(retrievedTooltip.get(i));
-        }
-        tooltipCache = formatted.toString();
+        tooltipCache = is.getTooltip(null, Minecraft.getMinecraft().gameSettings.advancedItemTooltips ? ITooltipFlag.TooltipFlags.ADVANCED : ITooltipFlag.TooltipFlags.NORMAL);
+
         cachedBounds = getBounds(blockState, blockAccess, position);
         cachedHighlightBounds = cachedBounds.grow(HIGHLIGHT_EXPAND, HIGHLIGHT_EXPAND, HIGHLIGHT_EXPAND);
     }
@@ -106,7 +97,7 @@ public class BlockComponent extends MultiblockComponent
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
 
-            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            final float offset = this.getOffsetForScale(scale);
             GlStateManager.translate(offset, 0f, offset);
 
             Tessellator tessellator = Tessellator.getInstance();
@@ -142,7 +133,7 @@ public class BlockComponent extends MultiblockComponent
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
-            final float offset = 0.75f * (1f - MathHelper.clamp(scale, 0f, 1f));
+            final float offset = this.getOffsetForScale(scale);
             GlStateManager.translate(offset, 0f, offset);
 
             this.renderHighlightBox(cachedHighlightBounds);
@@ -155,10 +146,10 @@ public class BlockComponent extends MultiblockComponent
     /**
      * Gets the tooltip of the component to draw when hovered over
      *
-     * @return A formatted String to render when hovered
+     * @return A list of Strings that represent each line
      */
     @Override
-    public String getTooltip()
+    public List<String> getTooltip()
     {
         return tooltipCache;
     }

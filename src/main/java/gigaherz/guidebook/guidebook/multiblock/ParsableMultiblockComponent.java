@@ -10,6 +10,11 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.w3c.dom.Node;
 
+/**
+ * @author joazlazer
+ * <p>
+ * An extention of MultiblockComponent that supports parsing from nodes within the parent <multiblock> node by registry of a Parser implementation
+ */
 @SuppressWarnings("WeakerAccess")
 public abstract class ParsableMultiblockComponent extends MultiblockComponent
 {

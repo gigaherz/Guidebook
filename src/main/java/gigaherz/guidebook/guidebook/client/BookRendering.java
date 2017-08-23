@@ -23,6 +23,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
 import java.util.Collection;
+import java.util.List;
 
 public class BookRendering implements IBookGraphics
 {
@@ -332,21 +333,18 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public boolean mouseHover(int mouseX, int mouseY)
+    public void mouseHover(int mouseX, int mouseY)
     {
         BookDocument.ChapterData ch = book.getChapter(currentChapter);
         BookDocument.PageData pg = ch.pages.get(currentPair * 2);
         if (mouseHoverPage(mouseX, mouseY, pg))
-            return true;
+            return;
 
         if (currentPair * 2 + 1 < ch.pages.size())
         {
             pg = ch.pages.get(currentPair * 2 + 1);
-            if (mouseHoverPage(mouseX, mouseY, pg))
-                return true;
+            mouseHoverPage(mouseX, mouseY, pg);
         }
-
-        return false;
     }
 
     private boolean mouseHoverPage(int mouseX, int mouseY, BookDocument.PageData pg)
@@ -471,7 +469,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawHoverText(int left, int top, int z, String text)
+    public void drawHoverText(int left, int top, int z, List<String> text)
     {
         gui.drawHoveringText(text, left, top);
     }
