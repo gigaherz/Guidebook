@@ -469,7 +469,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawHoverText(int left, int top, int z, List<String> text)
+    public void drawHoverText(int left, int top, List<String> text)
     {
         gui.drawHoveringText(text, left, top);
     }

@@ -3,7 +3,8 @@ package gigaherz.guidebook.guidebook.multiblock;
 import gigaherz.guidebook.guidebook.ParseUtils;
 import gigaherz.guidebook.guidebook.elements.Stack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -67,11 +68,11 @@ public class ItemComponent extends ParsableMultiblockComponent
     @Override
     public AxisAlignedBB render(float x, float y, float z, float scale)
     {
+        final float offset = this.getOffsetForScale(scale) * 0.666f;
         GlStateManager.pushMatrix();
         {
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
-            final float offset = this.getOffsetForScale(scale) * 0.666f;
             GlStateManager.translate(offset, -GROUND_OFFSET, offset);
             GlStateManager.translate(transformation.getTranslation().x, transformation.getTranslation().y, transformation.getTranslation().z);
             GlStateManager.scale(scale, scale, scale);
@@ -79,7 +80,7 @@ public class ItemComponent extends ParsableMultiblockComponent
             renderItem(stackObj.getCurrentStack(), Minecraft.getMinecraft().getRenderItem(), ITEM_STACK_SCALE * transformation.getScale().x, ITEM_STACK_SCALE * transformation.getScale().y, ITEM_STACK_SCALE * transformation.getScale().z, new Quaternion(transformation.getLeftRot().x, transformation.getLeftRot().y, transformation.getLeftRot().z, transformation.getLeftRot().w));
         }
         GlStateManager.popMatrix();
-        return cachedBounds;
+        return cachedBounds.offset((-0.5f + x) * scale + offset, (-0.5f + y) * scale, (-0.5f + z) * scale + offset);
     }
 
     /**

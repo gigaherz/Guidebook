@@ -7,10 +7,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 
-import javax.annotation.Nonnull;
 import javax.vecmath.Point2d;
 import javax.vecmath.Vector3f;
-import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -88,32 +87,13 @@ public abstract class MultiblockComponent
         Vector3f highlightDimensions = new Vector3f((float) (box.maxX - box.minX) + OFFSET, (float) (box.maxY - box.minY) + OFFSET, (float) (box.maxZ - box.minZ) + OFFSET);
         Point2d UV = new Point2d(0d, 0d);
         Point2d WH = new Point2d(1d, 1d);
-        Color color = new Color(1.0f, 1.0f, 1.0f, 0.2f);
+        Color color = new Color(1.0f, 1.0f, 1.0f, 0.225f);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.DOWN, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.NORTH, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.EAST, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.SOUTH, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.WEST, color);
         MultiblockStructure.drawTexturedQuad(highlightLocation, highlightDimensions, renderer, HOVER_TEXTURE, UV, WH, EnumFacing.UP, color);
-    }
-
-    /**
-     * A utility method to combine a String list into one String delimited with newlines
-     *
-     * @param lines A list of Strings representing lines of text
-     * @return A formatted String
-     */
-    @SuppressWarnings("WeakerAccess")
-    @Nonnull
-    protected String getFormattedString(List<String> lines)
-    {
-        StringBuilder formatted = new StringBuilder();
-        for (int i = 0; i < lines.size(); ++i)
-        {
-            if (i != 0) formatted.append("\n");
-            formatted.append(lines.get(i));
-        }
-        return formatted.toString();
     }
 
     /**

@@ -50,7 +50,7 @@ public interface IBookGraphics
 
     void drawItemStack(int left, int top, int z, ItemStack stack, int color, float scale);
 
-    void drawHoverText(int left, int top, int z, List<String> text);
+    void drawHoverText(int left, int top, List<String> text);
 
     void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
 

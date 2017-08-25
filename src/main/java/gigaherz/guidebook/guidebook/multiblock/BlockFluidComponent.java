@@ -19,8 +19,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 
 import javax.vecmath.Vector3f;
-import java.awt.Color;
-import java.util.Arrays;
+import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,14 +83,13 @@ public class BlockFluidComponent extends BlockComponent
     @Override
     public AxisAlignedBB render(float x, float y, float z, float scale)
     {
+        final float offset = this.getOffsetForScale(scale);
         GlStateManager.pushMatrix();
         {
             GlStateManager.disableLighting();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
-
-            final float offset = this.getOffsetForScale(scale);
             GlStateManager.translate(offset, 0f, offset);
 
             Tessellator tessellator = Tessellator.getInstance();
@@ -112,7 +110,7 @@ public class BlockFluidComponent extends BlockComponent
             GlStateManager.enableLighting();
         }
         GlStateManager.popMatrix();
-        return cachedBounds;
+        return cachedBounds.offset((-0.5f + x) * scale + offset, (-0.5f + y) * scale, (-0.5f + z) * scale + offset);
     }
 
     /**

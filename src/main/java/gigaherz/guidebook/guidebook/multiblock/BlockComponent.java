@@ -91,13 +91,13 @@ public class BlockComponent extends MultiblockComponent
     @Override
     public AxisAlignedBB render(float x, float y, float z, float scale)
     {
+        final float offset = this.getOffsetForScale(scale);
         GlStateManager.pushMatrix();
         {
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
             GlStateManager.translate(x, y, z);
             GlStateManager.scale(scale, scale, scale);
 
-            final float offset = this.getOffsetForScale(scale);
             GlStateManager.translate(offset, 0f, offset);
 
             Tessellator tessellator = Tessellator.getInstance();
@@ -112,7 +112,7 @@ public class BlockComponent extends MultiblockComponent
             tessellator.draw();
         }
         GlStateManager.popMatrix();
-        return cachedBounds;
+        return cachedBounds.offset((-0.5f + x) * scale + offset, (-0.5f + y) * scale, (-0.5f + z) * scale + offset);
     }
 
     /**

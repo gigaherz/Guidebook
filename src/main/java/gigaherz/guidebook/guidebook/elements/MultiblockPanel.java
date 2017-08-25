@@ -1,24 +1,23 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
-import com.sun.javafx.geom.Vec3f;
-import com.sun.javafx.geom.Vec4f;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.ParseUtils;
 import gigaherz.guidebook.guidebook.multiblock.MultiblockStructure;
 import gigaherz.guidebook.guidebook.multiblock.ParsableMultiblockComponent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.*;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.common.model.TRSRTransformation;
 import org.lwjgl.util.Rectangle;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -27,19 +26,16 @@ import java.util.ArrayList;
  * A page element that supports the display of complex multiblock structures within guidebooks
  * (See in-game manual)
  */
-public class MultiblockPanel implements IHoverPageElement, IClickablePageElement, ITickable
+public class MultiblockPanel implements IClickablePageElement, IHoverPageElement, ITickable
 {
     private int height = 150; // Default height
     private PoleMode poles = PoleMode.ON;
     private FloorMode floor = FloorMode.ADJACENT;
-    private Vec3f offset = new Vec3f(0f, 0f, 0f); // A block-space offset for the structure to become the new render origin
-    private Vec4f initialRot = new Vec4f(0f, 0f, 0f, 0f); // A block-space rotation for the structure to be transformed before it is spun / orbited
+    private TRSRTransformation transformation = TRSRTransformation.identity(); // An initial block-space transformation for the structure
     private MultiblockStructure[] structures;
     private boolean expanded = false;
     private boolean modeButtonEnabled = true;
     private boolean layerSelectEnabled = true;
-    private float scale = 1f;
-    private float spinSpeed = 0f;
 
     public MultiblockPanel()
     {
@@ -58,7 +54,9 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     private boolean collapsing = false;
     private int modeSwitchTicks = 0;
     private int maxDisplayLayer = 0;
-    private int spinAngle = 0;
+    private float spinAngle = 0;
+    private float spinSpeed = 0f;
+    private MultiblockStructure currentFrameStructure = null;
 
     private static final int CYCLE_TIME = 2000;
     private static final ResourceLocation BOOK_GUI_TEXTURES = GuidebookMod.location("gui/book");
@@ -80,7 +78,6 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         if (getCurrentStructure() != null)
         {
             updateLayerSelectLogic();
-            renderStructure(getCurrentStructure(), nav, left + (nav.getPageWidth() / 2), top + (height / 2));
             int buttonY = top + (height / 2) - (getButtonPanelHeight() / 2) - 4;
             if (layerSelectEnabled)
             {
@@ -92,6 +89,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
             {
                 drawModeButton(nav, left, buttonY);
             }
+            renderStructure(getCurrentStructure(), nav, left + (nav.getPageWidth() / 2), top + (height / 2));
         }
         return height;
     }
@@ -243,6 +241,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
                 globalScale = 1f + getCollapsedScale();
             }
         }
+        this.currentFrameStructure = structure;
         structure.render(left, top, expandBlockScale, expandLevelAmount, maxDisplayLayer, globalScale, spinAngle + (nav.getPartialTicks() * spinSpeed));
     }
 
@@ -254,13 +253,6 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         {
             Integer parsedHeight = Ints.tryParse(attr.getTextContent());
             if (parsedHeight != null) height = parsedHeight;
-        }
-
-        attr = attributes.getNamedItem("scale");
-        if (attr != null)
-        {
-            Float parsedScale = Floats.tryParse(attr.getTextContent());
-            if (parsedScale != null) scale = parsedScale;
         }
 
         attr = attributes.getNamedItem("poles");
@@ -275,18 +267,11 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
             floor = FloorMode.parse(attr.getTextContent());
         }
 
-        attr = attributes.getNamedItem("offset");
+        attr = attributes.getNamedItem("transformation");
         if (attr != null)
         {
-            Vec3f parsedOffset = ParseUtils.parseVec3f(attr.getTextContent());
-            if (parsedOffset != null) this.offset = parsedOffset;
-        }
-
-        attr = attributes.getNamedItem("initialRot");
-        if (attr != null)
-        {
-            Vec4f parsedRot = ParseUtils.parseVec4f(attr.getTextContent());
-            if (parsedRot != null) this.initialRot = parsedRot;
+            TRSRTransformation parsedTransformation = ParseUtils.parseTRSR(attr.getTextContent());
+            if (parsedTransformation != null) this.transformation = parsedTransformation;
         }
 
         // TODO additional attributes
@@ -337,9 +322,7 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
             if (newStructure != null)
             {
                 loadedStructures.add(newStructure);
-                newStructure.setOffset(this.offset);
-                newStructure.setInitialRot(this.initialRot);
-                newStructure.setScale(this.scale);
+                newStructure.setTransformation(this.transformation);
                 newStructure.setFloorMode(this.floor);
                 newStructure.setPoleMode(this.poles);
                 this.maxDisplayLayer = newStructure.getBounds().getY(); // Initialize the maxDisplayLayer to the max y of the last structure loaded
@@ -388,12 +371,6 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
     }
 
     @Override
-    public void mouseOver(IBookGraphics info, int x, int y)
-    {
-        if (getCurrentStructure() != null) getCurrentStructure().mouseOver(info, x, y);
-    }
-
-    @Override
     public Rectangle getBounds()
     {
         if (bounds == null)
@@ -436,6 +413,12 @@ public class MultiblockPanel implements IHoverPageElement, IClickablePageElement
         // Calculate the alpha value at mu
         float alpha = 0.5f * (float) Math.sin(((3.142f * mu) - 1.571f)) + 0.5f;
         return (y2 - y1) * alpha + y1;
+    }
+
+    @Override
+    public void mouseOver(IBookGraphics info, int x, int y)
+    {
+        if (currentFrameStructure != null) currentFrameStructure.mouseOver(info, x, y);
     }
 
     public enum PoleMode

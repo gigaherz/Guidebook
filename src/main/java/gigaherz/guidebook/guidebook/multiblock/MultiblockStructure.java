@@ -27,13 +27,17 @@ import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Quaternion;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.vecmath.*;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Point2d;
+import javax.vecmath.Point2i;
+import javax.vecmath.Vector3f;
 import java.awt.*;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
@@ -56,28 +60,24 @@ public class MultiblockStructure
     private BlockPos bounds;
 
     // Hover variables
-    private List<Pair<AxisAlignedBB, List<String>>> tooltipBBs; // Each bounding box for mouse collision as well as the formatted string to draw when hovered over
+    private List<Pair<AxisAlignedBB, Vec3i>> tooltipBBs; // Each bounding box for mouse collision as well as the block-space position of the component
     private Vec3i hoveredPos = new Vec3i(-1, -1, -1);
+    private boolean doRenderHighlight = false;
+    private List<String> tooltipToRender = null;
 
     // Floor and Poles
-    private Point2i[] floorLocations;
-    private Vec3i[] poleLocations;
     private MultiblockPanel.FloorMode floorMode;
     private MultiblockPanel.PoleMode poleMode;
+    private Point2i[] floorLocations;
+    private Vec3i[] poleLocations;
 
     // Initial render transforms
     private TRSRTransformation transformation;
 
-    // Transformation matrix caches
-    private FloatBuffer modelViewCache;
-    private FloatBuffer projectionCache;
-    private IntBuffer viewportCache;
-
-    private boolean doRenderHighlight = false;
-
     // Static constants
     private static final ResourceLocation FLOOR_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_floor.png");
     private static final ResourceLocation POLE_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "textures/multiblock_beacon.png");
+    private static final float POLE_SCALE = 0.65f;
     private static final BlockPos DEFAULT_HOVER_POSITION = new BlockPos(-1, -1, -1);
 
     private MultiblockStructure(BlockPos size)
@@ -95,11 +95,6 @@ public class MultiblockStructure
     private IBlockAccess getBlockAccess()
     {
         return structureBlockAccess;
-    }
-
-    public TRSRTransformation getTransformation()
-    {
-        return transformation;
     }
 
     public void setTransformation(TRSRTransformation transformation)
@@ -140,78 +135,101 @@ public class MultiblockStructure
      */
     public void render(int left, int top, float blockScale, float layerGap, int maxDisplayLayer, float globalScale, float spinAngle)
     {
+        this.tooltipToRender = null;
         GlStateManager.pushMatrix();
         {
             TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
 
+            // Set up OpenGL settings
+            GlStateManager.enableRescaleNormal();
+            GlStateManager.enableAlpha();
+            GlStateManager.alphaFunc(516, 0.1F);
+            GlStateManager.enableBlend();
+            GlStateManager.enableDepth();
+            GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+            GlStateManager.translate(left, top, 0f); // Screen-space transform to the specified x,y
+            GlStateManager.translate(-18f, 0f, 200.0F); // Screen-space transform to the left 18 pixels (necessary arbitrary offset) and forward on the z-axis by 200 units
+
             GlStateManager.pushMatrix();
             {
-
-                // Set up OpenGL settings
-                GlStateManager.enableRescaleNormal();
-                GlStateManager.enableAlpha();
-                GlStateManager.alphaFunc(516, 0.1F);
-                GlStateManager.enableBlend();
-                GlStateManager.enableDepth();
-                GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-
-                translate(left, top, 0f); // Screen-space transform to the specified x,y
-                translate(-18f, 0f, 100.0F); // Screen-space transform to the left 18 pixels (necessary arbitrary offset) and forward on the z-axis by 100 units
-
-                GlStateManager.pushMatrix();
-                {
-                    // Apply and scale out lighting
-                    GlStateManager.scale(24, 24, 24);
-                    RenderHelper.enableGUIStandardItemLighting();
-                }
-                GlStateManager.popMatrix();
-
-                scale(1.0F, -1.0F, 1.0F); // Screen-space flip on y-axis
-                scale(16.0F, 16.0F, 16.0F); // Screen-space scale by 16 units in each direction to make the multiblock appear larger
-                applyGUITransformationMatrix(); // Screens-space -> Block-space
-
-                // Block space transformations:
-                scale(2.0F, 2.0F, 2.0F); // Scale each block up by a hard 2x in each direction
-                scale(transformation.getScale().x, transformation.getScale().y, transformation.getScale().z); // Then, scale by the specified parsed scale in each direction
-                scale(globalScale, globalScale, globalScale); // Finally, scale by the interpolated value used for scaling down during expansion
-                rotate(spinAngle, 0f, 1f, 0f); // Rotate the structure by the interpolated spin angle
-                //noinspection SuspiciousNameCombination
-                rotate(new Quaternion(transformation.getLeftRot().x, transformation.getLeftRot().y, transformation.getLeftRot().z, transformation.getLeftRot().w)); // Rotate by the specified parsed scale in each direction
-                translate(transformation.getTranslation().x, transformation.getTranslation().y, transformation.getTranslation().z); // Transform by the specified parsed offset
-
-                storeViewModelPerspective();
-
-                renderPoles(layerGap, blockScale, maxDisplayLayer); // Draw the poles and lazily initialize if null
-                renderFloor(layerGap); // Draw the floor and lazily initialize if null
-
-                // Set texture manager settings
-                textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-                textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
-
-                tooltipBBs.clear();
-                renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw opaque blocks
-                renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
-                if (doRenderHighlight)
-                    renderHighlight(blockScale, layerGap, maxDisplayLayer); // Draw the block highlight
-                else resetHover();
-
-                // Reset texture manager settings
-                textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-                textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
-
-                RenderHelper.disableStandardItemLighting();
-                GlStateManager.disableAlpha();
-                GlStateManager.disableRescaleNormal();
-                GlStateManager.disableLighting();
+                // Apply and scale out lighting
+                GlStateManager.scale(24, 24, 24);
+                RenderHelper.enableGUIStandardItemLighting();
             }
             GlStateManager.popMatrix();
 
-        }
-        GlStateManager.popMatrix();
+            GlStateManager.scale(1.0F, -1.0F, 1.0F); // Screen-space flip on y-axis
+            GlStateManager.scale(16.0F, 16.0F, 16.0F); // Screen-space scale by 16 units in each direction to make the multiblock appear larger
+            applyGUITransformationMatrix(); // Screens-space -> Block-space
 
-        GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
+            // Block space transformations:
+            GlStateManager.scale(2.0F, 2.0F, 2.0F); // Scale each block up by a hard 2x in each direction
+            GlStateManager.scale(transformation.getScale().x, transformation.getScale().y, transformation.getScale().z); // Then, scale by the specified parsed scale in each direction
+            GlStateManager.scale(globalScale, globalScale, globalScale); // Finally, scale by the interpolated value used for scaling down during expansion
+            GlStateManager.rotate(spinAngle, 0f, 1f, 0f); // Rotate the structure by the interpolated spin angle
+            //noinspection SuspiciousNameCombination
+            GlStateManager.rotate(new Quaternion(transformation.getLeftRot().x, transformation.getLeftRot().y, transformation.getLeftRot().z, transformation.getLeftRot().w)); // Rotate by the specified parsed scale in each direction
+            GlStateManager.translate(transformation.getTranslation().x, transformation.getTranslation().y, transformation.getTranslation().z); // Transform by the specified parsed offset
+
+            renderPoles(layerGap, blockScale, maxDisplayLayer); // Draw the poles and lazily initialize if null
+            renderFloor(layerGap); // Draw the floor and lazily initialize if null
+
+            // Set texture manager settings
+            textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
+
+            tooltipBBs.clear();
+            renderComponents(structureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw opaque blocks
+            renderComponents(translucentStructureMatrix, maxDisplayLayer, layerGap, blockScale); // Draw translucent blocks
+
+            FloatBuffer modelView = BufferUtils.createFloatBuffer(16);
+            FloatBuffer projection = BufferUtils.createFloatBuffer(16);
+            IntBuffer viewport = BufferUtils.createIntBuffer(16);
+
+            GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelView);
+            GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
+            GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
+
+            Pair<Vector3f, Vector3f> mouseRay = getMouseRay(Mouse.getX(), Mouse.getY(), modelView, projection, viewport);
+            if (mouseRay != null)
+            {
+                // Invert y-values for the mouse ray
+                // TODO Mouse ray still not correct
+                mouseRay.getKey().y = -mouseRay.getKey().y + 4.5f;
+                mouseRay.getValue().y = -mouseRay.getValue().y + 4.5f;
+
+                this.hoveredPos = getHoveredPosition(mouseRay, tooltipBBs);
+                if (hoveredPos != null)
+                {
+                    doRenderHighlight = true;
+                    MultiblockComponent hoveredComponent = this.getComponentAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ());
+                    if (hoveredComponent != null) tooltipToRender = hoveredComponent.getTooltip();
+                }
+                else
+                {
+                    resetHover();
+                }
+            }
+
+            if (doRenderHighlight)
+                renderHighlight(blockScale, layerGap, maxDisplayLayer); // Draw the block highlight
+            else resetHover();
+
+            // Reset texture manager settings
+            textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
+
+            RenderHelper.disableStandardItemLighting();
+            GlStateManager.disableAlpha();
+            GlStateManager.disableRescaleNormal();
+
+            GlStateManager.disableLighting();
+            GlStateManager.disableDepth();
+
+            GlStateManager.popMatrix();
+        }
     }
 
     /**
@@ -232,39 +250,6 @@ public class MultiblockStructure
         doRenderHighlight = false;
     }
 
-    // ## Start of [WIP] hover / mouseOver system
-
-    private void storeViewModelPerspective()
-    {
-        modelViewCache = BufferUtils.createFloatBuffer(16);
-        projectionCache = BufferUtils.createFloatBuffer(16);
-        viewportCache = BufferUtils.createIntBuffer(16);
-
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelViewCache);
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionCache);
-        GL11.glGetInteger(GL11.GL_VIEWPORT, viewportCache);
-    }
-
-    private void scale(float x, float y, float z)
-    {
-        GlStateManager.scale(x, y, z);
-    }
-
-    private void rotate(float angle, float x, float y, float z)
-    {
-        GlStateManager.rotate(angle, x, y, z);
-    }
-
-    private void rotate(Quaternion quat)
-    {
-        GlStateManager.rotate(quat);
-    }
-
-    private void translate(float x, float y, float z)
-    {
-        GlStateManager.translate(x, y, z);
-    }
-
     /**
      * Renders tooltips and other mouse interactions and is called each frame
      *
@@ -274,46 +259,19 @@ public class MultiblockStructure
      */
     public void mouseOver(IBookGraphics info, int mouseX, int mouseY)
     {
-        Pair<Vector3f, Vector3f> mouseRay = getMouseRay(mouseX, mouseY, this.modelViewCache, this.projectionCache, this.viewportCache);
-
-        if (mouseRay == null) return;
-        List<Pair<RayTraceResult, List<String>>> results = new ArrayList<>();
-        for (Pair<AxisAlignedBB, List<String>> bbStringPair : tooltipBBs)
+        if (tooltipToRender != null)
         {
-            RayTraceResult result = bbStringPair.getKey().calculateIntercept(toVec3d(mouseRay.getKey()), toVec3d(mouseRay.getValue()));
-            if (result != null && result.typeOfHit != RayTraceResult.Type.MISS)
-            {
-                results.add(new Pair<>(result, bbStringPair.getValue()));
-            }
+            info.drawHoverText(mouseX, mouseY, tooltipToRender);
         }
-
-        if (results.size() != 0)
-        {
-            Pair<RayTraceResult, List<String>> minDistance = results.get(0);
-            for (Pair<RayTraceResult, List<String>> result : results)
-            {
-                if (result == minDistance) continue;
-                if (minDistance.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())) > result.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())))
-                    minDistance = result;
-            }
-            info.drawHoverText(mouseX, mouseY, 101, minDistance.getValue());
-        }
-        MultiblockComponent mc = getComponentAt(hoveredPos.getX(), hoveredPos.getY(), hoveredPos.getZ());
-        if(mc != null) {
-            info.drawHoverText(mouseX, mouseY, 101, mc.getTooltip());
-        }
-
-        // TODO Solve mouseOver algorithm
-        this.hoveredPos = new BlockPos(2, 4, 2);
-        doRenderHighlight = true;
     }
 
     /**
-     * Resets the position of the hovered component to -1,-1,-1 in order for the highlight to not be rendered
+     * Resets the position of the hovered component to (-1,-1,-1) in order for the highlight to not be rendered
      */
     private void resetHover()
     {
         this.hoveredPos = DEFAULT_HOVER_POSITION;
+        this.doRenderHighlight = false;
     }
 
     /**
@@ -322,7 +280,7 @@ public class MultiblockStructure
      * @param vecIn The java vec-math Vector
      * @return The minecraft vec-math Vector
      */
-    private Vec3d toVec3d(Vector3f vecIn)
+    private static Vec3d toVec3d(Vector3f vecIn)
     {
         return new Vec3d(vecIn.x, vecIn.y, vecIn.z);
     }
@@ -340,18 +298,51 @@ public class MultiblockStructure
     @Nullable
     private static Pair<Vector3f, Vector3f> getMouseRay(int mouseX, int mouseY, FloatBuffer modelView, FloatBuffer projection, IntBuffer viewport)
     {
+        // TODO Mouse ray still not correct
         if (modelView == null || projection == null || viewport == null) return null;
         float winX, winY;
         FloatBuffer startPos = BufferUtils.createFloatBuffer(3);
         FloatBuffer endPos = BufferUtils.createFloatBuffer(3);
         winX = (float) mouseX;
-        winY = (float) viewport.get(2) - (float) mouseY;
-        GLU.gluUnProject(winX, winY, 0f, modelView, projection, viewport, startPos);
-        GLU.gluUnProject(winX, winY, 1f, modelView, projection, viewport, endPos);
+        winY = (float) viewport.get(3) - (float) mouseY;
+        GLU.gluUnProject(winX, winY, 0f, modelView, projection, viewport, startPos); // Gets point on near clipping plane
+        GLU.gluUnProject(winX, winY, 1f, modelView, projection, viewport, endPos); // Gets point on far clipping plane
         return new Pair<>(new Vector3f(startPos.get(0), startPos.get(1), startPos.get(2)), new Vector3f(endPos.get(0), endPos.get(1), endPos.get(2)));
     }
 
-    // ## End of [WIP] hover / mouseOver system
+    /**
+     * Gets the structure coordinates of the hovered MultiblockComponent
+     *
+     * @param mouseRay           A pair of points representing (start, end) for the test ray
+     * @param hoverBoundingBoxes A list of pairs of bounding boxes and the structure coordinates they came from
+     * @return The structure coordinates of the currently hovered component, or null if nothing is being hovered
+     */
+    @Nullable
+    private static Vec3i getHoveredPosition(@Nonnull Pair<Vector3f, Vector3f> mouseRay, List<Pair<AxisAlignedBB, Vec3i>> hoverBoundingBoxes)
+    {
+        List<Pair<RayTraceResult, Vec3i>> results = new ArrayList<>();
+        for (Pair<AxisAlignedBB, Vec3i> hoverBoundingBox : hoverBoundingBoxes)
+        {
+            RayTraceResult result = hoverBoundingBox.getKey().calculateIntercept(toVec3d(mouseRay.getKey()), toVec3d(mouseRay.getValue()));
+            if (result != null && result.typeOfHit != RayTraceResult.Type.MISS)
+            {
+                results.add(new Pair<>(result, hoverBoundingBox.getValue()));
+            }
+        }
+
+        if (results.size() != 0)
+        {
+            Pair<RayTraceResult, Vec3i> minDistance = results.get(0);
+            for (Pair<RayTraceResult, Vec3i> result : results)
+            {
+                if (result == minDistance) continue;
+                if (minDistance.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())) > result.getKey().hitVec.squareDistanceTo(toVec3d(mouseRay.getKey())))
+                    minDistance = result;
+            }
+            return minDistance.getValue();
+        }
+        return null;
+    }
 
     /**
      * Draws thin opaque beacon-like poles according to the PoleMode
@@ -383,6 +374,7 @@ public class MultiblockStructure
                     {
                         GlStateManager.translate(polePoint.getX(), polePoint.getY() + (polePoint.getY() * layerGap), polePoint.getZ()); // Offset by the pole's location and then by the layer gap offset at that point
                         GlStateManager.scale(blockScale, blockScale, blockScale); // Scale in each direction by the current block scale
+                        GlStateManager.scale(POLE_SCALE, 1f, POLE_SCALE); // Scale in x-z by a constant scale
                         GlStateManager.translate(0f, 0f, -0.5F); // Translate by negative half a block in the z to prepare for rendering the CrossModel
                         drawTexturedQuad(tileLoc, tileSize, renderer, POLE_TEXTURE, uv, wh, EnumFacing.EAST, poleColor); // Draw forward-facing plane
                         drawTexturedQuad(tileLoc, tileSize, renderer, POLE_TEXTURE, uv, wh, EnumFacing.WEST, poleColor); // Draw backward-facing plane
@@ -454,17 +446,17 @@ public class MultiblockStructure
             final float offsetY = -layerGap * (bounds.getY() - 1) / 2f; // Calculate the y offset to account for expansion and move back down by half of the amount moved up by the layer gap
 
             // Render each component
-            for (int i = 0; i < componentMatrix.length; ++i)
+            for (int x = 0; x < componentMatrix.length; ++x)
             { // Loop through each x and y array
-                for (int j = 0; j < componentMatrix[i].length; ++j)
+                for (int y = 0; y < componentMatrix[x].length; ++y)
                 {
-                    if (j + 1 <= maxDisplayLayer)
+                    if (y + 1 <= maxDisplayLayer)
                     { // If the current layer should be rendered according to the display layer slider
-                        for (int k = 0; k < componentMatrix[i][j].length; ++k)
+                        for (int z = 0; z < componentMatrix[x][y].length; ++z)
                         {
-                            if (componentMatrix[i][j][k] != null)
+                            if (componentMatrix[x][y][z] != null)
                             { // Ensure there isn't air at the position
-                                tooltipBBs.add(new Pair<>(componentMatrix[i][j][k].render(i, j + offsetY + (layerGap * j), k, blockScale), componentMatrix[i][j][k].getTooltip())); // Only add tooltip bounds to visible elements
+                                tooltipBBs.add(new Pair<>(componentMatrix[x][y][z].render(x, y + offsetY + (layerGap * y), z, blockScale), new Vec3i(x, y, z))); // Only add tooltip bounds to visible elements
                             }
                         }
                     }
@@ -529,8 +521,7 @@ public class MultiblockStructure
             }
             case ADJACENT:
             { // Adds one tile under each x,z coordinate that has at least one non-air block in the column, and then 4 additional tiles to each side of that tile
-                boolean[][] floorInPos = new boolean[getBounds().getX() + 2][];
-                for (int i = 0; i < floorInPos.length; ++i) floorInPos[i] = new boolean[getBounds().getZ() + 2];
+                boolean[][] floorInPos = new boolean[getBounds().getX() + 2][getBounds().getZ() + 2];
                 for (int x = 0; x < getBounds().getX(); ++x)
                 {
                     for (int z = 0; z < getBounds().getZ(); ++z)
@@ -561,8 +552,7 @@ public class MultiblockStructure
             }
             case AROUND:
             { // Adds one tile under each x,z coordinate that has at least one non-air block in the column, and then 8 additional tiles to each side and corner of that tile
-                boolean[][] floorInPos = new boolean[getBounds().getX() + 2][];
-                for (int i = 0; i < floorInPos.length; ++i) floorInPos[i] = new boolean[getBounds().getZ() + 2];
+                boolean[][] floorInPos = new boolean[getBounds().getX() + 2][getBounds().getZ() + 2];
                 for (int x = 0; x < getBounds().getX(); ++x)
                 {
                     for (int z = 0; z < getBounds().getZ(); ++z)
@@ -628,8 +618,27 @@ public class MultiblockStructure
                 }
             }
             case BELOW_ITEMS:
-            {
-                // TODO Implement after items have been
+            { // Adds one pole for each y-position in a column that contains an Item by going down and adding poles once an item has been found
+                for (int x = 0; x < getBounds().getX(); ++x)
+                {
+                    for (int z = 0; z < getBounds().getZ(); ++z)
+                    {
+                        boolean itemAbove = false;
+                        for (int y = getBounds().getY() - 1; y >= 0; --y)
+                        {
+                            if (itemAbove)
+                            {
+                                poleLocationList.add(new Vec3i(x, y, z));
+                            }
+
+                            if (hasComponentAt(x, y, z))
+                            {
+                                MultiblockComponent component = getComponentAt(x, y, z);
+                                if (component instanceof ItemComponent) itemAbove = true;
+                            }
+                        }
+                    }
+                }
             }
             case OFF:
             default:
