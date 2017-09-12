@@ -67,9 +67,12 @@ public class ItemGuidebook extends ItemRegistered
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems)
     {
-        for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
+        if (this.isInCreativeTab(tab))
         {
-            subItems.add(of(resourceLocation));
+            for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
+            {
+                subItems.add(of(resourceLocation));
+            }
         }
     }
 
