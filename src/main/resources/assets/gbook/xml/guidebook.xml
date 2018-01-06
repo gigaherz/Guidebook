@@ -45,12 +45,9 @@
     <page>
       <title>Adding new books</title>
       <p>Guidebook has 3 ways to declare new books, designed for different purposes.</p>
-      <p>For modders:</p>
-      <link ref=":registry" indent="8" space="8">- Using the book registry API.</link>
-      <p>For adventure map authors:</p>
-      <link ref=":respack" indent="8" space="8">- Using resource packs.</link>
-      <p>For modpack authors:</p>
-      <link ref=":configuration" indent="8" space="8">- Using the configuration folder.</link>
+      <p space="8">For modders: <link ref=":registry">the book registry API.</link></p>
+      <p space="8">For adventure map authors: <link ref=":respack">resource packs.</link></p>
+      <p space="8">For modpack authors: <link ref=":configuration">the configuration folder.</link></p>
       <p space="8">Afterward, you can give the books to the player by using the creative menu, or using a command (command-block) with</p>
       <p space="8">/give @p gbook:guidebook 1 0 {Book:"gbook:xml/book.xml"}</p>
       <p>Finally, you can make the mod give new players one or more books the first time they join (applies retroactively to existing players if enabled).</p>
@@ -83,9 +80,9 @@
       <p indent="8">assets/</p>
       <p indent="16">gbook/</p>
       <p indent="24">books.json</p>
-      <p indent="32">books/</p>
-      <p indent="40">book1.xml</p>
-      <p indent="48" space="8">book2.xml</p>
+      <p indent="24">books/</p>
+      <p indent="32">book1.xml</p>
+      <p indent="32" space="8">book2.xml</p>
       <p space="8">The most important resource will be the `books.json` file, which will have to reside at the root of any resource domain. This JSON-formatted file will contain a single array, with the list of books inside. It will look like this:</p>
       <p indent="8" space="8">[ "gbook:books/book1.xml", "gbook:books/book2.xml", ... ]</p>
       <p>These resources are additive. That means an upper resource pack will not be able to remove books registered by a lower one, unlike normal resources which are replaced by upper packs.</p>

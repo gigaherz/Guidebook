@@ -26,7 +26,16 @@ public abstract class VisualElement
     {
     }
 
+    public void mouseOut(IBookGraphics nav, int x, int y)
+    {
+    }
+
     public void click(IBookGraphics nav)
     {
+    }
+
+    public boolean wantsHover()
+    {
+        return false;
     }
 }

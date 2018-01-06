@@ -29,6 +29,7 @@ public class ElementLink extends ElementSpan
     {
         List<VisualElement> texts = super.measure(nav, width, firstLineWidth);
         List<VisualElement> links = Lists.newArrayList();
+        VisualLink.SharedHoverContext ctx = null;
         for(VisualElement e : texts)
         {
             if (!(e instanceof VisualText))
@@ -37,6 +38,8 @@ public class ElementLink extends ElementSpan
             VisualText text = (VisualText)e;
 
             VisualLink link = new VisualLink(text.text, text.size);
+            if (ctx == null) ctx = link.hoverContext;
+            else link.hoverContext = ctx;
             link.color = color;
             link.target = target;
             link.webTarget = webTarget;

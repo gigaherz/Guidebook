@@ -50,7 +50,7 @@ public class ElementStack extends Element
     public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
     {
         VisualStack element = getVisual();
-        element.position = new Point(left, top);
+        element.position = applyPosition(new Point(left, top), left, top);
         paragraph.add(element);
         return top + element.size.height;
     }

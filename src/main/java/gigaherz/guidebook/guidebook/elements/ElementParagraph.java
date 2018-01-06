@@ -16,7 +16,7 @@ import java.util.List;
 public class ElementParagraph extends ElementContainer
 {
     public int alignment = 0;
-    public int indent = 0;
+    public int indent = 0; // First line?
     public int space = 2;
 
     public final List<Element> spans = Lists.newArrayList();
@@ -38,13 +38,14 @@ public class ElementParagraph extends ElementContainer
 
         for(Element element : spans)
         {
-            List<VisualElement> pieces = element.measure(nav, width, width - currentLineLeft);
+            List<VisualElement> pieces = element.measure(nav, width, width - currentLineLeft - indent);
 
             if (pieces.size() < 1)
                 continue;
 
-            for (VisualElement current : pieces)
+            for (int i = 0; i < pieces.size(); i++)
             {
+                VisualElement current = pieces.get(i);
                 Size size = current.size;
 
                 if (currentLineLeft + size.width > width && currentLineLeft > 0)
@@ -62,7 +63,7 @@ public class ElementParagraph extends ElementContainer
                 if (size.height > currentLineHeight)
                     currentLineHeight = size.height;
 
-                current.position = element.applyPosition(new Point(left + currentLineLeft, currentLineTop), left, top);
+                current.position = element.applyPosition(new Point(left + currentLineLeft + (i == 0 ? indent : 0), currentLineTop), left, top);
 
                 if (size.width > 0)
                     currentLineLeft += size.width + spaceSize.width;
@@ -166,24 +167,6 @@ public class ElementParagraph extends ElementContainer
     public Collection<Element> getChildren()
     {
         return spans;
-    }
-
-    public ElementParagraph addTextSpan(Node elementItem, int defaultPositionMode)
-    {
-        String st = elementItem.getTextContent();
-        if (!Strings.isNullOrEmpty(st))
-        {
-            ElementSpan s = new ElementSpan(defaultPositionMode, st);
-
-            if (elementItem.hasAttributes())
-            {
-                s.parse(elementItem.getAttributes());
-            }
-
-            spans.add(s);
-        }
-
-        return this;
     }
 
     public static ElementParagraph of(int defaultPositionMode, String text)

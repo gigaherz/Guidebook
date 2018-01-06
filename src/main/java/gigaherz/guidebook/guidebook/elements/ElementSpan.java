@@ -119,8 +119,9 @@ public class ElementSpan extends Element
     }
 
 
-    private static String compactString(String text)
+    public static String compactString(String text)
     {
-        return text.replaceAll("[ \t\n\r]+", " ");
+        String temp = text.replaceAll("[\n\r]+", "").replaceAll("[ \t]+", " ");
+        return " ".equals(temp) ? " " : temp.trim();
     }
 }

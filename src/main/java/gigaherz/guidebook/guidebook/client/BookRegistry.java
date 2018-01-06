@@ -131,7 +131,7 @@ public class BookRegistry
 
     private static void loadRawBookFiles()
     {
-        File booksFolder = GuidebookMod.booksDirectory;
+        File booksFolder = new File(Loader.instance().getConfigDir(), "books");
 
         if (!booksFolder.exists())
         {
@@ -180,21 +180,18 @@ public class BookRegistry
         if (initialized) return;
         initialized = true;
 
-        File resourcesFolder = new File(GuidebookMod.booksDirectory, "resources");
+        File resourcesFolder = new File(new File(Loader.instance().getConfigDir(), "books"), "resources");
 
         if (!resourcesFolder.exists())
         {
-            GuidebookMod.logger.info("The resources folder does not exist, creating...");
             if (!resourcesFolder.mkdirs())
             {
-                GuidebookMod.logger.info("The resources folder could not be created, and it won't be injected as a resource pack folder.");
                 return;
             }
         }
 
         if (!resourcesFolder.exists() || !resourcesFolder.isDirectory())
         {
-            GuidebookMod.logger.info("There's a file called books, but it's not a directory, so it won't be injected as a resource pack folder.");
             return;
         }
 

@@ -38,6 +38,12 @@ public class VisualStack extends VisualElement
     }
 
     @Override
+    public boolean wantsHover()
+    {
+        return true;
+    }
+
+    @Override
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
         ItemStack stack = getCurrentStack();

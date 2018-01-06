@@ -21,6 +21,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -327,6 +328,9 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
+
+    VisualElement previousHovering = null;
+
     @Override
     public boolean mouseHover(int mouseX, int mouseY)
     {
@@ -334,21 +338,35 @@ public class BookRendering implements IBookGraphics
 
         final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
 
-        if (mouseHoverPage(mouseX, mouseY, pgLeft))
-            return true;
+        VisualElement hovering = mouseHoverPage(pgLeft);
 
-        if (currentPair * 2 + 1 < ch.pages.size())
+        if (hovering == null)
         {
-            final VisualPage pgRight = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2 + 1), false);
+            if (currentPair * 2 + 1 < ch.pages.size())
+            {
+                final VisualPage pgRight = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2 + 1), false);
 
-            if (mouseHoverPage(mouseX, mouseY, pgRight))
-                return true;
+                hovering = mouseHoverPage(pgRight);
+            }
+        }
+
+        if (hovering != previousHovering && previousHovering != null)
+        {
+            previousHovering.mouseOut(this, mouseX, mouseY);
+        }
+        previousHovering = hovering;
+
+        if (hovering != null)
+        {
+            hovering.mouseOver(this, mouseX, mouseY);
+            return true;
         }
 
         return false;
     }
 
-    private boolean mouseHoverPage(int mouseX, int mouseY, VisualPage pg)
+    @Nullable
+    private VisualElement mouseHoverPage(VisualPage pg)
     {
         Minecraft mc = Minecraft.getMinecraft();
         int dw = hasScale ? scaledWidth : gui.width;
@@ -356,21 +374,22 @@ public class BookRendering implements IBookGraphics
         int mX = Mouse.getX() * dw / mc.displayWidth;
         int mY = dh - Mouse.getY() * dh / mc.displayHeight;
 
-        return mouseHoverContainer(mouseX, mouseY, mX, mY, pg.children);
+        return mouseHoverContainer(mX, mY, pg.children);
     }
 
-    private boolean mouseHoverContainer(int mouseX, int mouseY, int mX, int mY, List<VisualElement> elements)
+    @Nullable
+    private VisualElement mouseHoverContainer(int mX, int mY, List<VisualElement> elements)
     {
         for (VisualElement e : elements)
         {
-            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
+            if (e.wantsHover() &&
+                    mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
                     mY >= e.position.y && mY <= (e.position.y + e.size.height))
             {
-                e.mouseOver(this, mouseX, mouseY);
-                return true;
+                return e;
             }
         }
-        return false;
+        return null;
     }
 
     Rectangle getPageBounds(boolean leftPage)
@@ -516,7 +535,7 @@ public class BookRendering implements IBookGraphics
     {
         //TODO: Actually measure the string width taking into account the first line in an efficient way.
         FontRenderer font = gui.getFontRenderer();
-        int spaceWidth = font.getCharWidth(' ');
+        String format = FontRenderer.getFormatFromString(text);
         List<String> lines = font.listFormattedStringToWidth(text, firstLineWidth);
         if (lines.size() > 1)
         {
@@ -527,7 +546,7 @@ public class BookRendering implements IBookGraphics
             sizes.add(new VisualText(firstLine, new Size(width1, font.FONT_HEIGHT)));
 
             String remaining = text.substring(firstLine.length()).trim();
-            List<String> lines2 = font.listFormattedStringToWidth(remaining, width);
+            List<String> lines2 = font.listFormattedStringToWidth(format + remaining, width);
             for (String s : lines2)
             {
                 int width2 = font.getStringWidth(s);

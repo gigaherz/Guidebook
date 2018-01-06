@@ -59,8 +59,6 @@ public class GuidebookMod
 
     public static List<String> giveOnFirstJoin;
 
-    public static File booksDirectory;
-
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
@@ -72,8 +70,6 @@ public class GuidebookMod
         config.save();
 
         giveOnFirstJoin = Lists.newArrayList(give);
-
-        booksDirectory = new File(event.getModConfigurationDirectory(), "books");
 
         proxy.preInit();
     }

@@ -24,11 +24,14 @@ import static gigaherz.common.client.ModelHelpers.registerItemModel;
 @Mod.EventBusSubscriber(Side.CLIENT)
 public class ClientProxy implements IModProxy
 {
+    public ClientProxy()
+    {
+        BookRegistry.injectCustomResourcePack();
+    }
+
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event)
     {
-        BookRegistry.injectCustomResourcePack();
-
         OBJLoader.INSTANCE.addDomain(GuidebookMod.MODID);
         ModelLoaderRegistry.registerLoader(new BookBakedModel.ModelLoader());
 

@@ -18,11 +18,16 @@ public class VisualLink extends VisualText
 {
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
 
+    public static class SharedHoverContext
+    {
+        private boolean isHovering;
+    }
+
     public String webTarget;
     public PageRef target;
     public int colorHover = 0xFF77cc66;
 
-    public boolean isHovering;
+    public SharedHoverContext hoverContext = new SharedHoverContext();
 
     public VisualLink(String text, Size size)
     {
@@ -32,7 +37,25 @@ public class VisualLink extends VisualText
     @Override
     public void draw(IBookGraphics nav)
     {
-        nav.addString(position.x, position.y, text, isHovering ? colorHover : color);
+        nav.addString(position.x, position.y, text, hoverContext.isHovering ? colorHover : color);
+    }
+
+    @Override
+    public boolean wantsHover()
+    {
+        return true;
+    }
+
+    @Override
+    public void mouseOver(IBookGraphics nav, int x, int y)
+    {
+        hoverContext.isHovering = true;
+    }
+
+    @Override
+    public void mouseOut(IBookGraphics nav, int x, int y)
+    {
+        hoverContext.isHovering = false;
     }
 
     @Override

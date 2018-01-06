@@ -12,6 +12,7 @@ import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
+import joptsimple.internal.Strings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -320,9 +321,14 @@ public class BookDocument
             Element parsedElement = null;
 
             String nodeName = elementItem.getNodeName();
-            if (nodeName.equals("p"))
+            if (nodeName.equals("p") || nodeName.equals("title"))
             {
                 ElementParagraph p = new ElementParagraph(defaultPositionMode);
+                if (nodeName.equals("title"))
+                {
+                    p.alignment = 1;
+                    p.space = 4;
+                }
 
                 NodeList childList = elementItem.getChildNodes();
                 for(int q = 0; q < childList.getLength();q++)
@@ -330,7 +336,18 @@ public class BookDocument
                     Node childNode = childList.item(q);
                     if (childNode.getNodeType() == Node.TEXT_NODE)
                     {
-                        p.addTextSpan(childNode, 0);
+                        String st = ElementSpan.compactString(childNode.getTextContent());
+                        if (!Strings.isNullOrEmpty(st))
+                        {
+                            ElementSpan s = new ElementSpan(0, st);
+
+                            if (elementItem.hasAttributes())
+                            {
+                                s.parse(elementItem.getAttributes());
+                            }
+
+                            p.spans.add(s);
+                        }
                     }
                     else
                     {
@@ -346,21 +363,6 @@ public class BookDocument
                         }
                     }
                 }
-
-                if (elementItem.hasAttributes())
-                {
-                    p.parse(elementItem.getAttributes());
-                }
-
-                parsedElement = p;
-            }
-            else if (nodeName.equals("title"))
-            {
-                ElementParagraph p = new ElementParagraph(defaultPositionMode);
-                p.alignment = 1;
-                p.space = 4;
-
-                p.addTextSpan(elementItem, 0);
 
                 if (elementItem.hasAttributes())
                 {
@@ -432,11 +434,14 @@ public class BookDocument
             {
                 if (!parsedElement.supportsPageLevel())
                 {
-                    ElementParagraph p = new ElementParagraph(defaultPositionMode);
+                    ElementParagraph p = new ElementParagraph(parsedElement.position);
+
+                    parsedElement.position = 0;
 
                     if (elementItem.hasAttributes())
                     {
                         p.parse(elementItem.getAttributes());
+                        parsedElement.parse(elementItem.getAttributes());
                     }
 
                     p.spans.add(parsedElement);
