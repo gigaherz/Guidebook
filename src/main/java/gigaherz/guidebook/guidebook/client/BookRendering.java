@@ -1,14 +1,13 @@
 package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.*;
 import gigaherz.guidebook.guidebook.drawing.Size;
-import gigaherz.guidebook.guidebook.drawing.SizedSegment;
-import gigaherz.guidebook.guidebook.elements.IClickablePageElement;
-import gigaherz.guidebook.guidebook.elements.IContainerPageElement;
-import gigaherz.guidebook.guidebook.elements.IHoverPageElement;
-import gigaherz.guidebook.guidebook.elements.IPageElement;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualPage;
+import gigaherz.guidebook.guidebook.drawing.VisualText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -22,9 +21,9 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class BookRendering implements IBookGraphics
 {
@@ -35,6 +34,7 @@ public class BookRendering implements IBookGraphics
     public static final int DEFAULT_VERTICAL_MARGIN = 18;
 
     private BookDocument book;
+    private Map<PageRef,VisualPage> visualPages = Maps.newHashMap();
     int scaledWidth;
     int scaledHeight;
 
@@ -260,21 +260,13 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public int addStringWrapping(int left, int top, String s, int color, int align)
+    public int addString(int left, int top, String s, int color)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
-        if (align == 1)
-        {
-            left += (pageWidth - getSplitWidth(fontRenderer, s)) / 2;
-        }
-        else if (align == 2)
-        {
-            left += pageWidth - getSplitWidth(fontRenderer, s);
-        }
+        fontRenderer.drawString(s, left, top, color);
 
-        fontRenderer.drawSplitString(s, left, top, pageWidth, color);
-        return fontRenderer.getWordWrappedHeight(s, pageWidth);
+        return fontRenderer.FONT_HEIGHT;
     }
 
     @Override
@@ -289,14 +281,17 @@ public class BookRendering implements IBookGraphics
         if (mouseButton == 0)
         {
             BookDocument.ChapterData ch = book.getChapter(currentChapter);
-            BookDocument.PageData pg = ch.pages.get(currentPair * 2);
-            if (mouseClickPage(mouseX, mouseY, pg))
+
+            final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
+
+            if (mouseClickPage(mouseX, mouseY, pgLeft))
                 return true;
 
             if (currentPair * 2 + 1 < ch.pages.size())
             {
-                pg = ch.pages.get(currentPair * 2 + 1);
-                if (mouseClickPage(mouseX, mouseY, pg))
+                final VisualPage pgRight = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2 + 1), false);
+
+                if (mouseClickPage(mouseX, mouseY, pgRight))
                     return true;
             }
         }
@@ -304,29 +299,29 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
-    private boolean mouseClickPage(int mX, int mY, BookDocument.PageData pg)
+    private VisualPage getVisualPage(BookDocument.ChapterData ch, PageRef pr, boolean isLeftPage)
     {
-        return mouseClickContainer(mX, mY, pg.elements);
+        VisualPage pg = visualPages.get(pr);
+
+        if (pg == null)
+        {
+            Rectangle r = getPageBounds(isLeftPage);
+            BookDocument.PageData pd = ch.pages.get(pr.page);
+            pg = pd.reflow(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+            visualPages.put(pr, pg);
+        }
+        return pg;
     }
 
-    private boolean mouseClickContainer(int mX, int mY, Collection<IPageElement> elements)
+    private boolean mouseClickPage(int mX, int mY, VisualPage pg)
     {
-        for (IPageElement e : elements)
+        for (VisualElement e : pg.children)
         {
-            if (e instanceof IClickablePageElement)
+            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
+                    mY >= e.position.y && mY <= (e.position.y + e.size.height))
             {
-                IClickablePageElement l = (IClickablePageElement) e;
-                Rectangle b = l.getBounds();
-                if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
-                        mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
-                {
-                    l.click(this);
-                    return true;
-                }
-            }
-            else if (e instanceof IContainerPageElement)
-            {
-                mouseClickContainer(mX, mY, ((IContainerPageElement) e).getChildren());
+                e.click(this);
+                return true;
             }
         }
         return false;
@@ -336,21 +331,24 @@ public class BookRendering implements IBookGraphics
     public boolean mouseHover(int mouseX, int mouseY)
     {
         BookDocument.ChapterData ch = book.getChapter(currentChapter);
-        BookDocument.PageData pg = ch.pages.get(currentPair * 2);
-        if (mouseHoverPage(mouseX, mouseY, pg))
+
+        final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
+
+        if (mouseHoverPage(mouseX, mouseY, pgLeft))
             return true;
 
         if (currentPair * 2 + 1 < ch.pages.size())
         {
-            pg = ch.pages.get(currentPair * 2 + 1);
-            if (mouseHoverPage(mouseX, mouseY, pg))
+            final VisualPage pgRight = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2 + 1), false);
+
+            if (mouseHoverPage(mouseX, mouseY, pgRight))
                 return true;
         }
 
         return false;
     }
 
-    private boolean mouseHoverPage(int mouseX, int mouseY, BookDocument.PageData pg)
+    private boolean mouseHoverPage(int mouseX, int mouseY, VisualPage pg)
     {
         Minecraft mc = Minecraft.getMinecraft();
         int dw = hasScale ? scaledWidth : gui.width;
@@ -358,43 +356,30 @@ public class BookRendering implements IBookGraphics
         int mX = Mouse.getX() * dw / mc.displayWidth;
         int mY = dh - Mouse.getY() * dh / mc.displayHeight;
 
-        return mouseHoverContainer(mouseX, mouseY, mX, mY, pg.elements);
+        return mouseHoverContainer(mouseX, mouseY, mX, mY, pg.children);
     }
 
-    private boolean mouseHoverContainer(int mouseX, int mouseY, int mX, int mY, Collection<IPageElement> elements)
+    private boolean mouseHoverContainer(int mouseX, int mouseY, int mX, int mY, List<VisualElement> elements)
     {
-        for (IPageElement e : elements)
+        for (VisualElement e : elements)
         {
-            if (e instanceof IHoverPageElement)
+            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
+                    mY >= e.position.y && mY <= (e.position.y + e.size.height))
             {
-                IHoverPageElement l = (IHoverPageElement) e;
-                Rectangle b = l.getBounds();
-                if (mX >= b.getX() && mX <= (b.getX() + b.getWidth()) &&
-                        mY >= b.getY() && mY <= (b.getY() + b.getHeight()))
-                {
-                    l.mouseOver(this, mouseX, mouseY);
-                    return true;
-                }
-            }
-            else if (e instanceof IContainerPageElement)
-            {
-                mouseHoverContainer(mouseX, mouseY, mX, mY, ((IContainerPageElement) e).getChildren());
+                e.mouseOver(this, mouseX, mouseY);
+                return true;
             }
         }
         return false;
     }
 
-    @Override
-    public void drawCurrentPages()
+    Rectangle getPageBounds(boolean leftPage)
     {
         int guiWidth = gui.width;
         int guiHeight = gui.height;
 
         if (hasScale)
         {
-            GlStateManager.pushMatrix();
-            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
-
             guiWidth = scaledWidth;
             guiHeight = scaledHeight;
         }
@@ -402,13 +387,39 @@ public class BookRendering implements IBookGraphics
         int left = guiWidth / 2 - pageWidth - innerMargin;
         int right = guiWidth / 2 + innerMargin;
         int top = (guiHeight - pageHeight) / 2 - 9;
+
+        return new Rectangle(leftPage ? left : right,top,pageWidth,pageHeight);
+    }
+
+    @Override
+    public void drawCurrentPages()
+    {
+        if (hasScale)
+        {
+            GlStateManager.pushMatrix();
+            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
+        }
+
+        int guiWidth = gui.width;
+        int guiHeight = gui.height;
+
+        if (hasScale)
+        {
+            guiWidth = scaledWidth;
+            guiHeight = scaledHeight;
+        }
+
+        int left = guiWidth / 2 - pageWidth - innerMargin;
+        int top = (guiHeight - pageHeight) / 2 - 9;
         int bottom = top + pageHeight - 3;
 
-        drawPage(left, top, pageWidth, currentPair * 2);
-        drawPage(right, top, pageWidth, currentPair * 2 + 1);
+        drawPage(currentPair * 2, true);
+        drawPage(currentPair * 2 + 1, false);
 
         String cnt = "" + ((book.getChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (book.getTotalPairCount() * 2);
-        addStringWrapping(left, bottom, cnt, 0xFF000000, 1);
+        Size sz = measure(cnt);
+
+        addString(left + (pageWidth-sz.width)/2, bottom, cnt, 0xFF000000);
 
         if (hasScale)
         {
@@ -416,17 +427,17 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    private void drawPage(int left, int top, int availableWidth, int page)
+    private void drawPage(int page, boolean isLeftPage)
     {
         BookDocument.ChapterData ch = book.getChapter(currentChapter);
         if (page >= ch.pages.size())
             return;
 
-        BookDocument.PageData pg = ch.pages.get(page);
+        VisualPage pg = getVisualPage(ch, new PageRef(currentChapter, page), isLeftPage);
 
-        for (IPageElement e : pg.elements)
+        for (VisualElement e : pg.children)
         {
-            top += e.apply(this, left, top, availableWidth);
+            e.draw(this);
         }
     }
 
@@ -434,18 +445,6 @@ public class BookRendering implements IBookGraphics
     public BookDocument getBook()
     {
         return book;
-    }
-
-    @Override
-    public int getPageWidth()
-    {
-        return pageWidth;
-    }
-
-    @Override
-    public int getPageHeight()
-    {
-        return pageHeight;
     }
 
     @Override
@@ -493,16 +492,6 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public Rectangle getStringBounds(String text, int left, int top)
-    {
-        FontRenderer fontRenderer = gui.getFontRenderer();
-
-        int height = fontRenderer.getWordWrappedHeight(text, pageWidth);
-        int width = height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(text);
-        return new Rectangle(left, top, width, height);
-    }
-
-    @Override
     public void drawTooltip(ItemStack stack, int x, int y)
     {
         gui.drawTooltip(stack, x, y);
@@ -523,32 +512,33 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public List<SizedSegment> measure(String text, int width, int firstLineWidth)
+    public List<VisualElement> measure(String text, int width, int firstLineWidth)
     {
         //TODO: Actually measure the string width taking into account the first line in an efficient way.
         FontRenderer font = gui.getFontRenderer();
+        int spaceWidth = font.getCharWidth(' ');
         List<String> lines = font.listFormattedStringToWidth(text, firstLineWidth);
         if (lines.size() > 1)
         {
-            List<SizedSegment> sizes = Lists.newArrayList();
+            List<VisualElement> sizes = Lists.newArrayList();
 
             String firstLine = lines.get(0);
             int width1 = font.getStringWidth(firstLine);
-            sizes.add(new SizedSegment(firstLine, new Size(width1, font.FONT_HEIGHT)));
+            sizes.add(new VisualText(firstLine, new Size(width1, font.FONT_HEIGHT)));
 
-            String remaining = text.substring(firstLine.length());
+            String remaining = text.substring(firstLine.length()).trim();
             List<String> lines2 = font.listFormattedStringToWidth(remaining, width);
             for (String s : lines2)
             {
                 int width2 = font.getStringWidth(s);
-                sizes.add(new SizedSegment(s, new Size(width2, font.FONT_HEIGHT)));
+                sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT)));
             }
             return sizes;
         }
         else
         {
             int width1 = font.getStringWidth(text);
-            return Collections.singletonList(new SizedSegment(text, new (width1, font.FONT_HEIGHT * lines.size())));
+            return Collections.singletonList(new VisualText(text, new Size(width1, font.FONT_HEIGHT * lines.size())));
         }
     }
 }

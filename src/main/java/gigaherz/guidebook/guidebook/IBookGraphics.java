@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook;
 
 import gigaherz.guidebook.guidebook.drawing.Size;
-import gigaherz.guidebook.guidebook.drawing.SizedSegment;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Rectangle;
@@ -36,7 +36,7 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addStringWrapping(int left, int top, String s, int color, int align);
+    int addString(int left, int top, String s, int color);
 
     boolean mouseClicked(int mouseButton);
 
@@ -46,15 +46,9 @@ public interface IBookGraphics
 
     BookDocument getBook();
 
-    int getPageWidth();
-
-    int getPageHeight();
-
     void drawItemStack(int left, int top, int z, ItemStack stack, int color, float scale);
 
     void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
-
-    Rectangle getStringBounds(String text, int left, int top);
 
     void drawTooltip(ItemStack stack, int x, int y);
 
@@ -62,5 +56,5 @@ public interface IBookGraphics
 
     Size measure(String text);
 
-    List<SizedSegment> measure(String text, int width, int firstLineWidth);
+    List<VisualElement> measure(String text, int width, int firstLineWidth);
 }

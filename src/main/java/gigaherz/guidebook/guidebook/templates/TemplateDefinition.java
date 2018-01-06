@@ -1,31 +1,22 @@
 package gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.collect.Lists;
-import gigaherz.guidebook.guidebook.elements.IPageElement;
+import gigaherz.guidebook.guidebook.elements.Element;
 import org.w3c.dom.NamedNodeMap;
 
 import java.util.List;
 
 public class TemplateDefinition
 {
-    public final List<IPageElement> elements = Lists.newArrayList();
+    public final List<Element> elements = Lists.newArrayList();
     public NamedNodeMap attributes;
 
-    public List<IPageElement> applyTemplate(List<IPageElement> sourceElements)
+    public List<Element> applyTemplate(List<Element> sourceElements)
     {
-        List<IPageElement> output = Lists.newArrayList();
-        for (IPageElement element : elements)
+        List<Element> output = Lists.newArrayList();
+        for (Element element : elements)
         {
-            if (element instanceof TemplateElement)
-            {
-                IPageElement result = ((TemplateElement) element).apply(sourceElements);
-                if (result != null)
-                    output.add(result);
-            }
-            else
-            {
-                output.add(element.copy());
-            }
+            output.add(element.applyTemplate(sourceElements));
         }
         return output;
     }

@@ -6,11 +6,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
+import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.drawing.VisualPage;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
-import joptsimple.internal.Strings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -122,7 +123,7 @@ public class BookDocument
         {
             for (PageData page : chapter.pages)
             {
-                for (IPageElement element : page.elements)
+                for (Element element : page.elements)
                 {
                     element.findTextures(textures);
                 }
@@ -138,8 +139,8 @@ public class BookDocument
         PageData pg = new PageData(0);
         ch.pages.add(pg);
 
-        pg.elements.add(Paragraph.of("Error loading book:"));
-        pg.elements.add(Paragraph.of(TextFormatting.RED + error));
+        pg.elements.add(ElementParagraph.of(1, "Error loading book:"));
+        pg.elements.add(ElementParagraph.of(1, TextFormatting.RED + error));
     }
 
     public boolean parseBook(InputStream stream)
@@ -251,7 +252,7 @@ public class BookDocument
 
         templates.put(n.getTextContent(), page);
 
-        parseChildElements(templateItem, page.elements, templates);
+        parseChildElements(templateItem, page.elements, templates, 1);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;
@@ -306,24 +307,45 @@ public class BookDocument
             }
         }
 
-        parseChildElements(pageItem, page.elements, templates);
+        parseChildElements(pageItem, page.elements, templates, 1);
     }
 
-    public static void parseChildElements(Node pageItem, List<IPageElement> elements, Map<String, TemplateDefinition> templates)
+    public static void parseChildElements(Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, int defaultPositionMode)
     {
         NodeList elementsList = pageItem.getChildNodes();
         for (int k = 0; k < elementsList.getLength(); k++)
         {
             Node elementItem = elementsList.item(k);
 
-            IPageElement parsedElement = null;
+            Element parsedElement = null;
 
             String nodeName = elementItem.getNodeName();
             if (nodeName.equals("p"))
             {
-                Paragraph p = new Paragraph();
+                ElementParagraph p = new ElementParagraph(defaultPositionMode);
 
-                p.addTextSpan(elementItem);
+                NodeList childList = elementItem.getChildNodes();
+                for(int q = 0; q < childList.getLength();q++)
+                {
+                    Node childNode = childList.item(q);
+                    if (childNode.getNodeType() == Node.TEXT_NODE)
+                    {
+                        p.addTextSpan(childNode, 0);
+                    }
+                    else
+                    {
+                        Element parsedChild = parseParagraphElement(childNode, childNode.getNodeName(), 0);
+
+                        if (parsedChild == null)
+                        {
+                            GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
+                        }
+                        else
+                        {
+                            p.spans.add(parsedChild);
+                        }
+                    }
+                }
 
                 if (elementItem.hasAttributes())
                 {
@@ -334,11 +356,11 @@ public class BookDocument
             }
             else if (nodeName.equals("title"))
             {
-                Paragraph p = new Paragraph();
+                ElementParagraph p = new ElementParagraph(defaultPositionMode);
                 p.alignment = 1;
                 p.space = 4;
 
-                p.addTextSpan(elementItem);
+                p.addTextSpan(elementItem, 0);
 
                 if (elementItem.hasAttributes())
                 {
@@ -347,73 +369,29 @@ public class BookDocument
 
                 parsedElement = p;
             }
-            else if (nodeName.equals("link"))
-            {
-                Link link = new Link(elementItem.getTextContent());
-
-                if (elementItem.hasAttributes())
-                {
-                    link.parse(elementItem.getAttributes());
-                }
-
-                parsedElement = link;
-            }
             else if (nodeName.equals("space")
                     || nodeName.equals("group"))
             {
-                Space s = new Space();
+                ElementPanel s = new ElementPanel(defaultPositionMode);
 
                 if (elementItem.hasAttributes())
                 {
                     s.parse(elementItem.getAttributes());
                 }
 
-                List<IPageElement> elementList = Lists.newArrayList();
+                List<Element> elementList = Lists.newArrayList();
 
-                parseChildElements(elementItem, elementList, templates);
+                parseChildElements(elementItem, elementList, templates, 1);
 
                 s.innerElements.addAll(elementList);
 
                 parsedElement = s;
             }
-            else if (nodeName.equals("stack"))
-            {
-                Stack s = new Stack();
-
-                if (elementItem.hasAttributes())
-                {
-                    s.parse(elementItem.getAttributes());
-                }
-
-                parsedElement = s;
-            }
-            else if (nodeName.equals("image"))
-            {
-                Image i = new Image();
-
-                if (elementItem.hasAttributes())
-                {
-                    i.parse(elementItem.getAttributes());
-                }
-
-                parsedElement = i;
-            }
-            else if (nodeName.equals("element"))
-            {
-                TemplateElement i = new TemplateElement();
-
-                if (elementItem.hasAttributes())
-                {
-                    i.parse(elementItem.getAttributes());
-                }
-
-                parsedElement = i;
-            }
             else if (templates.containsKey(nodeName))
             {
                 TemplateDefinition tDef = templates.get(nodeName);
 
-                Template t = new Template();
+                ElementTemplate t = new ElementTemplate(defaultPositionMode);
                 t.parse(tDef.attributes);
 
                 if (elementItem.hasAttributes())
@@ -421,38 +399,116 @@ public class BookDocument
                     t.parse(elementItem.getAttributes());
                 }
 
-                List<IPageElement> elementList = Lists.newArrayList();
+                List<Element> elementList = Lists.newArrayList();
 
-                parseChildElements(elementItem, elementList, templates);
+                parseChildElements(elementItem, elementList, templates, 1);
 
-                List<IPageElement> effectiveList = tDef.applyTemplate(elementList);
+                List<Element> effectiveList = tDef.applyTemplate(elementList);
 
                 t.innerElements.addAll(effectiveList);
 
                 parsedElement = t;
             }
+            else if(elementItem.getNodeType() == Node.TEXT_NODE)
+            {
+                // Ignore? Generate paragraph?
+                // Ignore for now.
+            }
+            else if(elementItem.getNodeType() == Node.COMMENT_NODE)
+            {
+                // Ignore.
+            }
             else
             {
-                // TODO: Log unrecognized
-            }
+                parsedElement = parseParagraphElement(elementItem, nodeName, defaultPositionMode);
 
-            if (parsedElement instanceof IParagraphElement)
-            {
-                Paragraph p = new Paragraph();
-
-                if (elementItem.hasAttributes())
+                if (parsedElement == null)
                 {
-                    p.parse(elementItem.getAttributes());
+                    GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
                 }
-
-                p.spans.add((IParagraphElement)parsedElement);
-
-                parsedElement = p;
             }
 
             if(parsedElement != null)
+            {
+                if (!parsedElement.supportsPageLevel())
+                {
+                    ElementParagraph p = new ElementParagraph(defaultPositionMode);
+
+                    if (elementItem.hasAttributes())
+                    {
+                        p.parse(elementItem.getAttributes());
+                    }
+
+                    p.spans.add(parsedElement);
+
+                    parsedElement = p;
+                }
+
                 elements.add(parsedElement);
+            }
         }
+    }
+
+    @Nullable
+    private static Element parseParagraphElement(Node elementItem, String nodeName, int defaultPositionMode)
+    {
+        Element parsedElement = null;
+        if (nodeName.equals("span"))
+        {
+            ElementSpan link = new ElementSpan(defaultPositionMode, elementItem.getTextContent());
+
+            if (elementItem.hasAttributes())
+            {
+                link.parse(elementItem.getAttributes());
+            }
+
+            parsedElement = link;
+        }
+        else if (nodeName.equals("link"))
+        {
+            ElementLink link = new ElementLink(defaultPositionMode, elementItem.getTextContent());
+
+            if (elementItem.hasAttributes())
+            {
+                link.parse(elementItem.getAttributes());
+            }
+
+            parsedElement = link;
+        }
+        else if (nodeName.equals("stack"))
+        {
+            ElementStack s = new ElementStack(defaultPositionMode);
+
+            if (elementItem.hasAttributes())
+            {
+                s.parse(elementItem.getAttributes());
+            }
+
+            parsedElement = s;
+        }
+        else if (nodeName.equals("image"))
+        {
+            ElementImage i = new ElementImage(defaultPositionMode);
+
+            if (elementItem.hasAttributes())
+            {
+                i.parse(elementItem.getAttributes());
+            }
+
+            parsedElement = i;
+        }
+        else if (nodeName.equals("element"))
+        {
+            TemplateElement i = new TemplateElement(defaultPositionMode);
+
+            if (elementItem.hasAttributes())
+            {
+                i.parse(elementItem.getAttributes());
+            }
+
+            parsedElement = i;
+        }
+        return parsedElement;
     }
 
     private void parseStackLinks(Node refsItem)
@@ -532,11 +588,21 @@ public class BookDocument
         public final int num;
         public String id;
 
-        public final List<IPageElement> elements = Lists.newArrayList();
+        public final List<Element> elements = Lists.newArrayList();
 
         private PageData(int num)
         {
             this.num = num;
+        }
+
+        public VisualPage reflow(int left, int top, int width, int height)
+        {
+            VisualPage page = new VisualPage();
+
+            for(Element element : elements)
+                top = element.reflow(page.children, getRendering(), left, top, width, height);
+
+            return page;
         }
     }
 }

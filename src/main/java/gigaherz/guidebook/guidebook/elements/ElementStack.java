@@ -1,11 +1,12 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualStack;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,55 +16,43 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
-import org.lwjgl.util.Rectangle;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import java.util.Collections;
 import java.util.List;
 
-public class Stack implements IParagraphElement, IHoverPageElement, IClickablePageElement
+public class ElementStack extends Element
 {
-    public static final int CYCLE_TIME = 1000;//=1s
     public static final String WILDCARD = "*";
 
     public ItemStack[] stacks;
-    public int x = 0;
-    public int y = 0;
-    public int z = 0;
-    public float scale = 1.0f;
 
-    public Rectangle bounds;
-
-    public Stack()
+    public ElementStack(int defaultPositionMode)
     {
+        super(defaultPositionMode);
     }
 
-    @Override
-    public List<Size> measure(IBookGraphics nav, int _width, int firstLineWidth)
+    private VisualStack getVisual()
     {
         int width = (int) (16 * scale);
         int height = (int) (16 * scale);
-        return Collections.singletonList(new Size(width,height));
+        return new VisualStack(stacks, new Size(width,height), scale);
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top, int _width)
+    public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        left += x;
-        top += y;
-        int width = (int) (16 * scale);
-        int height = (int) (16 * scale);
-        bounds = new Rectangle(left, top, width, height);
+        return Collections.singletonList(getVisual());
+    }
 
-        ItemStack stack = getCurrentStack();
-
-        if (stack.getCount() > 0)
-        {
-            nav.drawItemStack(left, top, z, stack, 0xFFFFFFFF, scale);
-        }
-
-        return 0;
+    @Override
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
+    {
+        VisualStack element = getVisual();
+        element.position = new Point(left, top);
+        paragraph.add(element);
+        return top + element.size.height;
     }
 
     @Override
@@ -72,6 +61,8 @@ public class Stack implements IParagraphElement, IHoverPageElement, IClickablePa
         int meta = 0;
         int stackSize = 1;
         NBTTagCompound tag = new NBTTagCompound();
+
+        super.parse(attributes);
 
         Node attr = attributes.getNamedItem("meta");
         if (attr != null)
@@ -185,36 +176,12 @@ public class Stack implements IParagraphElement, IHoverPageElement, IClickablePa
             }
         }
 
-        attr = attributes.getNamedItem("x");
-        if (attr != null)
-        {
-            x = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("y");
-        if (attr != null)
-        {
-            y = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("z");
-        if (attr != null)
-        {
-            z = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("scale");
-        if (attr != null)
-        {
-            Float f = Floats.tryParse(attr.getTextContent());
-            scale = f != null ? f : scale;
-        }
     }
 
     @Override
-    public IParagraphElement copy()
+    public Element copy()
     {
-        Stack stack = new Stack();
+        ElementStack stack = super.copy(new ElementStack(position));
         if (this.stacks != null)
         {
             stack.stacks = new ItemStack[this.stacks.length];
@@ -227,40 +194,12 @@ public class Stack implements IParagraphElement, IHoverPageElement, IClickablePa
         {
             stack.stacks = null;
         }
-        stack.x = x;
-        stack.y = y;
         return stack;
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, int x, int y)
+    public boolean supportsPageLevel()
     {
-        ItemStack stack = getCurrentStack();
-        if (stack.getCount() > 0)
-        {
-            nav.drawTooltip(stack, x, y);
-        }
-    }
-
-    @Override
-    public void click(IBookGraphics nav)
-    {
-        PageRef ref = nav.getBook().getStackLink(getCurrentStack());
-        if (ref != null)
-            nav.navigateTo(ref);
-    }
-
-    public ItemStack getCurrentStack()
-    {
-        if (stacks == null || stacks.length == 0)
-            return ItemStack.EMPTY;
-        long time = System.currentTimeMillis();
-        return stacks[(int) ((time / 1000) % stacks.length)];
-    }
-
-    @Override
-    public Rectangle getBounds()
-    {
-        return bounds;
+        return true;
     }
 }

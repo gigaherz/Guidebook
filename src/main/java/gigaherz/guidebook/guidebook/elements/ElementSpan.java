@@ -1,14 +1,16 @@
 package gigaherz.guidebook.guidebook.elements;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualText;
 import net.minecraft.util.text.TextFormatting;
+import org.apache.commons.lang3.NotImplementedException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import java.util.List;
 
-public class Span implements IParagraphElement
+public class ElementSpan extends Element
 {
     public final String text;
     public int color = 0xFF000000;
@@ -16,21 +18,10 @@ public class Span implements IParagraphElement
     public boolean italics;
     public boolean underline;
 
-    public Span(String text)
+    public ElementSpan(int defaultPositionMode, String text)
     {
-        this.text = text;
-    }
-
-    @Override
-    public List<Size> measure(IBookGraphics nav, int width, int firstLineWidth)
-    {
-        return nav.measure(getStringWithFormat(), width, firstLineWidth);
-    }
-
-    @Override
-    public int apply(IBookGraphics nav, int left, int top, int width)
-    {
-        return nav.addStringWrapping(left, top, getStringWithFormat(), color, 0);
+        super(defaultPositionMode);
+        this.text = compactString(text);
     }
 
     private String getStringWithFormat()
@@ -43,8 +34,29 @@ public class Span implements IParagraphElement
     }
 
     @Override
+    public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
+    {
+        List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth);
+        for(VisualElement text : elements)
+        {
+            if (!(text instanceof VisualText))
+                continue; // WTF?
+            ((VisualText)text).color = color;
+        }
+        return elements;
+    }
+
+    @Override
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
+    {
+        throw new NotImplementedException("Cannot call reflow directly on a span, it should be called on Paragraph!");
+    }
+
+    @Override
     public void parse(NamedNodeMap attributes)
     {
+        super.parse(attributes);
+
         Node attr = attributes.getNamedItem("bold");
         if (attr != null)
         {
@@ -96,13 +108,19 @@ public class Span implements IParagraphElement
     }
 
     @Override
-    public IParagraphElement copy()
+    public Element copy()
     {
-        Span span = new Span(text);
+        ElementSpan span = super.copy(new ElementSpan(position, text));
         span.color = color;
         span.bold = bold;
         span.italics = italics;
         span.underline = underline;
         return span;
+    }
+
+
+    private static String compactString(String text)
+    {
+        return text.replaceAll("[ \t\n\r]+", " ");
     }
 }

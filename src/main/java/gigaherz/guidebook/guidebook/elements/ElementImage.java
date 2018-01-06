@@ -3,7 +3,7 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -12,36 +12,39 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class Image implements IParagraphElement
+public class ElementImage extends Element
 {
     public ResourceLocation textureLocation;
-    public int x = 0;
-    public int y = 0;
-    public int w = 0;
-    public int h = 0;
     public int tx = 0;
     public int ty = 0;
     public int tw = 0;
     public int th = 0;
-    public float scale = 1.0f;
 
-    public Image()
+    public ElementImage(int defaultPositionMode)
     {
+        super(defaultPositionMode);
     }
 
-    @Override
-    public List<Size> measure(IBookGraphics nav, int _width, int firstLineWidth)
+    private VisualImage getVisual()
     {
         int width = (int) (w * scale);
         int height = (int) (h * scale);
-        return Collections.singletonList(new Size(width,height));
+        return new VisualImage(new Size(width,height), textureLocation, tx, ty, tw, th);
     }
 
     @Override
-    public int apply(IBookGraphics nav, int left, int top, int width)
+    public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        nav.drawImage(textureLocation, left + x, top + y, tx, ty, w, h, tw, th, scale);
-        return 0;
+        return Collections.singletonList(getVisual());
+    }
+
+    @Override
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
+    {
+        VisualImage element = getVisual();
+        element.position = applyPosition(new Point(left, top), left, top);
+        paragraph.add(element);
+        return top + element.size.height;
     }
 
     @Override
@@ -54,30 +57,9 @@ public class Image implements IParagraphElement
     @Override
     public void parse(NamedNodeMap attributes)
     {
-        Node attr = attributes.getNamedItem("x");
-        if (attr != null)
-        {
-            x = Ints.tryParse(attr.getTextContent());
-        }
+        super.parse(attributes);
 
-        attr = attributes.getNamedItem("y");
-        if (attr != null)
-        {
-            y = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("w");
-        if (attr != null)
-        {
-            w = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("h");
-        if (attr != null)
-        {
-            h = Ints.tryParse(attr.getTextContent());
-        }
-        attr = attributes.getNamedItem("tx");
+        Node attr = attributes.getNamedItem("tx");
         if (attr != null)
         {
             tx = Ints.tryParse(attr.getTextContent());
@@ -116,19 +98,21 @@ public class Image implements IParagraphElement
     }
 
     @Override
-    public IParagraphElement copy()
+    public Element copy()
     {
-        Image img = new Image();
+        ElementImage img = super.copy(new ElementImage(position));
 
         img.textureLocation = new ResourceLocation(textureLocation.toString());
-        img.x = x;
-        img.y = y;
-        img.w = w;
-        img.h = h;
         img.tx = tx;
         img.ty = ty;
         img.tw = tw;
         img.th = th;
         return img;
+    }
+
+    @Override
+    public boolean supportsPageLevel()
+    {
+        return true;
     }
 }

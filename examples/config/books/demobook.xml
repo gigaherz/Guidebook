@@ -13,7 +13,7 @@
             <p underline="true">Underline</p>
             <p color="#306090">Colored</p>
             <p bold="true" italics="true" underline="true" color="#123456" align="center">All the Formats</p>
-            <apace height="20" />
+            <space height="20" />
             <p space="20">A</p>
             <p>B</p>
             <space height="25%" />

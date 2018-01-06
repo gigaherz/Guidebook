@@ -131,4 +131,21 @@ public class PageRef
             return new PageRef(refString, null);
         }
     }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof PageRef))
+            return false;
+        PageRef pr = (PageRef)obj;
+        return resolvedNames && pr.resolvedNames && pr.chapter == chapter && pr.page == page;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        if (!resolvedNames)
+            return 0;
+        return chapter * 313 + page;
+    }
 }

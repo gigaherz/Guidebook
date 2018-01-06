@@ -1,4 +1,4 @@
-package gigaherz.guidebook.guidebook.elements;
+package gigaherz.guidebook.guidebook.drawing;
 
 import com.google.common.collect.Sets;
 import gigaherz.guidebook.GuidebookMod;
@@ -8,16 +8,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import org.lwjgl.util.Rectangle;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Set;
 
-public class Link extends Span implements IClickablePageElement
+public class VisualLink extends VisualText
 {
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
 
@@ -26,19 +23,16 @@ public class Link extends Span implements IClickablePageElement
     public int colorHover = 0xFF77cc66;
 
     public boolean isHovering;
-    public Rectangle bounds;
 
-    public Link(String text)
+    public VisualLink(String text, Size size)
     {
-        super(text);
-        underline = true;
-        color = 0xFF7766cc;
+        super(text, size);
     }
 
     @Override
-    public Rectangle getBounds()
+    public void draw(IBookGraphics nav)
     {
-        return bounds;
+        nav.addString(position.x, position.y, text, isHovering ? colorHover : color);
     }
 
     @Override
@@ -89,49 +83,6 @@ public class Link extends Span implements IClickablePageElement
         {
             GuidebookMod.logger.error("Can't open url {}", webTarget, urisyntaxexception);
         }
-    }
-
-    @Override
-    public int apply(IBookGraphics nav, int left, int top, int width)
-    {
-        bounds = nav.getStringBounds(text, left, top);
-
-        return nav.addStringWrapping(left, top, text, isHovering ? colorHover : color, 0);
-    }
-
-    @Override
-    public void parse(NamedNodeMap attributes)
-    {
-        super.parse(attributes);
-
-        Node attr = attributes.getNamedItem("ref");
-        if (attr != null)
-        {
-            String ref = attr.getTextContent();
-            target = PageRef.fromString(ref);
-        }
-
-        attr = attributes.getNamedItem("href");
-        if (attr != null)
-        {
-            webTarget = attr.getTextContent();
-        }
-    }
-
-    @Override
-    public IParagraphElement copy()
-    {
-        Link link = new Link(text);
-        link.color = color;
-        link.bold = bold;
-        link.italics = italics;
-        link.underline = underline;
-
-        link.target = target.copy();
-        link.webTarget = webTarget;
-        link.colorHover = colorHover;
-
-        return link;
     }
 
     private static void openWebLink(URI url)
