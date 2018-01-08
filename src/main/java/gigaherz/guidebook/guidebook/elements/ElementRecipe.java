@@ -171,7 +171,7 @@ public class ElementRecipe extends Element
     @Override
     public Element copy()
     {
-        ElementRecipe elementRecipe = new ElementRecipe();
+        ElementRecipe elementRecipe = super.copy(new ElementRecipe());
         elementRecipe.recipeComponents = new ElementStack[recipeComponents.length];
         for (int i = 0; i < recipeComponents.length; ++i)
         {

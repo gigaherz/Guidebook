@@ -125,7 +125,7 @@ public abstract class Element
         if (attr != null)
         {
             Float f = Floats.tryParse(attr.getTextContent());
-            scale = f != null ? f : 1.0f;
+            if (f != null) scale = f;
         }
 
         attr = attributes.getNamedItem("align");

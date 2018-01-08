@@ -14,7 +14,6 @@ public class ElementSpan extends Element
 {
     public final String text;
     public int color = 0xFF000000;
-    public float scale = 1f;
     public boolean bold;
     public boolean italics;
     public boolean underline;

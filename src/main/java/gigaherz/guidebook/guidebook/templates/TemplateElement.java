@@ -41,7 +41,7 @@ public class TemplateElement extends Element
     @Override
     public Element copy()
     {
-        TemplateElement temp = new TemplateElement();
+        TemplateElement temp = super.copy(new TemplateElement());
         temp.index = index;
         temp.attributes = attributes;
         return temp;

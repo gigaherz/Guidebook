@@ -85,13 +85,6 @@ public class ElementImage extends Element
         {
             textureLocation = new ResourceLocation(attr.getTextContent());
         }
-
-        attr = attributes.getNamedItem("scale");
-        if (attr != null)
-        {
-            Float f = Floats.tryParse(attr.getTextContent());
-            scale = f != null ? f : scale;
-        }
     }
 
     @Override
