@@ -36,7 +36,7 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addString(int left, int top, String s, int color);
+    int addString(int left, int top, String s, int color, float scale);
 
     boolean mouseClicked(int mouseButton);
 
@@ -56,5 +56,5 @@ public interface IBookGraphics
 
     Size measure(String text);
 
-    List<VisualElement> measure(String text, int width, int firstLineWidth);
+    List<VisualElement> measure(String text, int width, int firstLineWidth, float scale);
 }

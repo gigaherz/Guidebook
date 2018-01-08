@@ -251,18 +251,31 @@ public class BookRendering implements IBookGraphics
         history.push(new PageRef(currentChapter, currentPair * 2));
     }
 
-    private int getSplitWidth(FontRenderer fontRenderer, String s)
+    private int getSplitWidth(FontRenderer fontRenderer, String s, float scale)
     {
-        int height = fontRenderer.getWordWrappedHeight(s, pageWidth);
-        return height > fontRenderer.FONT_HEIGHT ? pageWidth : fontRenderer.getStringWidth(s);
+        int height = (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scale)) * scale);
+        return height > (fontRenderer.FONT_HEIGHT * scale) ? pageWidth : (int)(fontRenderer.getStringWidth(s) * scale);
     }
 
     @Override
-    public int addString(int left, int top, String s, int color)
+    public int addString(int left, int top, String s, int color, float scale)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
-        fontRenderer.drawString(s, left, top, color);
+        // Does scaling need to be performed?
+        if(!(MathHelper.epsilonEquals(scale, 1.0f)))
+        {
+            GlStateManager.pushMatrix();
+            {
+                GlStateManager.scale(scale, scale, 1f);
+                fontRenderer.drawString(s, (int)(left / scale), (int)(top / scale), color);
+            }
+            GlStateManager.popMatrix();
+        }
+        else
+        {
+            fontRenderer.drawString(s, left, top, color);
+        }
 
         return fontRenderer.FONT_HEIGHT;
     }
@@ -435,7 +448,7 @@ public class BookRendering implements IBookGraphics
         String cnt = "" + ((book.getChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (book.getTotalPairCount() * 2);
         Size sz = measure(cnt);
 
-        addString(left + (pageWidth-sz.width)/2, bottom, cnt, 0xFF000000);
+        addString(left + (pageWidth-sz.width)/2, bottom, cnt, 0xFF000000, 1.0f);
 
         if (hasScale)
         {
@@ -528,7 +541,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public List<VisualElement> measure(String text, int width, int firstLineWidth)
+    public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale)
     {
         //TODO: Actually measure the string width taking into account the first line in an efficient way.
         FontRenderer font = gui.getFontRenderer();
@@ -540,21 +553,21 @@ public class BookRendering implements IBookGraphics
 
             String firstLine = lines.get(0);
             int width1 = font.getStringWidth(firstLine);
-            sizes.add(new VisualText(firstLine, new Size(width1, font.FONT_HEIGHT)));
+            sizes.add(new VisualText(firstLine, new Size(width1, font.FONT_HEIGHT), scale));
 
             String remaining = text.substring(firstLine.length()).trim();
             List<String> lines2 = font.listFormattedStringToWidth(format + remaining, width);
             for (String s : lines2)
             {
                 int width2 = font.getStringWidth(s);
-                sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT)));
+                sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT), scale));
             }
             return sizes;
         }
         else
         {
             int width1 = font.getStringWidth(text);
-            return Collections.singletonList(new VisualText(text, new Size(width1, font.FONT_HEIGHT * lines.size())));
+            return Collections.singletonList(new VisualText(text, new Size(width1, font.FONT_HEIGHT * lines.size()), scale));
         }
     }
 }

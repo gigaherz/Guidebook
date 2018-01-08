@@ -14,6 +14,7 @@ public class ElementSpan extends Element
 {
     public final String text;
     public int color = 0xFF000000;
+    public float scale = 1f;
     public boolean bold;
     public boolean italics;
     public boolean underline;
@@ -35,7 +36,7 @@ public class ElementSpan extends Element
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth);
+        List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth, scale);
         for(VisualElement text : elements)
         {
             if (!(text instanceof VisualText))

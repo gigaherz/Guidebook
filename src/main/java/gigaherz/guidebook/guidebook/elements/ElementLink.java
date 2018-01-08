@@ -37,7 +37,7 @@ public class ElementLink extends ElementSpan
 
             VisualText text = (VisualText)e;
 
-            VisualLink link = new VisualLink(text.text, text.size);
+            VisualLink link = new VisualLink(text.text, text.size, scale);
             if (ctx == null) ctx = link.hoverContext;
             else link.hoverContext = ctx;
             link.color = color;

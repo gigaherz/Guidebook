@@ -20,11 +20,11 @@
       The % refers to a % of the page's height, while integer values refer to pixels.
       -->
       <space height="33%" />
-      <p space="0" align="center">Welcome</p>
-      <p space="0" align="center">to</p>
-      <p space="0" align="center">Guidebook</p>
-      <p space="6" align="center">__________</p>
-      <p align="center">by Gigaherz</p>
+      <p space="0" align="center" scale="2">Welcome</p>
+      <p space="0" align="center" scale="2">to</p>
+      <p space="0" align="center" scale="2">Guidebook</p>
+      <p space="6" align="center" scale="2">__________</p>
+      <p align="center" scale="1.5">by Gigaherz</p>
     </page>
     <page>
       <title>Index</title>
@@ -138,6 +138,15 @@
       <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
       <p indent="20" space="20">Indented spaced text</p>
       <p space="12">Text after</p>
+      <p space="8">To make text larger or smaller, you can specify the 'scale' attribute, which takes a decimal number</p>
+      <p indent="8">&lt;p scale="1.0"&gt;normal&lt;/p&gt;</p>
+      <p indent="8">&lt;p scale="1.5"&gt;larger&lt;/p&gt;</p>
+      <p indent="8" space="8">&lt;p scale="2.0"&gt;huge&lt;/p&gt;</p>
+      <p scale="1.0" align="center">normal</p>
+      <p scale="1.5" align="center">larger</p>
+      <p scale="2.0" align="center">huge</p>
+    </page>
+    <page>
       <p space="8">Finally, to avoid writing so many formatting codes. Section titles can be shortened with the 'title' tag, which has different default formattings.</p>
       <p indent="8" space="8">&lt;title&gt;Title Here&lt;/title&gt;</p>
       <title>Title Here</title>
@@ -160,6 +169,97 @@
       <stack item="minecraft:coal" meta="0" count="2" />
     </page>
   </chapter>
+  <chapter id="recipes">
+    <page id="recipes">
+      <page_title>
+        <p>Recipes</p>
+      </page_title>
+      <p space="8">Recipe tags let you display the recipe(s) for a specified item or block inside the guidebook.</p>
+      <p space="8" color="505050">They have three attributes: type, which specifies the type of recipe to use; indent, (same as paragraph); index, (See Recipe Indices). </p>
+      <p space="12">Finally, to specify the desired output item, simply include a Stack tag inside of a &lt;recipe.result&gt; sub-tag as follows:</p>
+      <p indent="0" color="505050">&lt;recipe type="shaped"&gt;</p>
+      <p indent="6" color="505050">&lt;recipe.result&gt;</p>
+      <p indent="12" color="505050">&lt;stack item="minecraft:comparator"/&gt;</p>
+      <p indent="6" color="505050">&lt;/recipe.result&gt;</p>
+      <p indent="0" color="505050">&lt;/recipe&gt;</p>
+    </page>
+    <page>
+      <p space="6">Which produces the following RecipePanel:</p>
+      <recipe type="shaped">
+        <recipe.result>
+          <stack item="minecraft:comparator"/>
+        </recipe.result>
+      </recipe>
+      <space height="3"/>
+      <divider/>
+      <p indent="8" color="505050">type="shapeless"</p>
+      <p indent="8" color="505050">item="minecraft:ender_eye"</p>
+      <space height="4"/>
+      <recipe type="shapeless">
+        <recipe.result>
+          <stack item="minecraft:ender_eye"/>
+        </recipe.result>
+      </recipe>
+      <space height="3"/>
+      <divider/>
+      <p indent="8" color="505050">type="furnace"</p>
+      <p indent="8" color="505050">item="minecraft:iron_nugget"</p>
+      <space height="4"/>
+      <recipe type="furnace">
+        <recipe.result>
+          <stack item="minecraft:iron_nugget"/>
+        </recipe.result>
+      </recipe>
+    </page>
+    <page id="recipe_keys">
+      <page_title>
+        <p>Recipe Keys</p>
+      </page_title>
+      <p space="12">Another way to declare a recipe is to use its registry name. Simply use the key attribute and specify the domain ("minecraft" by default) as well as the path for the json file that the recipe was contained in. For example, the following XML:</p>
+      <p space="12" indent="8" color="505050">&lt;recipe type="shapeless" key="minecraft:fire_charge"/&gt;</p>
+      <recipe type="shapeless" key="minecraft:fire_charge"/>
+    </page>
+    <page>
+      <p indent="8" color="505050">type="shaped"</p>
+      <p space="12" indent="8" color="1E50A0">key="minecraft:red_stained_hardened_clay"</p>
+      <recipe type="shaped" key="minecraft:red_stained_hardened_clay"/>
+      <space height="12"/>
+      <divider/>
+      <space height="6"/>
+      <p color="8C3321">Warning: This feature will NOT work with furnace recipes as they are registered in code and without a registry key. This may be the case with other custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
+    </page>
+    <page id="recipe_indices">
+      <page_title>
+        <p>Recipe Indices</p>
+      </page_title>
+      <p space="10">Recipe indices let you specify to the recipe search to use a particular occurrence of the target result.</p>
+      <p space="10" color="505050">This becomes useful when an item has more than one recipe which produces it.</p>
+      <p>For example, searching for a shaped recipe which produces a gold ingot will result in two possible recipes: One that converts from nuggets to ingots; and another that converts from blocks to ingots. Using the recipe index allows book authors to specify only one of these:</p>
+    </page>
+    <page>
+      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="1E50A0">index="0"</p>
+      <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
+      <space height="8"/>
+      <recipe type="shaped" index="0">
+        <recipe.result>
+          <stack item="minecraft:gold_ingot"/>
+        </recipe.result>
+      </recipe>
+      <space height="7"/>
+      <divider/>
+      <space height="5"/>
+      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="1E50A0">index="1"</p>
+      <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
+      <space height="8"/>
+      <recipe type="shaped" index="1">
+        <recipe.result>
+          <stack item="minecraft:gold_ingot"/>
+        </recipe.result>
+      </recipe>
+    </page>
+  </chapter>
   <chapter id="templates">
     <page>
       <title>Templates</title>
@@ -170,11 +270,9 @@
       <p>Templates can be defined inside template library files, and thosefiles can be included from books.</p>
       <p>Browse this mod's source code on github for an example of use and declaration.</p>
     </page>
-    <page id="recipes">
-      <title>Recipes</title>
-      <p>For now, the only way to show recipes is to declare them using the template system. The result looks as follows:</p>
+    <page>
+      <p>Although the recipe panel system exists, another way to display recipes is to declare them using the template system. The result looks as follows:</p>
       <p>For Items with multiple Id's (for example orange dye - 351:14) use the meta tag as below for bonemeal</p>
-
       <big_recipe>
         <space/>
         <space/>
@@ -200,8 +298,6 @@
         <stack ore="plankWood" />
         <stack item="minecraft:trapdoor" />
       </big_recipe>
-
-      <p>In the future, I want to add a system to query and show recipes, but this is not implemented yet.</p>
     </page>
   </chapter>
   <stack-links>

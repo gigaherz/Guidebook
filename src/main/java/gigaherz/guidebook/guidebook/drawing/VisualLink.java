@@ -29,15 +29,15 @@ public class VisualLink extends VisualText
 
     public SharedHoverContext hoverContext = new SharedHoverContext();
 
-    public VisualLink(String text, Size size)
+    public VisualLink(String text, Size size, float scale)
     {
-        super(text, size);
+        super(text, size, scale);
     }
 
     @Override
     public void draw(IBookGraphics nav)
     {
-        nav.addString(position.x, position.y, text, hoverContext.isHovering ? colorHover : color);
+        nav.addString(position.x, position.y, text, hoverContext.isHovering ? colorHover : color, scale);
     }
 
     @Override
