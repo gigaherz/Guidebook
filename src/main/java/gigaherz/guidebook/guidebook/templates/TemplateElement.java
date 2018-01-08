@@ -2,11 +2,13 @@ package gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class TemplateElement extends Element
@@ -14,13 +16,8 @@ public class TemplateElement extends Element
     int index;
     private NamedNodeMap attributes;
 
-    public TemplateElement(int defaultPositionMode)
-    {
-        super(defaultPositionMode);
-    }
-
     @Override
-    public int reflow(List<VisualElement> list, IBookGraphics nav, int left, int top, int width, int height)
+    public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect page)
     {
         throw new IllegalStateException("Template elements must not be used directly");
     }
@@ -44,7 +41,7 @@ public class TemplateElement extends Element
     @Override
     public Element copy()
     {
-        TemplateElement temp = new TemplateElement(position);
+        TemplateElement temp = new TemplateElement();
         temp.index = index;
         temp.attributes = attributes;
         return temp;
@@ -56,9 +53,12 @@ public class TemplateElement extends Element
         throw new IllegalStateException("Template elements must not be used directly");
     }
 
+    @Nullable
     @Override
     public Element applyTemplate(List<Element> sourceElements)
     {
+        if (index >= sourceElements.size())
+            return null;
         Element e = sourceElements.get(index).copy();
         e.parse(attributes);
         return e;

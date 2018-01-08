@@ -3,10 +3,7 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.drawing.Point;
-import gigaherz.guidebook.guidebook.drawing.Size;
-import gigaherz.guidebook.guidebook.drawing.VisualElement;
-import gigaherz.guidebook.guidebook.drawing.VisualStack;
+import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -28,16 +25,11 @@ public class ElementStack extends Element
 
     public ItemStack[] stacks;
 
-    public ElementStack(int defaultPositionMode)
-    {
-        super(defaultPositionMode);
-    }
-
     private VisualStack getVisual()
     {
         int width = (int) (16 * scale);
         int height = (int) (16 * scale);
-        return new VisualStack(stacks, new Size(width,height), scale);
+        return new VisualStack(stacks, new Size(width,height), scale, z);
     }
 
     @Override
@@ -47,12 +39,14 @@ public class ElementStack extends Element
     }
 
     @Override
-    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
         VisualStack element = getVisual();
-        element.position = applyPosition(new Point(left, top), left, top);
+        element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
-        return top + element.size.height;
+        if (position != 0)
+            return bounds.position.y;
+        return bounds.position.y + element.size.height;
     }
 
     @Override
@@ -181,7 +175,7 @@ public class ElementStack extends Element
     @Override
     public Element copy()
     {
-        ElementStack stack = super.copy(new ElementStack(position));
+        ElementStack stack = super.copy(new ElementStack());
         if (this.stacks != null)
         {
             stack.stacks = new ItemStack[this.stacks.length];

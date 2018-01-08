@@ -64,8 +64,7 @@
       <p indent="8">event.register(</p>
       <p indent="16">new ResourceLocation(</p>
       <p indent="24">"modid:xml/book.xml"));</p>
-      <p>}</p>
-      <space height="8" />
+      <p space="8">}</p>
       <p>The Optional annotation is needed to prevent a hard-dependency on the mod. The event parameter has a register method, that can be used to perform the registration.</p>
       <p>In order for this event to run, you need to annotate the class with @Mod.EventBusSubscriber.</p>
     </page>

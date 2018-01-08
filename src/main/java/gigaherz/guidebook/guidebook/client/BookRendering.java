@@ -4,10 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.*;
-import gigaherz.guidebook.guidebook.drawing.Size;
-import gigaherz.guidebook.guidebook.drawing.VisualElement;
-import gigaherz.guidebook.guidebook.drawing.VisualPage;
-import gigaherz.guidebook.guidebook.drawing.VisualText;
+import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -306,9 +303,9 @@ public class BookRendering implements IBookGraphics
 
         if (pg == null)
         {
-            Rectangle r = getPageBounds(isLeftPage);
+            Rect r = getPageBounds(isLeftPage);
             BookDocument.PageData pd = ch.pages.get(pr.page);
-            pg = pd.reflow(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+            pg = pd.reflow(r);
             visualPages.put(pr, pg);
         }
         return pg;
@@ -392,7 +389,7 @@ public class BookRendering implements IBookGraphics
         return null;
     }
 
-    Rectangle getPageBounds(boolean leftPage)
+    Rect getPageBounds(boolean leftPage)
     {
         int guiWidth = gui.width;
         int guiHeight = gui.height;
@@ -407,7 +404,7 @@ public class BookRendering implements IBookGraphics
         int right = guiWidth / 2 + innerMargin;
         int top = (guiHeight - pageHeight) / 2 - 9;
 
-        return new Rectangle(leftPage ? left : right,top,pageWidth,pageHeight);
+        return new Rect(leftPage ? left : right,top,pageWidth,pageHeight);
     }
 
     @Override

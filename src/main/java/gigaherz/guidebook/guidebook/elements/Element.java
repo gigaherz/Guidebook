@@ -4,11 +4,13 @@ import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.drawing.Point;
+import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +22,8 @@ public abstract class Element
      * 1 = "absolute" -- relative to the containing Panel
      * 2 = "fixed" -- relative to the page
      */
-    public int position;
+    @Nullable
+    public int position = 0;
 
     public int x = 0;
     public int y = 0;
@@ -30,12 +33,12 @@ public abstract class Element
     public int z = 0;
     public float scale = 1.0f;
 
-    protected Element(int defaultPositionMode)
+    public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        position = defaultPositionMode;
+        return Collections.emptyList();
     }
 
-    public abstract int reflow(List<VisualElement> list, IBookGraphics nav, int left, int top, int width, int height);
+    public abstract int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect page);
 
     public void findTextures(Set<ResourceLocation> textures)
     {
@@ -43,14 +46,10 @@ public abstract class Element
 
     public abstract Element copy();
 
+    @Nullable
     public Element applyTemplate(List<Element> sourceElements)
     {
         return copy();
-    }
-
-    public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
-    {
-        return Collections.emptyList();
     }
 
     public boolean supportsPageLevel()
@@ -58,19 +57,19 @@ public abstract class Element
         return false;
     }
 
-    public Point applyPosition(Point point, int sx, int sy)
+    public Point applyPosition(Point point, Point parent)
     {
         switch(position)
         {
             case 0:
                 return new Point(point.x+x,point.y+y);
             case 1:
-                return new Point(sx+x,sy+y);
+                return new Point(parent.x+x,parent.y+y);
             case 2:
                 return new Point(x, y);
         }
 
-        return point;
+        return new Point(point.x, point.y);
     }
 
     protected<T extends Element> T copy(T other)

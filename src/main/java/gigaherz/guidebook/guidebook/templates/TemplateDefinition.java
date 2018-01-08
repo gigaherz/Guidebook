@@ -16,7 +16,9 @@ public class TemplateDefinition
         List<Element> output = Lists.newArrayList();
         for (Element element : elements)
         {
-            output.add(element.applyTemplate(sourceElements));
+            Element t = element.applyTemplate(sourceElements);
+            if (t != null)
+                output.add(t);
         }
         return output;
     }

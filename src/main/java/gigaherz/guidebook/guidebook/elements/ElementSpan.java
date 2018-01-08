@@ -1,10 +1,10 @@
 package gigaherz.guidebook.guidebook.elements;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
 import net.minecraft.util.text.TextFormatting;
-import org.apache.commons.lang3.NotImplementedException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -18,9 +18,8 @@ public class ElementSpan extends Element
     public boolean italics;
     public boolean underline;
 
-    public ElementSpan(int defaultPositionMode, String text)
+    public ElementSpan(String text)
     {
-        super(defaultPositionMode);
         this.text = compactString(text);
     }
 
@@ -46,10 +45,17 @@ public class ElementSpan extends Element
         return elements;
     }
 
+    private ElementParagraph temporaryParagraph = null;
+
     @Override
-    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
-        throw new NotImplementedException("Cannot call reflow directly on a span, it should be called on Paragraph!");
+        if (temporaryParagraph == null)
+        {
+            temporaryParagraph = new ElementParagraph();
+            temporaryParagraph.spans.add(this);
+        }
+        return temporaryParagraph.reflow(paragraph, nav, bounds, page);
     }
 
     @Override
@@ -110,7 +116,7 @@ public class ElementSpan extends Element
     @Override
     public Element copy()
     {
-        ElementSpan span = super.copy(new ElementSpan(position, text));
+        ElementSpan span = super.copy(new ElementSpan(text));
         span.color = color;
         span.bold = bold;
         span.italics = italics;

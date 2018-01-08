@@ -4,33 +4,30 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.drawing.Point;
+import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
-import joptsimple.internal.Strings;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import java.util.Collection;
+import javax.annotation.Nullable;
 import java.util.List;
 
-public class ElementParagraph extends ElementContainer
+public class ElementParagraph extends Element
 {
     public int alignment = 0;
     public int indent = 0; // First line?
+    public int indentFirstLine = 0; // First line?
     public int space = 2;
 
     public final List<Element> spans = Lists.newArrayList();
 
-    public ElementParagraph(int defaultPositionMode)
-    {
-        super(defaultPositionMode);
-    }
-
     @Override
-    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, final int left, final int top, int width, int height)
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
-        int currentLineTop = top;
-        int currentLineLeft = 0;
+        Point adjustedPosition = applyPosition(bounds.position, bounds.position);
+        int currentLineTop = adjustedPosition.y;
+        int currentLineLeft = indentFirstLine;
         int currentLineHeight = 0;
         final Size spaceSize = nav.measure(" ");
 
@@ -38,7 +35,9 @@ public class ElementParagraph extends ElementContainer
 
         for(Element element : spans)
         {
-            List<VisualElement> pieces = element.measure(nav, width, width - currentLineLeft - indent);
+            List<VisualElement> pieces = element.measure(nav,
+                    bounds.size.width - indent,
+                    bounds.size.width - currentLineLeft - indent - indentFirstLine);
 
             if (pieces.size() < 1)
                 continue;
@@ -48,10 +47,10 @@ public class ElementParagraph extends ElementContainer
                 VisualElement current = pieces.get(i);
                 Size size = current.size;
 
-                if (currentLineLeft + size.width > width && currentLineLeft > 0)
+                if (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0)
                 {
                     if (paragraph.size() > firstInLine && alignment != 0)
-                        processAlignment(paragraph, width, currentLineLeft, spaceSize, firstInLine);
+                        processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, spaceSize, firstInLine);
 
                     currentLineTop += currentLineHeight;
                     currentLineLeft = 0;
@@ -63,7 +62,7 @@ public class ElementParagraph extends ElementContainer
                 if (size.height > currentLineHeight)
                     currentLineHeight = size.height;
 
-                current.position = element.applyPosition(new Point(left + currentLineLeft + (i == 0 ? indent : 0), currentLineTop), left, top);
+                current.position = element.applyPosition(new Point(adjustedPosition.x + currentLineLeft + indent, currentLineTop), bounds.position);
 
                 if (size.width > 0)
                     currentLineLeft += size.width + spaceSize.width;
@@ -73,8 +72,10 @@ public class ElementParagraph extends ElementContainer
         }
 
         if (paragraph.size() > firstInLine && alignment != 0)
-            processAlignment(paragraph, width, currentLineLeft, spaceSize, firstInLine);
+            processAlignment(paragraph, bounds.size.width, currentLineLeft, spaceSize, firstInLine);
 
+        if (position != 0)
+            return bounds.position.y;
         return currentLineTop + currentLineHeight + space;
     }
 
@@ -133,7 +134,7 @@ public class ElementParagraph extends ElementContainer
     @Override
     public Element copy()
     {
-        ElementParagraph paragraph = super.copy(new ElementParagraph(position));
+        ElementParagraph paragraph = super.copy(new ElementParagraph());
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
@@ -142,18 +143,27 @@ public class ElementParagraph extends ElementContainer
         return paragraph;
     }
 
+    @Nullable
     @Override
     public Element applyTemplate(List<Element> sourceElements)
     {
-        ElementParagraph paragraph = super.copy(new ElementParagraph(position));
+        if (spans.size() == 0)
+            return null;
+
+        ElementParagraph paragraph = super.copy(new ElementParagraph());
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
         for(Element element : spans)
         {
             Element t = element.applyTemplate(sourceElements);
-            paragraph.spans.add(t);
+            if (t != null)
+                paragraph.spans.add(t);
         }
+
+        if (paragraph.spans.size() == 0)
+            return null;
+
         return paragraph;
     }
 
@@ -163,16 +173,10 @@ public class ElementParagraph extends ElementContainer
         return true;
     }
 
-    @Override
-    public Collection<Element> getChildren()
+    public static ElementParagraph of(String text)
     {
-        return spans;
-    }
-
-    public static ElementParagraph of(int defaultPositionMode, String text)
-    {
-        ElementParagraph p = new ElementParagraph(defaultPositionMode);
-        ElementSpan s = new ElementSpan(0, text);
+        ElementParagraph p = new ElementParagraph();
+        ElementSpan s = new ElementSpan(text);
         p.spans.add(s);
         return p;
     }

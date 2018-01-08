@@ -59,7 +59,7 @@ public class TemplateLibrary
 
         templates.put(n.getTextContent(), page);
 
-        BookDocument.parseChildElements(templateItem, page.elements, templates, 1);
+        BookDocument.parseChildElements(templateItem, page.elements, templates, true);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;

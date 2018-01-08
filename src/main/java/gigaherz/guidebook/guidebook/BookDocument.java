@@ -7,6 +7,8 @@ import com.google.common.collect.Table;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.drawing.Point;
+import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualPage;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
@@ -140,8 +142,8 @@ public class BookDocument
         PageData pg = new PageData(0);
         ch.pages.add(pg);
 
-        pg.elements.add(ElementParagraph.of(1, "Error loading book:"));
-        pg.elements.add(ElementParagraph.of(1, TextFormatting.RED + error));
+        pg.elements.add(ElementParagraph.of("Error loading book:"));
+        pg.elements.add(ElementParagraph.of(TextFormatting.RED + error));
     }
 
     public boolean parseBook(InputStream stream)
@@ -253,7 +255,7 @@ public class BookDocument
 
         templates.put(n.getTextContent(), page);
 
-        parseChildElements(templateItem, page.elements, templates, 1);
+        parseChildElements(templateItem, page.elements, templates, true);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;
@@ -308,10 +310,10 @@ public class BookDocument
             }
         }
 
-        parseChildElements(pageItem, page.elements, templates, 1);
+        parseChildElements(pageItem, page.elements, templates, true);
     }
 
-    public static void parseChildElements(Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, int defaultPositionMode)
+    public static void parseChildElements(Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, boolean generateParagraphs)
     {
         NodeList elementsList = pageItem.getChildNodes();
         for (int k = 0; k < elementsList.getLength(); k++)
@@ -323,7 +325,7 @@ public class BookDocument
             String nodeName = elementItem.getNodeName();
             if (nodeName.equals("p") || nodeName.equals("title"))
             {
-                ElementParagraph p = new ElementParagraph(defaultPositionMode);
+                ElementParagraph p = new ElementParagraph();
                 if (nodeName.equals("title"))
                 {
                     p.alignment = 1;
@@ -339,7 +341,7 @@ public class BookDocument
                         String st = ElementSpan.compactString(childNode.getTextContent());
                         if (!Strings.isNullOrEmpty(st))
                         {
-                            ElementSpan s = new ElementSpan(0, st);
+                            ElementSpan s = new ElementSpan(st);
 
                             if (elementItem.hasAttributes())
                             {
@@ -351,7 +353,7 @@ public class BookDocument
                     }
                     else
                     {
-                        Element parsedChild = parseParagraphElement(childNode, childNode.getNodeName(), 0);
+                        Element parsedChild = parseParagraphElement(childNode, childNode.getNodeName());
 
                         if (parsedChild == null)
                         {
@@ -374,7 +376,7 @@ public class BookDocument
             else if (nodeName.equals("space")
                     || nodeName.equals("group"))
             {
-                ElementPanel s = new ElementPanel(defaultPositionMode);
+                ElementPanel s = new ElementPanel();
 
                 if (elementItem.hasAttributes())
                 {
@@ -383,7 +385,7 @@ public class BookDocument
 
                 List<Element> elementList = Lists.newArrayList();
 
-                parseChildElements(elementItem, elementList, templates, 1);
+                parseChildElements(elementItem, elementList, templates, true);
 
                 s.innerElements.addAll(elementList);
 
@@ -393,7 +395,7 @@ public class BookDocument
             {
                 TemplateDefinition tDef = templates.get(nodeName);
 
-                ElementTemplate t = new ElementTemplate(defaultPositionMode);
+                ElementPanel t = new ElementPanel();
                 t.parse(tDef.attributes);
 
                 if (elementItem.hasAttributes())
@@ -403,7 +405,7 @@ public class BookDocument
 
                 List<Element> elementList = Lists.newArrayList();
 
-                parseChildElements(elementItem, elementList, templates, 1);
+                parseChildElements(elementItem, elementList, templates, false);
 
                 List<Element> effectiveList = tDef.applyTemplate(elementList);
 
@@ -422,7 +424,7 @@ public class BookDocument
             }
             else
             {
-                parsedElement = parseParagraphElement(elementItem, nodeName, defaultPositionMode);
+                parsedElement = parseParagraphElement(elementItem, nodeName);
 
                 if (parsedElement == null)
                 {
@@ -432,11 +434,9 @@ public class BookDocument
 
             if(parsedElement != null)
             {
-                if (!parsedElement.supportsPageLevel())
+                if (!parsedElement.supportsPageLevel() && generateParagraphs)
                 {
-                    ElementParagraph p = new ElementParagraph(parsedElement.position);
-
-                    parsedElement.position = 0;
+                    ElementParagraph p = new ElementParagraph();
 
                     if (elementItem.hasAttributes())
                     {
@@ -455,12 +455,12 @@ public class BookDocument
     }
 
     @Nullable
-    private static Element parseParagraphElement(Node elementItem, String nodeName, int defaultPositionMode)
+    private static Element parseParagraphElement(Node elementItem, String nodeName)
     {
         Element parsedElement = null;
         if (nodeName.equals("span"))
         {
-            ElementSpan link = new ElementSpan(defaultPositionMode, elementItem.getTextContent());
+            ElementSpan link = new ElementSpan(elementItem.getTextContent());
 
             if (elementItem.hasAttributes())
             {
@@ -471,7 +471,7 @@ public class BookDocument
         }
         else if (nodeName.equals("link"))
         {
-            ElementLink link = new ElementLink(defaultPositionMode, elementItem.getTextContent());
+            ElementLink link = new ElementLink(elementItem.getTextContent());
 
             if (elementItem.hasAttributes())
             {
@@ -482,7 +482,7 @@ public class BookDocument
         }
         else if (nodeName.equals("stack"))
         {
-            ElementStack s = new ElementStack(defaultPositionMode);
+            ElementStack s = new ElementStack();
 
             if (elementItem.hasAttributes())
             {
@@ -493,7 +493,7 @@ public class BookDocument
         }
         else if (nodeName.equals("image"))
         {
-            ElementImage i = new ElementImage(defaultPositionMode);
+            ElementImage i = new ElementImage();
 
             if (elementItem.hasAttributes())
             {
@@ -504,7 +504,7 @@ public class BookDocument
         }
         else if (nodeName.equals("element"))
         {
-            TemplateElement i = new TemplateElement(defaultPositionMode);
+            TemplateElement i = new TemplateElement();
 
             if (elementItem.hasAttributes())
             {
@@ -600,12 +600,15 @@ public class BookDocument
             this.num = num;
         }
 
-        public VisualPage reflow(int left, int top, int width, int height)
+        public VisualPage reflow(Rect pageBounds)
         {
             VisualPage page = new VisualPage();
 
+            int top = pageBounds.position.y;
             for(Element element : elements)
-                top = element.reflow(page.children, getRendering(), left, top, width, height);
+            {
+                top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+            }
 
             return page;
         }

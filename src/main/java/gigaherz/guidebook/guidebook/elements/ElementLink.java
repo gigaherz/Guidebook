@@ -17,9 +17,9 @@ public class ElementLink extends ElementSpan
     public PageRef target;
     public int colorHover = 0xFF77cc66;
 
-    public ElementLink(int defaultPositionMode, String text)
+    public ElementLink(String text)
     {
-        super(defaultPositionMode, text);
+        super(text);
         underline = true;
         color = 0xFF7766cc;
     }
@@ -71,7 +71,7 @@ public class ElementLink extends ElementSpan
     @Override
     public Element copy()
     {
-        ElementLink link = super.copy(new ElementLink(position, text));
+        ElementLink link = super.copy(new ElementLink(text));
         link.color = color;
         link.bold = bold;
         link.italics = italics;

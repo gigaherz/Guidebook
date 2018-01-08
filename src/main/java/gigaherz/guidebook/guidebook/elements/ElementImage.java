@@ -20,11 +20,6 @@ public class ElementImage extends Element
     public int tw = 0;
     public int th = 0;
 
-    public ElementImage(int defaultPositionMode)
-    {
-        super(defaultPositionMode);
-    }
-
     private VisualImage getVisual()
     {
         int width = (int) (w * scale);
@@ -39,12 +34,14 @@ public class ElementImage extends Element
     }
 
     @Override
-    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, int left, int top, int width, int height)
+    public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
         VisualImage element = getVisual();
-        element.position = applyPosition(new Point(left, top), left, top);
+        element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
-        return top + element.size.height;
+        if (position != 0)
+            return bounds.position.y;
+        return bounds.position.y + element.size.height;
     }
 
     @Override
@@ -100,7 +97,7 @@ public class ElementImage extends Element
     @Override
     public Element copy()
     {
-        ElementImage img = super.copy(new ElementImage(position));
+        ElementImage img = super.copy(new ElementImage());
 
         img.textureLocation = new ResourceLocation(textureLocation.toString());
         img.tx = tx;
