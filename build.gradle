@@ -20,15 +20,15 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "2.0.0"
+version = "2.0.1"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook-1.12.2"
 
 minecraft {
-    version = "1.12.2-14.23.0.2512"
+    version = "1.12.2-14.23.2.2616"
     runDir = "run"
 
-    mappings = "snapshot_20171010"
+    mappings = "snapshot_20180214"
 
     replace "@VERSION@", project.version
     replaceIn "GuidebookMod.java"

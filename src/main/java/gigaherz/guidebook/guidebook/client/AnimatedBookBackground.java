@@ -187,7 +187,7 @@ public class AnimatedBookBackground
         List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, 0);
         List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, 0);
 
-        int length = fmt.getNextOffset();
+        int length = fmt.getSize();
 
         for (int i = 0; i < generalQuadsA.size(); i++)
         {

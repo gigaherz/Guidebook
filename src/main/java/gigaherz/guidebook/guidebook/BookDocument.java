@@ -604,6 +604,51 @@ public class BookDocument
         }
     }
 
+    /**
+     * This class represents a group of pages clearly delimited by start/end of chapters, sections, or explicit page braks.
+     * Example:
+     * <book>
+     *     <chapter>
+     *         <section>
+     *             Group 1
+     *         </section>
+     *         <section>
+     *             Group 2
+     *         </section>
+     *     </chapter>
+     *     <chapter>
+     *         Group 3
+     *         <page_break />
+     *         Group 4
+     *     </chapter>
+     * </book>
+     */
+    public class PageGroup
+    {
+        public final int num;
+        public String id;
+
+        public final List<Element> elements = Lists.newArrayList();
+
+        private PageGroup(int num)
+        {
+            this.num = num;
+        }
+
+        public VisualPage reflow(Rect pageBounds)
+        {
+            VisualPage page = new VisualPage();
+
+            int top = pageBounds.position.y;
+            for(Element element : elements)
+            {
+                top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+            }
+
+            return page;
+        }
+    }
+
     public class PageData
     {
         public final int num;

@@ -22,13 +22,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.common.model.IModelPart;
 import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.common.model.TRSRTransformation;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class BookBakedModel implements IBakedModel
@@ -164,7 +163,7 @@ public class BookBakedModel implements IBakedModel
         @Override
         public IModelState getDefaultState()
         {
-            return null;
+            return part -> Optional.empty();
         }
 
         @Override
