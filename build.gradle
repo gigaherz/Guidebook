@@ -15,6 +15,10 @@ repositories {
     maven {
         url 'http://dogforce-games.com/maven'
     }
+
+    maven {
+        url 'https://maven.mcmoddev.com'
+    }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -25,10 +29,10 @@ group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming
 archivesBaseName = "Guidebook-1.12.2"
 
 minecraft {
-    version = "1.12.2-14.23.2.2616"
+    version = "1.12.2-14.23.2.2619"
     runDir = "run"
 
-    mappings = "snapshot_20180214"
+    mappings = "snapshot_20180223"
 
     replace "@VERSION@", project.version
     replaceIn "GuidebookMod.java"
@@ -42,6 +46,11 @@ configurations {
 dependencies {
     deobfCompile "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
     embed "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
+
+    deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:1.0.80"
+    deobfCompile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.526"
+
+    //compile fileTree(dir: 'libs', include: '*.jar')
 }
 
 jar {

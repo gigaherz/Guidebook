@@ -16,7 +16,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.Rectangle;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -291,7 +290,7 @@ public class BookRendering implements IBookGraphics
 
         if (mouseButton == 0)
         {
-            BookDocument.ChapterData ch = book.getChapter(currentChapter);
+            BookDocument.SectionData ch = book.getChapter(currentChapter);
 
             final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
 
@@ -310,7 +309,7 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
-    private VisualPage getVisualPage(BookDocument.ChapterData ch, PageRef pr, boolean isLeftPage)
+    private VisualPage getVisualPage(BookDocument.SectionData ch, PageRef pr, boolean isLeftPage)
     {
         VisualPage pg = visualPages.get(pr);
 
@@ -344,7 +343,7 @@ public class BookRendering implements IBookGraphics
     @Override
     public boolean mouseHover(int mouseX, int mouseY)
     {
-        BookDocument.ChapterData ch = book.getChapter(currentChapter);
+        BookDocument.SectionData ch = book.getChapter(currentChapter);
 
         final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
 
@@ -458,7 +457,7 @@ public class BookRendering implements IBookGraphics
 
     private void drawPage(int page, boolean isLeftPage)
     {
-        BookDocument.ChapterData ch = book.getChapter(currentChapter);
+        BookDocument.SectionData ch = book.getChapter(currentChapter);
         if (page >= ch.pages.size())
             return;
 

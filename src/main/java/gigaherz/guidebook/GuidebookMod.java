@@ -3,6 +3,9 @@ package gigaherz.guidebook;
 import com.google.common.collect.Lists;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
+import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
+import gigaherz.guidebook.guidebook.conditions.BasicConditions;
+import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -70,6 +73,10 @@ public class GuidebookMod
         config.save();
 
         giveOnFirstJoin = Lists.newArrayList(give);
+
+        BasicConditions.register();
+        CompositeCondition.register();
+        //AdvancementCondition.register();
 
         proxy.preInit();
     }

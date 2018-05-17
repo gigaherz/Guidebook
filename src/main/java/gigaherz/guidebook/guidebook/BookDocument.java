@@ -7,6 +7,8 @@ import com.google.common.collect.Table;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.conditions.ConditionManager;
+import gigaherz.guidebook.guidebook.conditions.IDisplayCondition;
 import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualPage;
@@ -46,13 +48,14 @@ public class BookDocument
     private String bookName;
     private ResourceLocation bookCover;
 
-    final List<ChapterData> chapters = Lists.newArrayList();
+    final List<SectionData> chapters = Lists.newArrayList();
     private Table<Item, Integer, PageRef> stackLinks = HashBasedTable.create();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, PageRef> pagesByName = Maps.newHashMap();
 
     private final Map<String, TemplateDefinition> templates = Maps.newHashMap();
+    private final Map<String, IDisplayCondition> conditions = Maps.newHashMap();
 
     private int totalPairs = 0;
     private IBookGraphics rendering;
@@ -79,7 +82,7 @@ public class BookDocument
         return bookCover;
     }
 
-    public ChapterData getChapter(int i)
+    public SectionData getChapter(int i)
     {
         return chapters.get(i);
     }
@@ -122,7 +125,7 @@ public class BookDocument
             textures.add(bookCover);
 
         // TODO: Add <image> texture locations when implemented
-        for (ChapterData chapter : chapters)
+        for (SectionData chapter : chapters)
         {
             for (PageData page : chapter.pages)
             {
@@ -136,7 +139,7 @@ public class BookDocument
 
     public void initializeWithLoadError(String error)
     {
-        ChapterData ch = new ChapterData(0);
+        SectionData ch = new SectionData(0);
         chapters.add(ch);
 
         PageData pg = new PageData(0);
@@ -199,35 +202,39 @@ public class BookDocument
                 }
             }
 
-            NodeList chaptersList = root.getChildNodes();
-            for (int i = 0; i < chaptersList.getLength(); i++)
+            NodeList firstLevel = root.getChildNodes();
+            for (int i = 0; i < firstLevel.getLength(); i++)
             {
-                Node chapterItem = chaptersList.item(i);
+                Node firstLevelNode = firstLevel.item(i);
 
-                String nodeName = chapterItem.getNodeName();
+                String nodeName = firstLevelNode.getNodeName();
                 if (nodeName.equals("template"))
                 {
-                    parseTemplateDefinition(chapterItem, templates);
+                    parseTemplateDefinition(firstLevelNode, templates);
                 }
                 else if (nodeName.equals("include"))
                 {
-                    NamedNodeMap attributes = chapterItem.getAttributes();
+                    NamedNodeMap attributes = firstLevelNode.getAttributes();
                     Node n = attributes.getNamedItem("ref");
                     TemplateLibrary tpl = TemplateLibrary.get(n.getTextContent());
                     templates.putAll(tpl.templates);
                 }
                 else if (nodeName.equals("chapter"))
                 {
-                    parseChapter(chapterItem);
+                    parseChapter(firstLevelNode);
                 }
                 else if (nodeName.equals("stack-links"))
                 {
-                    parseStackLinks(chapterItem);
+                    parseStackLinks(firstLevelNode);
+                }
+                else if(nodeName.equals("conditions"))
+                {
+                    parseConditions(firstLevelNode);
                 }
             }
 
             int prevCount = 0;
-            for (ChapterData chapter : chapters)
+            for (SectionData chapter : chapters)
             {
                 chapter.startPair = prevCount;
                 prevCount += chapter.pagePairs;
@@ -239,6 +246,68 @@ public class BookDocument
             initializeWithLoadError(e.toString());
         }
         return true;
+    }
+
+    private void parseConditions(Node node)
+    {
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++)
+        {
+            Node condition = children.item(i);
+            if (condition.getNodeType() != Node.ELEMENT_NODE)
+                continue;
+
+            NamedNodeMap attributes = condition.getAttributes();
+            if (attributes == null)
+                continue;
+
+            Node conditionName = attributes.getNamedItem("name");
+            String name = conditionName != null ? conditionName.getTextContent() : null;
+
+            if (Strings.isNullOrEmpty(name))
+            {
+                throw new BookParsingException("Condition node found without a name attribute");
+            }
+
+            IDisplayCondition displayCondition = parseSingleCondition(this, condition);
+
+            conditions.put(name, displayCondition);
+        }
+    }
+
+    public static List<IDisplayCondition> parseChildConditions(BookDocument context, Node node)
+    {
+        List<IDisplayCondition> conditions = Lists.newArrayList();
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++)
+        {
+            Node condition = children.item(i);
+            if (condition.getNodeType() != Node.ELEMENT_NODE)
+                continue;
+
+            IDisplayCondition displayCondition = parseSingleCondition(context, condition);
+
+            conditions.add(displayCondition);
+        }
+        return conditions;
+    }
+
+    private static IDisplayCondition parseSingleCondition(BookDocument context, Node condition)
+    {
+        IDisplayCondition displayCondition;
+        try
+        {
+            displayCondition = ConditionManager.parseCondition(context, condition);
+            if (displayCondition == null)
+            {
+                throw new BookParsingException("Condition not found");
+            }
+        }
+        catch(Exception e)
+        {
+            throw new BookParsingException("Exception parsing condition", e);
+        }
+        return displayCondition;
     }
 
     private static void parseTemplateDefinition(Node templateItem, Map<String, TemplateDefinition> templates)
@@ -263,7 +332,7 @@ public class BookDocument
 
     private void parseChapter(Node chapterItem)
     {
-        ChapterData chapter = new ChapterData(chapters.size());
+        SectionData chapter = new SectionData(chapters.size());
         chapters.add(chapter);
 
         if (chapterItem.hasAttributes())
@@ -293,7 +362,7 @@ public class BookDocument
         chapter.pagePairs = (chapter.pages.size() + 1) / 2;
     }
 
-    private void parsePage(ChapterData chapter, Node pageItem)
+    private void parsePage(SectionData chapter, Node pageItem)
     {
         PageData page = new PageData(chapter.pages.size());
         chapter.pages.add(page);
@@ -582,10 +651,11 @@ public class BookDocument
         return rendering;
     }
 
-    public class ChapterData
+    public class SectionData
     {
         public final int num;
         public String id;
+        public IDisplayCondition condition;
 
         public final List<PageData> pages = Lists.newArrayList();
         public final Map<String, Integer> pagesByName = Maps.newHashMap();
@@ -593,7 +663,7 @@ public class BookDocument
         public int pagePairs;
         public int startPair;
 
-        private ChapterData(int num)
+        private SectionData(int num)
         {
             this.num = num;
         }
