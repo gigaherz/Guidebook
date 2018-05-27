@@ -4,6 +4,7 @@ import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.ItemRegister;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
@@ -35,7 +36,7 @@ public class ClientProxy implements IModProxy
         OBJLoader.INSTANCE.addDomain(GuidebookMod.MODID);
         ModelLoaderRegistry.registerLoader(new BookBakedModel.ModelLoader());
 
-        registerItemModel(GuidebookMod.guidebook);
+        registerItemModel(ItemRegister.guidebook);
     }
 
     @Override

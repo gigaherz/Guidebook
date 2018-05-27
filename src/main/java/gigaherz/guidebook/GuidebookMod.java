@@ -3,6 +3,7 @@ package gigaherz.guidebook;
 import com.google.common.collect.Lists;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
+import gigaherz.guidebook.guidebook.ItemRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,13 +15,11 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.util.List;
 
 @Mod.EventBusSubscriber
@@ -50,7 +49,7 @@ public class GuidebookMod
         @Override
         public ItemStack getTabIconItem()
         {
-            return new ItemStack(guidebook);
+            return new ItemStack(ItemRegister.guidebook);
         }
     };
 
@@ -77,9 +76,7 @@ public class GuidebookMod
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
-        event.getRegistry().registerAll(
-                guidebook = new ItemGuidebook("guidebook")
-        );
+        ItemRegister.init(event.getRegistry());
     }
 
     @SubscribeEvent
