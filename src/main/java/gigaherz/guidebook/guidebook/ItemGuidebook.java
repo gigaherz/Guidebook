@@ -57,7 +57,7 @@ public class ItemGuidebook extends ItemRegistered
 
     public ItemStack of(ResourceLocation book)
     {
-        ItemStack stack = new ItemStack(this);
+        ItemStack stack = new ItemStack(ItemRegister.guidebook);
         NBTTagCompound tag = new NBTTagCompound();
         tag.setString("Book", book.toString());
         stack.setTagCompound(tag);
