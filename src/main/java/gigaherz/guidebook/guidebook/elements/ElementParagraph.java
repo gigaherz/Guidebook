@@ -35,9 +35,10 @@ public class ElementParagraph extends Element
 
         for(Element element : spans)
         {
+            int firstLineWidth = bounds.size.width - currentLineLeft - indent - indentFirstLine;
             List<VisualElement> pieces = element.measure(nav,
                     bounds.size.width - indent,
-                    bounds.size.width - currentLineLeft - indent - indentFirstLine);
+                    firstLineWidth);
 
             if (pieces.size() < 1)
                 continue;
@@ -47,7 +48,7 @@ public class ElementParagraph extends Element
                 VisualElement current = pieces.get(i);
                 Size size = current.size;
 
-                if (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0)
+                if ((currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
                 {
                     if (paragraph.size() > firstInLine && alignment != 0)
                         processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, spaceSize, firstInLine);
@@ -66,6 +67,15 @@ public class ElementParagraph extends Element
 
                 if (size.width > 0)
                     currentLineLeft += size.width + spaceSize.width;
+
+                if (currentLineLeft > bounds.size.width)
+                {
+                    currentLineTop += currentLineHeight;
+                    currentLineLeft = 0;
+                    currentLineHeight = 0;
+
+                    firstInLine = paragraph.size();
+                }
 
                 paragraph.add(current);
             }

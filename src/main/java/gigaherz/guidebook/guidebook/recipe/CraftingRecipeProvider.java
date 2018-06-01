@@ -121,7 +121,7 @@ class CraftingRecipeProvider
     {
         shapelessRecipes = new ArrayList<>();
         shapedRecipes = new ArrayList<>();
-        for (IRecipe recipe : ForgeRegistries.RECIPES.getValues())
+        for (IRecipe recipe : ForgeRegistries.RECIPES.getValuesCollection())
         {
             if (recipe instanceof ShapelessOreRecipe) shapelessRecipes.add(recipe);
             if (recipe instanceof ShapelessRecipes) shapelessRecipes.add(recipe);

@@ -7,7 +7,7 @@ import gigaherz.guidebook.GuidebookMod;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class PageRef
+public class SectionRef
 {
     public int chapter;
     public int page;
@@ -16,14 +16,14 @@ public class PageRef
     public String chapterName;
     public String pageName;
 
-    public PageRef(int chapter, int page)
+    public SectionRef(int chapter, int page)
     {
         this.chapter = chapter;
         this.page = page;
         resolvedNames = true;
     }
 
-    public PageRef(String chapter, @Nullable String page)
+    public SectionRef(String chapter, @Nullable String page)
     {
         this.chapterName = chapter;
         this.pageName = page;
@@ -31,7 +31,7 @@ public class PageRef
 
     /**
      * @param bookDocument the book which contains the referenced page
-     * @return <code>false</code> if the {@link PageRef} has no valid target
+     * @return <code>false</code> if the {@link SectionRef} has no valid target
      */
     public boolean resolve(BookDocument bookDocument)
     {
@@ -60,13 +60,13 @@ public class PageRef
                         }
                         else
                         {
-                            page = bookDocument.chapters.get(chapter).pagesByName.get(pageName);
+                            page = bookDocument.chapters.get(chapter).sectionsByName.get(pageName);
                         }
                     }
                 }
                 else if (!Strings.isNullOrEmpty(pageName))
                 {
-                    PageRef temp = bookDocument.pagesByName.get(pageName);
+                    SectionRef temp = bookDocument.sectionsByName.get(pageName);
                     temp.resolve(bookDocument);
                     chapter = temp.chapter;
                     page = temp.page;
@@ -97,14 +97,14 @@ public class PageRef
         return true;
     }
 
-    public PageRef copy()
+    public SectionRef copy()
     {
-        return new PageRef(chapter, page);
+        return new SectionRef(chapter, page);
     }
 
     /**
-     * Thrown by {@link PageRef#resolve(BookDocument)} in any case that normally wouldn't cause an exception
-     * but still signifies that the {@link PageRef} has no valid target and is therefore invalid.
+     * Thrown by {@link SectionRef#resolve(BookDocument)} in any case that normally wouldn't cause an exception
+     * but still signifies that the {@link SectionRef} has no valid target and is therefore invalid.
      */
     public static class InvalidPageRefException extends Exception
     {
@@ -115,29 +115,29 @@ public class PageRef
     }
 
     /**
-     * Parses a String into a {@link PageRef}.
+     * Parses a String into a {@link SectionRef}.
      *
      * @param refString the string to be parsed
      */
-    public static PageRef fromString(@Nonnull String refString)
+    public static SectionRef fromString(@Nonnull String refString)
     {
         if (refString.indexOf(':') >= 0)
         {
             String[] parts = refString.split(":");
-            return new PageRef(parts[0], parts[1]);
+            return new SectionRef(parts[0], parts[1]);
         }
         else
         {
-            return new PageRef(refString, null);
+            return new SectionRef(refString, null);
         }
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof PageRef))
+        if (!(obj instanceof SectionRef))
             return false;
-        PageRef pr = (PageRef)obj;
+        SectionRef pr = (SectionRef)obj;
         return resolvedNames && pr.resolvedNames && pr.chapter == chapter && pr.page == page;
     }
 

@@ -2,7 +2,7 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualLink;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
@@ -14,7 +14,7 @@ import java.util.List;
 public class ElementLink extends ElementSpan
 {
     public String webTarget;
-    public PageRef target;
+    public SectionRef target;
     public int colorHover = 0xFF77cc66;
 
     public ElementLink(String text)
@@ -58,7 +58,7 @@ public class ElementLink extends ElementSpan
         if (attr != null)
         {
             String ref = attr.getTextContent();
-            target = PageRef.fromString(ref);
+            target = SectionRef.fromString(ref);
         }
 
         attr = attributes.getNamedItem("href");

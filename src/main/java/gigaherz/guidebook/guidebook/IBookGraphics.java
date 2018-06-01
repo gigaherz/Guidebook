@@ -4,7 +4,6 @@ import gigaherz.guidebook.guidebook.drawing.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.Rectangle;
 
 import java.util.List;
 
@@ -24,7 +23,7 @@ public interface IBookGraphics
 
     boolean canGoPrevChapter();
 
-    void navigateTo(PageRef target);
+    void navigateTo(SectionRef target);
 
     void nextPage();
 

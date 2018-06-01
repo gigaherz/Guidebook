@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.SectionRef;
 import net.minecraft.item.ItemStack;
 
 public class VisualStack extends VisualElement
@@ -57,7 +57,7 @@ public class VisualStack extends VisualElement
     @Override
     public void click(IBookGraphics nav)
     {
-        PageRef ref = nav.getBook().getStackLink(getCurrentStack());
+        SectionRef ref = nav.getBook().getStackLink(getCurrentStack());
         if (ref != null)
             nav.navigateTo(ref);
     }

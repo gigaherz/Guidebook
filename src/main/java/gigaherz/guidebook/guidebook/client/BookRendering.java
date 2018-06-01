@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.GuidebookMod;
@@ -18,9 +19,9 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class BookRendering implements IBookGraphics
 {
@@ -31,7 +32,7 @@ public class BookRendering implements IBookGraphics
     public static final int DEFAULT_VERTICAL_MARGIN = 18;
 
     private BookDocument book;
-    private Map<PageRef,VisualPage> visualPages = Maps.newHashMap();
+
     int scaledWidth;
     int scaledHeight;
 
@@ -45,6 +46,28 @@ public class BookRendering implements IBookGraphics
     private int verticalMargin;
     private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
     private int pageHeight = bookHeight - verticalMargin;
+
+    private class PageRef
+    {
+        public int chapter;
+        public int page;
+
+        public PageRef(int currentChapter, int currentPage)
+        {
+            chapter = currentChapter;
+            page = currentPage;
+        }
+    }
+
+    private class VisualChapter
+    {
+        public final List<VisualPage> pages = Lists.newArrayList();
+        public final Map<String, Integer> pagesByName = Maps.newHashMap();
+        public int startPair;
+        public int totalPairs;
+    }
+
+    final List<VisualChapter> chapters = Lists.newArrayList();
 
     final java.util.Stack<PageRef> history = new java.util.Stack<>();
     private int currentChapter = 0;
@@ -143,7 +166,7 @@ public class BookRendering implements IBookGraphics
     @Override
     public boolean canGoNextPage()
     {
-        return (currentPair + 1 < book.getChapter(currentChapter).pagePairs || currentChapter + 1 < book.chapterCount());
+        return (currentPair + 1 < getVisualChapter(currentChapter).totalPairs || currentChapter + 1 < book.chapterCount());
     }
 
     @Override
@@ -165,19 +188,19 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void navigateTo(final PageRef target)
+    public void navigateTo(final SectionRef target)
     {
         if (!target.resolve(book))
             return;
         pushHistory();
         currentChapter = Math.max(0, Math.min(book.chapterCount() - 1, target.chapter));
-        currentPair = Math.max(0, Math.min(book.getChapter(currentChapter).pagePairs - 1, target.page / 2));
+        currentPair = Math.max(0, Math.min(getVisualChapter(currentChapter).totalPairs - 1, target.page / 2));
     }
 
     @Override
     public void nextPage()
     {
-        if (currentPair + 1 < book.getChapter(currentChapter).pagePairs)
+        if (currentPair + 1 < getVisualChapter(currentChapter).totalPairs)
         {
             pushHistory();
             currentPair++;
@@ -202,7 +225,7 @@ public class BookRendering implements IBookGraphics
         {
             pushHistory();
             currentChapter--;
-            currentPair = book.getChapter(currentChapter).pairCount() - 1;
+            currentPair = getVisualChapter(currentChapter).totalPairs - 1;
         }
     }
 
@@ -234,7 +257,7 @@ public class BookRendering implements IBookGraphics
         if (history.size() > 0)
         {
             PageRef target = history.pop();
-            target.resolve(book);
+            //target.resolve(book);
             currentChapter = target.chapter;
             currentPair = target.page / 2;
         }
@@ -248,12 +271,6 @@ public class BookRendering implements IBookGraphics
     private void pushHistory()
     {
         history.push(new PageRef(currentChapter, currentPair * 2));
-    }
-
-    private int getSplitWidth(FontRenderer fontRenderer, String s, float scale)
-    {
-        int height = (int)(fontRenderer.getWordWrappedHeight(s, (int)(pageWidth / scale)) * scale);
-        return height > (fontRenderer.FONT_HEIGHT * scale) ? pageWidth : (int)(fontRenderer.getStringWidth(s) * scale);
     }
 
     @Override
@@ -290,16 +307,16 @@ public class BookRendering implements IBookGraphics
 
         if (mouseButton == 0)
         {
-            BookDocument.SectionData ch = book.getChapter(currentChapter);
+            VisualChapter ch = getVisualChapter(currentChapter);
 
-            final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
+            final VisualPage pgLeft = ch.pages.get(currentPair * 2);
 
             if (mouseClickPage(mouseX, mouseY, pgLeft))
                 return true;
 
             if (currentPair * 2 + 1 < ch.pages.size())
             {
-                final VisualPage pgRight = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2 + 1), false);
+                final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
 
                 if (mouseClickPage(mouseX, mouseY, pgRight))
                     return true;
@@ -309,18 +326,34 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
-    private VisualPage getVisualPage(BookDocument.SectionData ch, PageRef pr, boolean isLeftPage)
+    private VisualChapter getVisualChapter(int chapter)
     {
-        VisualPage pg = visualPages.get(pr);
-
-        if (pg == null)
+        while (chapters.size() <= chapter && chapters.size() < book.chapterCount())
         {
-            Rect r = getPageBounds(isLeftPage);
-            BookDocument.PageData pd = ch.pages.get(pr.page);
-            pg = pd.reflow(r);
-            visualPages.put(pr, pg);
+            VisualChapter ch = new VisualChapter();
+            if (chapters.size() > 0)
+            {
+                VisualChapter prev = chapters.get(chapters.size() - 1);
+                ch.startPair = prev.startPair + prev.totalPairs;
+            }
+
+            BookDocument.SectionData bc = book.getChapter(chapters.size());
+
+            Rect rl = getPageBounds(true);
+            Rect rr = getPageBounds(false);
+            for(BookDocument.PageData section : bc.sections)
+            {
+                if(!Strings.isNullOrEmpty(section.id))
+                    ch.pagesByName.put(section.id, ch.pages.size());
+
+                ch.pages.addAll(section.reflow(rl,rr,ch.pages.size()));
+            }
+
+            ch.totalPairs = (ch.pages.size()+1)/2;
+            chapters.add(ch);
         }
-        return pg;
+
+        return chapters.get(chapter);
     }
 
     private boolean mouseClickPage(int mX, int mY, VisualPage pg)
@@ -343,9 +376,9 @@ public class BookRendering implements IBookGraphics
     @Override
     public boolean mouseHover(int mouseX, int mouseY)
     {
-        BookDocument.SectionData ch = book.getChapter(currentChapter);
+        VisualChapter ch = getVisualChapter(currentChapter);
 
-        final VisualPage pgLeft = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2), true);
+        final VisualPage pgLeft = ch.pages.get(currentPair * 2);
 
         VisualElement hovering = mouseHoverPage(pgLeft);
 
@@ -353,7 +386,7 @@ public class BookRendering implements IBookGraphics
         {
             if (currentPair * 2 + 1 < ch.pages.size())
             {
-                final VisualPage pgRight = getVisualPage(ch, new PageRef(currentChapter, currentPair * 2 + 1), false);
+                final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
 
                 hovering = mouseHoverPage(pgRight);
             }
@@ -441,10 +474,10 @@ public class BookRendering implements IBookGraphics
         int top = (guiHeight - pageHeight) / 2 - 9;
         int bottom = top + pageHeight - 3;
 
-        drawPage(currentPair * 2, true);
-        drawPage(currentPair * 2 + 1, false);
+        drawPage(currentPair * 2);
+        drawPage(currentPair * 2 + 1);
 
-        String cnt = "" + ((book.getChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (book.getTotalPairCount() * 2);
+        String cnt = "" + ((getVisualChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (getTotalPairCount() * 2);
         Size sz = measure(cnt);
 
         addString(left + (pageWidth-sz.width)/2, bottom, cnt, 0xFF000000, 1.0f);
@@ -455,13 +488,19 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    private void drawPage(int page, boolean isLeftPage)
+    private int getTotalPairCount()
     {
-        BookDocument.SectionData ch = book.getChapter(currentChapter);
+        VisualChapter last = chapters.get(chapters.size() - 1);
+        return last.startPair + last.totalPairs;
+    }
+
+    private void drawPage(int page)
+    {
+        VisualChapter ch = getVisualChapter(currentChapter);
         if (page >= ch.pages.size())
             return;
 
-        VisualPage pg = getVisualPage(ch, new PageRef(currentChapter, page), isLeftPage);
+        VisualPage pg = ch.pages.get(page);
 
         for (VisualElement e : pg.children)
         {
@@ -539,34 +578,103 @@ public class BookRendering implements IBookGraphics
         return new Size(width, font.FONT_HEIGHT);
     }
 
-    @Override
-    public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale)
+    private static boolean isFormatColor(char colorChar)
     {
-        //TODO: Actually measure the string width taking into account the first line in an efficient way.
-        FontRenderer font = gui.getFontRenderer();
-        String format = FontRenderer.getFormatFromString(text);
-        List<String> lines = font.listFormattedStringToWidth(text, firstLineWidth);
-        if (lines.size() > 1)
+        return colorChar >= '0' && colorChar <= '9' || colorChar >= 'a' && colorChar <= 'f' || colorChar >= 'A' && colorChar <= 'F';
+    }
+
+    private static int sizeStringToWidth(FontRenderer font, String str, int wrapWidth)
+    {
+        int i = str.length();
+        int j = 0;
+        int k = 0;
+        int l = -1;
+
+        for (boolean flag = false; k < i; ++k)
         {
-            List<VisualElement> sizes = Lists.newArrayList();
+            char c0 = str.charAt(k);
 
-            String firstLine = lines.get(0);
-            int width1 = font.getStringWidth(firstLine);
-            sizes.add(new VisualText(firstLine, new Size(width1, font.FONT_HEIGHT), scale));
-
-            String remaining = text.substring(firstLine.length()).trim();
-            List<String> lines2 = font.listFormattedStringToWidth(format + remaining, width);
-            for (String s : lines2)
+            switch (c0)
             {
-                int width2 = font.getStringWidth(s);
-                sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT), scale));
+                case '\n':
+                    --k;
+                    break;
+                case ' ':
+                    l = k;
+                default:
+                    j += font.getCharWidth(c0);
+
+                    if (flag)
+                    {
+                        ++j;
+                    }
+
+                    break;
+                case '\u00a7':
+
+                    if (k < i - 1)
+                    {
+                        ++k;
+                        char c1 = str.charAt(k);
+
+                        if (c1 != 'l' && c1 != 'L')
+                        {
+                            if (c1 == 'r' || c1 == 'R' || isFormatColor(c1))
+                            {
+                                flag = false;
+                            }
+                        }
+                        else
+                        {
+                            flag = true;
+                        }
+                    }
             }
-            return sizes;
+
+            if (c0 == '\n')
+            {
+                ++k;
+                l = k;
+                break;
+            }
+
+            if (j > wrapWidth)
+            {
+                break;
+            }
+        }
+
+        return k != i && l != -1 && l < k ? l : k;
+    }
+
+    private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<String> dest, String str, int wrapWidth, int wrapWidthFirstLine, boolean firstLine)
+    {
+        int i = sizeStringToWidth(font, str, firstLine ? wrapWidthFirstLine : wrapWidth);
+
+        if (str.length() <= i)
+        {
+            dest.accept(str);
         }
         else
         {
-            int width1 = font.getStringWidth(text);
-            return Collections.singletonList(new VisualText(text, new Size(width1, font.FONT_HEIGHT * lines.size()), scale));
+            String s = str.substring(0, i);
+            dest.accept(s);
+            char c0 = str.charAt(i);
+            boolean flag = c0 == ' ' || c0 == '\n';
+            String s1 = FontRenderer.getFormatFromString(s) + str.substring(i + (flag ? 1 : 0));
+            wrapFormattedStringToWidth(font, dest, s1, wrapWidth, wrapWidthFirstLine, false);
         }
+    }
+
+    @Override
+    public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale)
+    {
+        FontRenderer font = gui.getFontRenderer();
+        List<VisualElement> sizes = Lists.newArrayList();
+        wrapFormattedStringToWidth(font, (s) -> {
+            int width2 = font.getStringWidth(s);
+            sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT), scale));
+        }, text, width, firstLineWidth, true);
+        return sizes;
     }
 }

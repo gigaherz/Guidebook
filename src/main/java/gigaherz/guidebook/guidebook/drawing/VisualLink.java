@@ -3,7 +3,7 @@ package gigaherz.guidebook.guidebook.drawing;
 import com.google.common.collect.Sets;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.PageRef;
+import gigaherz.guidebook.guidebook.SectionRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.client.gui.GuiScreen;
@@ -24,7 +24,7 @@ public class VisualLink extends VisualText
     }
 
     public String webTarget;
-    public PageRef target;
+    public SectionRef target;
     public int colorHover = 0xFF77cc66;
 
     public SharedHoverContext hoverContext = new SharedHoverContext();

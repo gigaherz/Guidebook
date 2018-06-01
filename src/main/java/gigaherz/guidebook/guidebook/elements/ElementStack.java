@@ -25,11 +25,16 @@ public class ElementStack extends Element
 
     public ItemStack[] stacks;
 
+    private Size getVisualSize()
+    {
+        int width = (int) (w * scale);
+        int height = (int) (h * scale);
+        return new Size(width,height);
+    }
+
     private VisualStack getVisual()
     {
-        int width = (int) (16 * scale);
-        int height = (int) (16 * scale);
-        return new VisualStack(stacks, new Size(width,height), scale, z);
+        return new VisualStack(stacks, getVisualSize(), scale, z);
     }
 
     @Override

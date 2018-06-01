@@ -11,6 +11,7 @@ import gigaherz.guidebook.guidebook.conditions.ConditionManager;
 import gigaherz.guidebook.guidebook.conditions.IDisplayCondition;
 import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualPage;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
@@ -34,9 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class BookDocument
 {
@@ -49,15 +48,14 @@ public class BookDocument
     private ResourceLocation bookCover;
 
     final List<SectionData> chapters = Lists.newArrayList();
-    private Table<Item, Integer, PageRef> stackLinks = HashBasedTable.create();
+    private Table<Item, Integer, SectionRef> stackLinks = HashBasedTable.create();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
-    final Map<String, PageRef> pagesByName = Maps.newHashMap();
+    final Map<String, SectionRef> sectionsByName = Maps.newHashMap();
 
     private final Map<String, TemplateDefinition> templates = Maps.newHashMap();
     private final Map<String, IDisplayCondition> conditions = Maps.newHashMap();
 
-    private int totalPairs = 0;
     private IBookGraphics rendering;
 
     public BookDocument(ResourceLocation bookLocation)
@@ -88,7 +86,7 @@ public class BookDocument
     }
 
     @Nullable
-    public PageRef getStackLink(ItemStack stack)
+    public SectionRef getStackLink(ItemStack stack)
     {
         Item item = stack.getItem();
         int damage = stack.getItemDamage();
@@ -102,11 +100,6 @@ public class BookDocument
             return stackLinks.get(item, -1);
         }
         return null;
-    }
-
-    public int getTotalPairCount()
-    {
-        return totalPairs;
     }
 
     public float getFontSize()
@@ -127,7 +120,7 @@ public class BookDocument
         // TODO: Add <image> texture locations when implemented
         for (SectionData chapter : chapters)
         {
-            for (PageData page : chapter.pages)
+            for (PageData page : chapter.sections)
             {
                 for (Element element : page.elements)
                 {
@@ -142,8 +135,8 @@ public class BookDocument
         SectionData ch = new SectionData(0);
         chapters.add(ch);
 
-        PageData pg = new PageData(0);
-        ch.pages.add(pg);
+        PageData pg = new PageData();
+        ch.sections.add(pg);
 
         pg.elements.add(ElementParagraph.of("Error loading book:"));
         pg.elements.add(ElementParagraph.of(TextFormatting.RED + error));
@@ -156,10 +149,8 @@ public class BookDocument
             chapters.clear();
             bookName = "";
             bookCover = null;
-            totalPairs = 0;
             fontSize = DEFAULT_FONT_SIZE;
             chaptersByName.clear();
-            pagesByName.clear();
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -232,14 +223,6 @@ public class BookDocument
                     parseConditions(firstLevelNode);
                 }
             }
-
-            int prevCount = 0;
-            for (SectionData chapter : chapters)
-            {
-                chapter.startPair = prevCount;
-                prevCount += chapter.pagePairs;
-            }
-            totalPairs = prevCount;
         }
         catch (IOException | ParserConfigurationException | SAXException e)
         {
@@ -357,15 +340,29 @@ public class BookDocument
             {
                 parsePage(chapter, pageItem);
             }
+            else if (nodeName.equals("section"))
+            {
+                parseSection(chapter, pageItem);
+            }
         }
-
-        chapter.pagePairs = (chapter.pages.size() + 1) / 2;
     }
 
     private void parsePage(SectionData chapter, Node pageItem)
     {
-        PageData page = new PageData(chapter.pages.size());
-        chapter.pages.add(page);
+        PageData page = new PageData();
+        parseSection(chapter, pageItem, page);
+    }
+
+    private void parseSection(SectionData chapter, Node pageItem)
+    {
+        PageData page = new PageGroup();
+        parseSection(chapter, pageItem, page);
+    }
+
+    private void parseSection(SectionData chapter, Node pageItem, PageData page)
+    {
+        int num = chapter.sections.size();
+        chapter.sections.add(page);
 
         if (pageItem.hasAttributes())
         {
@@ -374,13 +371,14 @@ public class BookDocument
             if (n != null)
             {
                 page.id = n.getTextContent();
-                pagesByName.put(page.id, new PageRef(chapter.num, page.num));
-                chapter.pagesByName.put(page.id, page.num);
+                sectionsByName.put(page.id, new SectionRef(chapter.num, num));
+                chapter.sectionsByName.put(page.id, num);
             }
         }
 
         parseChildElements(pageItem, page.elements, templates, true);
     }
+
 
     public static void parseChildElements(Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, boolean generateParagraphs)
     {
@@ -632,7 +630,7 @@ public class BookDocument
                             }
 
                             String ref = refItem.getTextContent();
-                            stackLinks.put(item, damage_value, PageRef.fromString(ref));
+                            stackLinks.put(item, damage_value, SectionRef.fromString(ref));
                         }
                     }
                 }
@@ -657,20 +655,33 @@ public class BookDocument
         public String id;
         public IDisplayCondition condition;
 
-        public final List<PageData> pages = Lists.newArrayList();
-        public final Map<String, Integer> pagesByName = Maps.newHashMap();
-
-        public int pagePairs;
-        public int startPair;
+        public final List<PageData> sections = Lists.newArrayList();
+        public final Map<String, Integer> sectionsByName = Maps.newHashMap();
 
         private SectionData(int num)
         {
             this.num = num;
         }
+    }
 
-        public int pairCount()
+    public class PageData
+    {
+        public String id;
+
+        public final List<Element> elements = Lists.newArrayList();
+
+        public List<VisualPage> reflow(Rect leftBounds, Rect rightBounds, int pageNumber)
         {
-            return pagePairs;
+            VisualPage page = new VisualPage();
+
+            Rect pageBounds = (pageNumber & 1) == 0 ? leftBounds : rightBounds;
+            int top = pageBounds.position.y;
+            for(Element element : elements)
+            {
+                top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+            }
+
+            return Collections.singletonList(page);
         }
     }
 
@@ -693,55 +704,68 @@ public class BookDocument
      *     </chapter>
      * </book>
      */
-    public class PageGroup
+    public class PageGroup extends PageData
     {
-        public final int num;
-        public String id;
-
-        public final List<Element> elements = Lists.newArrayList();
-
-        private PageGroup(int num)
+        @Override
+        public List<VisualPage> reflow(Rect leftBounds, Rect rightBounds, int pageNumber)
         {
-            this.num = num;
-        }
+            List<VisualPage> pages = Lists.newArrayList();
 
-        public VisualPage reflow(Rect pageBounds)
-        {
             VisualPage page = new VisualPage();
+            Rect pageBounds = (pageNumber & 1) == 0 ? leftBounds : rightBounds;
 
             int top = pageBounds.position.y;
-            for(Element element : elements)
+            for (Element element : elements)
             {
                 top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
             }
 
-            return page;
-        }
-    }
-
-    public class PageData
-    {
-        public final int num;
-        public String id;
-
-        public final List<Element> elements = Lists.newArrayList();
-
-        private PageData(int num)
-        {
-            this.num = num;
-        }
-
-        public VisualPage reflow(Rect pageBounds)
-        {
-            VisualPage page = new VisualPage();
-
-            int top = pageBounds.position.y;
-            for(Element element : elements)
+            boolean needsRepagination = false;
+            for (VisualElement child : page.children)
             {
-                top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+                if (child.position.y + child.size.height > (pageBounds.position.y + pageBounds.size.height))
+                {
+                    needsRepagination = true;
+                }
             }
 
-            return page;
+            if (needsRepagination)
+            {
+                VisualPage page2 = new VisualPage();
+
+                Rect pageBounds2;
+                int offsetY = 0;
+                int offsetX = 0;
+                for (VisualElement child : page.children)
+                {
+                    int cpy = child.position.y + offsetY;
+                    if (cpy + child.size.height > (pageBounds.position.y + pageBounds.size.height)
+                            && child.position.y > pageBounds.position.y)
+                    {
+                        pages.add(page2);
+                        page2 = new VisualPage();
+
+                        pageNumber++;
+                        pageBounds2 = (pageNumber & 1) == 0 ? leftBounds : rightBounds;
+                        offsetY = pageBounds.position.y - child.position.y;
+                        offsetX = pageBounds2.position.x - pageBounds.position.x;
+                    }
+
+                    child.position = new Point(
+                            child.position.x + offsetX,
+                            child.position.y + offsetY);
+                    page2.children.add(child);
+
+                }
+
+                pages.add(page2);
+            }
+            else
+            {
+                pages.add(page);
+            }
+
+            return pages;
         }
     }
 }

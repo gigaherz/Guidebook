@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.drawing.*;
@@ -20,11 +19,16 @@ public class ElementImage extends Element
     public int tw = 0;
     public int th = 0;
 
-    private VisualImage getVisual()
+    private Size getVisualSize()
     {
         int width = (int) (w * scale);
         int height = (int) (h * scale);
-        return new VisualImage(new Size(width,height), textureLocation, tx, ty, tw, th);
+        return new Size(width,height);
+    }
+
+    private VisualImage getVisual()
+    {
+        return new VisualImage(getVisualSize(), textureLocation, tx, ty, tw, th);
     }
 
     @Override
