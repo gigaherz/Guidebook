@@ -9,10 +9,7 @@ import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.conditions.ConditionManager;
 import gigaherz.guidebook.guidebook.conditions.IDisplayCondition;
-import gigaherz.guidebook.guidebook.drawing.Point;
-import gigaherz.guidebook.guidebook.drawing.Rect;
-import gigaherz.guidebook.guidebook.drawing.VisualElement;
-import gigaherz.guidebook.guidebook.drawing.VisualPage;
+import gigaherz.guidebook.guidebook.drawing.*;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
@@ -670,15 +667,15 @@ public class BookDocument
 
         public final List<Element> elements = Lists.newArrayList();
 
-        public List<VisualPage> reflow(Rect leftBounds, Rect rightBounds, int pageNumber)
+        public List<VisualPage> reflow(Size pageSize, int pageNumber)
         {
             VisualPage page = new VisualPage();
+            Rect pageBounds = new Rect(new Point(), pageSize);
 
-            Rect pageBounds = (pageNumber & 1) == 0 ? leftBounds : rightBounds;
-            int top = pageBounds.position.y;
+            int top = 0;
             for(Element element : elements)
             {
-                top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+                top = element.reflow(page.children, getRendering(), new Rect(new Point(0, top), pageSize), pageBounds);
             }
 
             return Collections.singletonList(page);
@@ -707,12 +704,12 @@ public class BookDocument
     public class PageGroup extends PageData
     {
         @Override
-        public List<VisualPage> reflow(Rect leftBounds, Rect rightBounds, int pageNumber)
+        public List<VisualPage> reflow(Size pageSize, int pageNumber)
         {
             List<VisualPage> pages = Lists.newArrayList();
 
             VisualPage page = new VisualPage();
-            Rect pageBounds = (pageNumber & 1) == 0 ? leftBounds : rightBounds;
+            Rect pageBounds = new Rect(new Point(0,0), pageSize);
 
             int top = pageBounds.position.y;
             for (Element element : elements)
@@ -733,9 +730,7 @@ public class BookDocument
             {
                 VisualPage page2 = new VisualPage();
 
-                Rect pageBounds2;
                 int offsetY = 0;
-                int offsetX = 0;
                 for (VisualElement child : page.children)
                 {
                     int cpy = child.position.y + offsetY;
@@ -746,13 +741,11 @@ public class BookDocument
                         page2 = new VisualPage();
 
                         pageNumber++;
-                        pageBounds2 = (pageNumber & 1) == 0 ? leftBounds : rightBounds;
                         offsetY = pageBounds.position.y - child.position.y;
-                        offsetX = pageBounds2.position.x - pageBounds.position.x;
                     }
 
                     child.position = new Point(
-                            child.position.x + offsetX,
+                            child.position.x,
                             child.position.y + offsetY);
                     page2.children.add(child);
 

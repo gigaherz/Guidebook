@@ -9,7 +9,6 @@ import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
@@ -29,10 +28,13 @@ public class BookRendering implements IBookGraphics
     public static final int DEFAULT_BOOK_HEIGHT = 198;
     public static final int DEFAULT_INNER_MARGIN = 22;
     public static final int DEFAULT_OUTER_MARGIN = 10;
+    public static final int DEFAULT_BOTTOM_MARGIN = 8;
     public static final int DEFAULT_VERTICAL_MARGIN = 18;
 
     private BookDocument book;
 
+    double scaledWidthD;
+    double scaledHeightD;
     int scaledWidth;
     int scaledHeight;
 
@@ -44,6 +46,7 @@ public class BookRendering implements IBookGraphics
     private int innerMargin;
     private int outerMargin;
     private int verticalMargin;
+    private int bottomMargin;
     private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
     private int pageHeight = bookHeight - verticalMargin;
 
@@ -87,6 +90,8 @@ public class BookRendering implements IBookGraphics
         this.scaledWidth = minecraftClient.displayWidth;
         this.scaledHeight = minecraftClient.displayHeight;
         int scaleFactor = 1;
+        double w = (DEFAULT_BOOK_WIDTH * 1.1) / scaleFactorCoef;
+        double h = (DEFAULT_BOOK_HEIGHT * 1.1) / scaleFactorCoef;
         boolean flag = minecraftClient.isUnicode();
         int i = GuidebookMod.bookGUIScale < 0 ? minecraftClient.gameSettings.guiScale : GuidebookMod.bookGUIScale;
 
@@ -95,20 +100,18 @@ public class BookRendering implements IBookGraphics
             i = 1000;
         }
 
-        while (scaleFactor < i && this.scaledWidth / (scaleFactor + 1) >= 320 && this.scaledHeight / (scaleFactor + 1) >= 240)
+        while (scaleFactor < i && this.scaledWidth / (scaleFactor + 1) >= w && this.scaledHeight / (scaleFactor + 1) >= h)
         {
             ++scaleFactor;
         }
 
-        scaleFactor = MathHelper.floor(Math.max(1, scaleFactor * scaleFactorCoef));
-
-        if (flag && scaleFactor % 2 != 0 && scaleFactor != 1)
+        if (flag && scaleFactor % 2 != 0 && scaleFactor > 1)
         {
             --scaleFactor;
         }
 
-        double scaledWidthD = (double) this.scaledWidth / (double) scaleFactor;
-        double scaledHeightD = (double) this.scaledHeight / (double) scaleFactor;
+        this.scaledWidthD = (double) minecraftClient.displayWidth / (double) scaleFactor;
+        this.scaledHeightD = (double) minecraftClient.displayHeight / (double) scaleFactor;
         this.scaledWidth = MathHelper.ceil(scaledWidthD);
         this.scaledHeight = MathHelper.ceil(scaledHeightD);
     }
@@ -120,35 +123,35 @@ public class BookRendering implements IBookGraphics
 
         if (MathHelper.epsilonEquals(fontSize, 1.0f))
         {
-            this.scaledWidth = gui.width;
-            this.scaledHeight = gui.height;
-
             this.hasScale = false;
             this.scalingFactor = 1.0f;
+            this.scaledWidth = gui.width;
+            this.scaledHeight = gui.height;
 
             this.bookWidth = DEFAULT_BOOK_WIDTH;
             this.bookHeight = DEFAULT_BOOK_HEIGHT;
             this.innerMargin = DEFAULT_INNER_MARGIN;
             this.outerMargin = DEFAULT_OUTER_MARGIN;
             this.verticalMargin = DEFAULT_VERTICAL_MARGIN;
+            this.bottomMargin = DEFAULT_BOTTOM_MARGIN;
         }
         else
         {
-            ScaledResolution sr = new ScaledResolution(mc);
             computeScaledResolution2(mc, fontSize);
 
             this.hasScale = true;
-            this.scalingFactor = Math.min(sr.getScaledWidth() / (float) scaledWidth, sr.getScaledHeight() / (float) scaledHeight);
+            this.scalingFactor = Math.min(gui.width / (float) scaledWidth, gui.height / (float) scaledHeight);
 
             this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
             this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
             this.innerMargin = (int) (DEFAULT_INNER_MARGIN / fontSize);
             this.outerMargin = (int) (DEFAULT_OUTER_MARGIN / fontSize);
             this.verticalMargin = (int) (DEFAULT_VERTICAL_MARGIN / fontSize);
+            this.bottomMargin = (int) (DEFAULT_BOTTOM_MARGIN / fontSize);
         }
 
         this.pageWidth = this.bookWidth / 2 - this.innerMargin - this.outerMargin;
-        this.pageHeight = this.bookHeight - this.verticalMargin;
+        this.pageHeight = this.bookHeight - this.verticalMargin - this.bottomMargin;
     }
 
     @Override
@@ -311,14 +314,14 @@ public class BookRendering implements IBookGraphics
 
             final VisualPage pgLeft = ch.pages.get(currentPair * 2);
 
-            if (mouseClickPage(mouseX, mouseY, pgLeft))
+            if (mouseClickPage(mouseX, mouseY, pgLeft, true))
                 return true;
 
             if (currentPair * 2 + 1 < ch.pages.size())
             {
                 final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
 
-                if (mouseClickPage(mouseX, mouseY, pgRight))
+                if (mouseClickPage(mouseX, mouseY, pgRight, false))
                     return true;
             }
         }
@@ -339,14 +342,13 @@ public class BookRendering implements IBookGraphics
 
             BookDocument.SectionData bc = book.getChapter(chapters.size());
 
-            Rect rl = getPageBounds(true);
-            Rect rr = getPageBounds(false);
+            Size pageSize = new Size(pageWidth, pageHeight);
             for(BookDocument.PageData section : bc.sections)
             {
                 if(!Strings.isNullOrEmpty(section.id))
                     ch.pagesByName.put(section.id, ch.pages.size());
 
-                ch.pages.addAll(section.reflow(rl,rr,ch.pages.size()));
+                ch.pages.addAll(section.reflow(pageSize,ch.pages.size()));
             }
 
             ch.totalPairs = (ch.pages.size()+1)/2;
@@ -356,8 +358,11 @@ public class BookRendering implements IBookGraphics
         return chapters.get(chapter);
     }
 
-    private boolean mouseClickPage(int mX, int mY, VisualPage pg)
+    private boolean mouseClickPage(int mX, int mY, VisualPage pg, boolean isLeftPage)
     {
+        Point offset = getPageOffset(isLeftPage);
+        mX -= offset.x;
+        mY -= offset.y;
         for (VisualElement e : pg.children)
         {
             if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
@@ -380,7 +385,7 @@ public class BookRendering implements IBookGraphics
 
         final VisualPage pgLeft = ch.pages.get(currentPair * 2);
 
-        VisualElement hovering = mouseHoverPage(pgLeft);
+        VisualElement hovering = mouseHoverPage(pgLeft, true);
 
         if (hovering == null)
         {
@@ -388,7 +393,7 @@ public class BookRendering implements IBookGraphics
             {
                 final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
 
-                hovering = mouseHoverPage(pgRight);
+                hovering = mouseHoverPage(pgRight, false);
             }
         }
 
@@ -408,21 +413,19 @@ public class BookRendering implements IBookGraphics
     }
 
     @Nullable
-    private VisualElement mouseHoverPage(VisualPage pg)
+    private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage)
     {
         Minecraft mc = Minecraft.getMinecraft();
         int dw = hasScale ? scaledWidth : gui.width;
         int dh = hasScale ? scaledHeight : gui.height;
         int mX = Mouse.getX() * dw / mc.displayWidth;
         int mY = dh - Mouse.getY() * dh / mc.displayHeight;
+        Point offset = getPageOffset(isLeftPage);
 
-        return mouseHoverContainer(mX, mY, pg.children);
-    }
+        mX -= offset.x;
+        mY -= offset.y;
 
-    @Nullable
-    private VisualElement mouseHoverContainer(int mX, int mY, List<VisualElement> elements)
-    {
-        for (VisualElement e : elements)
+        for (VisualElement e : pg.children)
         {
             if (e.wantsHover() &&
                     mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
@@ -431,10 +434,29 @@ public class BookRendering implements IBookGraphics
                 return e;
             }
         }
+
         return null;
     }
 
-    Rect getPageBounds(boolean leftPage)
+    @Override
+    public void drawCurrentPages()
+    {
+        if (hasScale)
+        {
+            GlStateManager.pushMatrix();
+            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
+        }
+
+        drawPage(currentPair * 2);
+        drawPage(currentPair * 2 + 1);
+
+        if (hasScale)
+        {
+            GlStateManager.popMatrix();
+        }
+    }
+
+    Point getPageOffset(boolean leftPage)
     {
         int guiWidth = gui.width;
         int guiHeight = gui.height;
@@ -447,51 +469,9 @@ public class BookRendering implements IBookGraphics
 
         int left = guiWidth / 2 - pageWidth - innerMargin;
         int right = guiWidth / 2 + innerMargin;
-        int top = (guiHeight - pageHeight) / 2 - 9;
+        int top = (guiHeight - pageHeight) / 2 - bottomMargin;
 
-        return new Rect(leftPage ? left : right,top,pageWidth,pageHeight);
-    }
-
-    @Override
-    public void drawCurrentPages()
-    {
-        if (hasScale)
-        {
-            GlStateManager.pushMatrix();
-            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
-        }
-
-        int guiWidth = gui.width;
-        int guiHeight = gui.height;
-
-        if (hasScale)
-        {
-            guiWidth = scaledWidth;
-            guiHeight = scaledHeight;
-        }
-
-        int left = guiWidth / 2 - pageWidth - innerMargin;
-        int top = (guiHeight - pageHeight) / 2 - 9;
-        int bottom = top + pageHeight - 3;
-
-        drawPage(currentPair * 2);
-        drawPage(currentPair * 2 + 1);
-
-        String cnt = "" + ((getVisualChapter(currentChapter).startPair + currentPair) * 2 + 1) + "/" + (getTotalPairCount() * 2);
-        Size sz = measure(cnt);
-
-        addString(left + (pageWidth-sz.width)/2, bottom, cnt, 0xFF000000, 1.0f);
-
-        if (hasScale)
-        {
-            GlStateManager.popMatrix();
-        }
-    }
-
-    private int getTotalPairCount()
-    {
-        VisualChapter last = chapters.get(chapters.size() - 1);
-        return last.startPair + last.totalPairs;
+        return new Point(leftPage ? left : right,top);
     }
 
     private void drawPage(int page)
@@ -502,10 +482,21 @@ public class BookRendering implements IBookGraphics
 
         VisualPage pg = ch.pages.get(page);
 
+        Point offset = getPageOffset((page & 1) == 0);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(offset.x, offset.y, 0);
+
         for (VisualElement e : pg.children)
         {
             e.draw(this);
         }
+
+        String cnt = String.valueOf(ch.startPair * 2 + page+1);
+        Size sz = measure(cnt);
+
+        addString((pageWidth-sz.width)/2, pageHeight + 2, cnt, 0xFF000000, 1.0f);
+
+        GlStateManager.popMatrix();
     }
 
     @Override
