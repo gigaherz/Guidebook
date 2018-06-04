@@ -2,6 +2,8 @@ package gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.IConditionSource;
+import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -17,8 +19,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.function.Predicate;
 
-public class TemplateLibrary
+public class TemplateLibrary implements IConditionSource
 {
     public final Map<String, TemplateDefinition> templates = Maps.newHashMap();
 
@@ -59,7 +62,7 @@ public class TemplateLibrary
 
         templates.put(n.getTextContent(), page);
 
-        BookDocument.parseChildElements(templateItem, page.elements, templates, true);
+        BookDocument.parseChildElements(this, templateItem, page.elements, templates, true);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;
@@ -82,8 +85,10 @@ public class TemplateLibrary
                 lib = new TemplateLibrary();
 
                 IResource res = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(path));
-                InputStream stream = res.getInputStream();
-                lib.parseLibrary(stream);
+                try (InputStream stream = res.getInputStream())
+                {
+                    lib.parseLibrary(stream);
+                }
 
                 LIBRARIES.put(path, lib);
             }
@@ -94,5 +99,11 @@ public class TemplateLibrary
         }
 
         return lib;
+    }
+
+    @Override
+    public Predicate<ConditionContext> getCondition(String name)
+    {
+        return null;
     }
 }

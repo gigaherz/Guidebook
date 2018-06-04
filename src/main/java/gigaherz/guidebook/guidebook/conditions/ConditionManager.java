@@ -6,6 +6,7 @@ import net.minecraftforge.common.crafting.IConditionFactory;
 import org.w3c.dom.Node;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class ConditionManager
 {
@@ -16,7 +17,7 @@ public class ConditionManager
         REGISTRY.put(id, factory);
     }
 
-    public static IDisplayCondition parseCondition(BookDocument document, Node node)
+    public static Predicate<ConditionContext> parseCondition(BookDocument document, Node node)
     {
         IDisplayConditionFactory factory = REGISTRY.get(node.getNodeName());
         if (factory == null)

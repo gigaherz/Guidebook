@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
@@ -56,9 +57,9 @@ public class ElementImage extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        super.parse(attributes);
+        super.parse(book, attributes);
 
         Node attr = attributes.getNamedItem("tx");
         if (attr != null)

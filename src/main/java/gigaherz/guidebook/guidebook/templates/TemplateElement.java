@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.Element;
@@ -23,9 +24,9 @@ public class TemplateElement extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        super.parse(attributes);
+        super.parse(book, attributes);
 
         this.attributes = attributes;
 
@@ -55,12 +56,12 @@ public class TemplateElement extends Element
 
     @Nullable
     @Override
-    public Element applyTemplate(List<Element> sourceElements)
+    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
     {
         if (index >= sourceElements.size())
             return null;
         Element e = sourceElements.get(index).copy();
-        e.parse(attributes);
+        e.parse(book, attributes);
         return e;
     }
 

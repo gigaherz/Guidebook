@@ -3,6 +3,8 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
+import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
@@ -14,6 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public abstract class Element
 {
@@ -33,6 +36,17 @@ public abstract class Element
     public int z = 0;
     public float scale = 1.0f;
 
+    public Predicate<ConditionContext> condition;
+    public boolean conditionResult;
+
+    public boolean reevaluateConditions(ConditionContext ctx)
+    {
+        boolean oldValue = conditionResult;
+        conditionResult = condition== null || condition.test(ctx);
+
+        return conditionResult != oldValue;
+    }
+
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
         return Collections.emptyList();
@@ -47,7 +61,7 @@ public abstract class Element
     public abstract Element copy();
 
     @Nullable
-    public Element applyTemplate(List<Element> sourceElements)
+    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
     {
         return copy();
     }
@@ -84,7 +98,7 @@ public abstract class Element
         return other;
     }
 
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         Node attr = attributes.getNamedItem("x");
         if (attr != null)
@@ -144,6 +158,12 @@ public abstract class Element
                     position = 2;
                     break;
             }
+        }
+
+        attr = attributes.getNamedItem("condition");
+        if (attr != null)
+        {
+            condition = book.getCondition(attr.getTextContent());
         }
     }
 }

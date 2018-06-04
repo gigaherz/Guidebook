@@ -3,6 +3,8 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
+import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.Size;
@@ -21,6 +23,21 @@ public class ElementParagraph extends Element
     public int space = 2;
 
     public final List<Element> spans = Lists.newArrayList();
+
+    @Override
+    public boolean reevaluateConditions(ConditionContext ctx)
+    {
+        boolean oldValue = conditionResult;
+        conditionResult = condition== null || condition.test(ctx);
+
+        boolean anyChanged = conditionResult != oldValue;
+        for(Element element : spans)
+        {
+            anyChanged |= element.reevaluateConditions(ctx);
+        }
+
+        return anyChanged;
+    }
 
     @Override
     public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
@@ -106,9 +123,9 @@ public class ElementParagraph extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        super.parse(attributes);
+        super.parse(book, attributes);
 
         Node attr = attributes.getNamedItem("align");
         if (attr != null)
@@ -155,7 +172,7 @@ public class ElementParagraph extends Element
 
     @Nullable
     @Override
-    public Element applyTemplate(List<Element> sourceElements)
+    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
     {
         if (spans.size() == 0)
             return null;
@@ -166,7 +183,7 @@ public class ElementParagraph extends Element
         paragraph.space = space;
         for(Element element : spans)
         {
-            Element t = element.applyTemplate(sourceElements);
+            Element t = element.applyTemplate(book, sourceElements);
             if (t != null)
                 paragraph.spans.add(t);
         }

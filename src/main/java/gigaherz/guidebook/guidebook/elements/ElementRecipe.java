@@ -2,7 +2,9 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
@@ -51,7 +53,7 @@ public class ElementRecipe extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         // If a RecipeProvider was not loaded correctly or was not specified, fallback to the default
         recipeProvider = RecipeProvider.registry.getValue(new ResourceLocation(GuidebookMod.MODID, "shaped"));
@@ -104,7 +106,7 @@ public class ElementRecipe extends Element
      *
      * @param element The base <recipe> tag
      */
-    public void parseChildNodes(Node element)
+    public void parseChildNodes(IConditionSource book, Node element)
     {
         if (recipeComponents != null)
         {
@@ -127,7 +129,7 @@ public class ElementRecipe extends Element
                             if (stackNode.hasAttributes())
                             {
                                 ElementStack targetOutput = new ElementStack();
-                                targetOutput.parse(stackNode.getAttributes());
+                                targetOutput.parse(book, stackNode.getAttributes());
                                 ItemStack targetOutputItem = targetOutput.stacks[0];
                                 retrieveRecipe(targetOutputItem);
                             }

@@ -7,7 +7,9 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.w3c.dom.Node;
 
-public abstract class BasicConditions implements IDisplayCondition
+import java.util.function.Predicate;
+
+public abstract class BasicConditions implements Predicate<ConditionContext>
 {
     public static void register()
     {
@@ -35,7 +37,7 @@ public abstract class BasicConditions implements IDisplayCondition
         }
     }
 
-    public static class ModLoaded implements IDisplayCondition
+    public static class ModLoaded extends BasicConditions
     {
         private final String modId;
 
@@ -51,7 +53,7 @@ public abstract class BasicConditions implements IDisplayCondition
         }
     }
 
-    public static class ItemExists implements IDisplayCondition
+    public static class ItemExists extends BasicConditions
     {
         private final ResourceLocation item;
 

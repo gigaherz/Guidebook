@@ -1,16 +1,16 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.*;
+import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -19,7 +19,6 @@ import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class BookRendering implements IBookGraphics
@@ -62,15 +61,8 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    private class VisualChapter
-    {
-        public final List<VisualPage> pages = Lists.newArrayList();
-        public final Map<String, Integer> pagesByName = Maps.newHashMap();
-        public int startPair;
-        public int totalPairs;
-    }
-
     final List<VisualChapter> chapters = Lists.newArrayList();
+    private int lastProcessedChapter = 0;
 
     final java.util.Stack<PageRef> history = new java.util.Stack<>();
     private int currentChapter = 0;
@@ -331,8 +323,12 @@ public class BookRendering implements IBookGraphics
 
     private VisualChapter getVisualChapter(int chapter)
     {
-        while (chapters.size() <= chapter && chapters.size() < book.chapterCount())
+        while (chapters.size() <= chapter && lastProcessedChapter < book.chapterCount())
         {
+            BookDocument.ChapterData bc = book.getChapter(lastProcessedChapter++);
+            if (!bc.conditionResult)
+                continue;
+
             VisualChapter ch = new VisualChapter();
             if (chapters.size() > 0)
             {
@@ -340,19 +336,18 @@ public class BookRendering implements IBookGraphics
                 ch.startPair = prev.startPair + prev.totalPairs;
             }
 
-            BookDocument.SectionData bc = book.getChapter(chapters.size());
-
             Size pageSize = new Size(pageWidth, pageHeight);
-            for(BookDocument.PageData section : bc.sections)
-            {
-                if(!Strings.isNullOrEmpty(section.id))
-                    ch.pagesByName.put(section.id, ch.pages.size());
-
-                ch.pages.addAll(section.reflow(pageSize,ch.pages.size()));
-            }
+            bc.reflow(ch, pageSize);
 
             ch.totalPairs = (ch.pages.size()+1)/2;
             chapters.add(ch);
+        }
+
+        if (chapter >= chapters.size())
+        {
+            VisualChapter vc = new VisualChapter();
+            vc.pages.add(new VisualPage());
+            return vc;
         }
 
         return chapters.get(chapter);
@@ -427,11 +422,11 @@ public class BookRendering implements IBookGraphics
 
         for (VisualElement e : pg.children)
         {
-            if (e.wantsHover() &&
-                    mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
+            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
                     mY >= e.position.y && mY <= (e.position.y + e.size.height))
             {
-                return e;
+                if (e.wantsHover())
+                    return e;
             }
         }
 

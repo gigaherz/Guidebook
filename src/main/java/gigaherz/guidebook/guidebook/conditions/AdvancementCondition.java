@@ -4,7 +4,9 @@ import com.google.common.base.Strings;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import org.w3c.dom.Node;
 
-public abstract class AdvancementCondition implements IDisplayCondition
+import java.util.function.Predicate;
+
+public abstract class AdvancementCondition implements Predicate<ConditionContext>
 {
     public final String stageName;
 

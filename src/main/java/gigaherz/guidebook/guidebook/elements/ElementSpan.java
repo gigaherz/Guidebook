@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.elements;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
@@ -59,9 +60,9 @@ public class ElementSpan extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        super.parse(attributes);
+        super.parse(book, attributes);
 
         Node attr = attributes.getNamedItem("bold");
         if (attr != null)

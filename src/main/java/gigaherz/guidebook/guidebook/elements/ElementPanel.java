@@ -3,6 +3,8 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
+import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.drawing.Point;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
@@ -31,9 +33,9 @@ public class ElementPanel extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        super.parse(attributes);
+        super.parse(book, attributes);
 
         Node attr = attributes.getNamedItem("height");
         if (attr != null)
@@ -47,6 +49,21 @@ public class ElementPanel extends Element
 
             space = Ints.tryParse(t);
         }
+    }
+
+    @Override
+    public boolean reevaluateConditions(ConditionContext ctx)
+    {
+        boolean oldValue = conditionResult;
+        conditionResult = condition== null || condition.test(ctx);
+
+        boolean anyChanged = conditionResult != oldValue;
+        for(Element element : innerElements)
+        {
+            anyChanged |= element.reevaluateConditions(ctx);
+        }
+
+        return anyChanged;
     }
 
     @Override
@@ -83,7 +100,7 @@ public class ElementPanel extends Element
 
     @Nullable
     @Override
-    public Element applyTemplate(List<Element> sourceElements)
+    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
     {
         if (innerElements.size() == 0)
             return null;
@@ -92,7 +109,7 @@ public class ElementPanel extends Element
         paragraph.space = space;
         for(Element element : innerElements)
         {
-            Element t = element.applyTemplate(sourceElements);
+            Element t = element.applyTemplate(book, sourceElements);
             if (t != null)
                 paragraph.innerElements.add(t);
         }

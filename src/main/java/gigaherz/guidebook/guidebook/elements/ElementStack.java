@@ -3,6 +3,7 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -24,6 +25,13 @@ public class ElementStack extends Element
     public static final String WILDCARD = "*";
 
     public ItemStack[] stacks;
+
+    public ElementStack()
+    {
+        // default size
+        w = 16;
+        h = 16;
+    }
 
     private Size getVisualSize()
     {
@@ -55,13 +63,13 @@ public class ElementStack extends Element
     }
 
     @Override
-    public void parse(NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         int meta = 0;
         int stackSize = 1;
         NBTTagCompound tag = new NBTTagCompound();
 
-        super.parse(attributes);
+        super.parse(book, attributes);
 
         Node attr = attributes.getNamedItem("meta");
         if (attr != null)

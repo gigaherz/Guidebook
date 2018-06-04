@@ -48,7 +48,7 @@ public class BookRegistry
     public static void parseAllBooks(IResourceManager manager)
     {
         // Reload recipe caches
-        for(RecipeProvider recipeProvider : RecipeProvider.registry.getValues())
+        for(RecipeProvider recipeProvider : RecipeProvider.registry.getValuesCollection())
         {
             recipeProvider.reloadCache();
         }
@@ -67,7 +67,7 @@ public class BookRegistry
 
                 for (IResource res : resources)
                 {
-                    loadBooksData(toLoad, res.getInputStream());
+                    loadBooksData(toLoad, res);
                 }
             }
             catch (FileNotFoundException e)
@@ -95,10 +95,13 @@ public class BookRegistry
 
     private static Type listType = new TypeToken<List<String>>() {}.getType();
 
-    private static void loadBooksData(Set<ResourceLocation> toLoad, InputStream stream)
+    private static void loadBooksData(Set<ResourceLocation> toLoad, IResource resource) throws IOException
     {
-        List<String> yourList = new Gson().fromJson(new InputStreamReader(stream), listType);
-        toLoad.addAll(yourList.stream().map(ResourceLocation::new).collect(Collectors.toList()));
+        try (InputStream stream = resource.getInputStream())
+        {
+            List<String> yourList = new Gson().fromJson(new InputStreamReader(stream), listType);
+            toLoad.addAll(yourList.stream().map(ResourceLocation::new).collect(Collectors.toList()));
+        }
     }
 
     @Nullable
@@ -108,9 +111,11 @@ public class BookRegistry
         try
         {
             IResource res = manager.getResource(bookDocument.getBookLocation());
-            InputStream stream = res.getInputStream();
-            if (!bookDocument.parseBook(stream))
-                return null;
+            try (InputStream stream = res.getInputStream())
+            {
+                if (!bookDocument.parseBook(stream))
+                    return null;
+            }
         }
         catch (IOException e)
         {

@@ -7,8 +7,8 @@ import com.google.common.collect.Table;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.conditions.ConditionManager;
-import gigaherz.guidebook.guidebook.conditions.IDisplayCondition;
 import gigaherz.guidebook.guidebook.drawing.*;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
@@ -33,8 +33,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Predicate;
 
-public class BookDocument
+public class BookDocument implements IConditionSource
 {
     private static final float DEFAULT_FONT_SIZE = 1.0f;
 
@@ -44,14 +45,14 @@ public class BookDocument
     private String bookName;
     private ResourceLocation bookCover;
 
-    final List<SectionData> chapters = Lists.newArrayList();
+    final List<ChapterData> chapters = Lists.newArrayList();
     private Table<Item, Integer, SectionRef> stackLinks = HashBasedTable.create();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, SectionRef> sectionsByName = Maps.newHashMap();
 
     private final Map<String, TemplateDefinition> templates = Maps.newHashMap();
-    private final Map<String, IDisplayCondition> conditions = Maps.newHashMap();
+    private final Map<String, Predicate<ConditionContext>> conditions = Maps.newHashMap();
 
     private IBookGraphics rendering;
 
@@ -77,7 +78,7 @@ public class BookDocument
         return bookCover;
     }
 
-    public SectionData getChapter(int i)
+    public ChapterData getChapter(int i)
     {
         return chapters.get(i);
     }
@@ -115,7 +116,7 @@ public class BookDocument
             textures.add(bookCover);
 
         // TODO: Add <image> texture locations when implemented
-        for (SectionData chapter : chapters)
+        for (ChapterData chapter : chapters)
         {
             for (PageData page : chapter.sections)
             {
@@ -129,7 +130,7 @@ public class BookDocument
 
     public void initializeWithLoadError(String error)
     {
-        SectionData ch = new SectionData(0);
+        ChapterData ch = new ChapterData(0);
         chapters.add(ch);
 
         PageData pg = new PageData();
@@ -249,15 +250,15 @@ public class BookDocument
                 throw new BookParsingException("Condition node found without a name attribute");
             }
 
-            IDisplayCondition displayCondition = parseSingleCondition(this, condition);
+            Predicate<ConditionContext> displayCondition = parseSingleCondition(this, condition);
 
             conditions.put(name, displayCondition);
         }
     }
 
-    public static List<IDisplayCondition> parseChildConditions(BookDocument context, Node node)
+    public static List<Predicate<ConditionContext>> parseChildConditions(BookDocument context, Node node)
     {
-        List<IDisplayCondition> conditions = Lists.newArrayList();
+        List<Predicate<ConditionContext>> conditions = Lists.newArrayList();
         NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++)
         {
@@ -265,16 +266,16 @@ public class BookDocument
             if (condition.getNodeType() != Node.ELEMENT_NODE)
                 continue;
 
-            IDisplayCondition displayCondition = parseSingleCondition(context, condition);
+            Predicate<ConditionContext> displayCondition = parseSingleCondition(context, condition);
 
             conditions.add(displayCondition);
         }
         return conditions;
     }
 
-    private static IDisplayCondition parseSingleCondition(BookDocument context, Node condition)
+    private static Predicate<ConditionContext> parseSingleCondition(BookDocument context, Node condition)
     {
-        IDisplayCondition displayCondition;
+        Predicate<ConditionContext> displayCondition;
         try
         {
             displayCondition = ConditionManager.parseCondition(context, condition);
@@ -290,7 +291,7 @@ public class BookDocument
         return displayCondition;
     }
 
-    private static void parseTemplateDefinition(Node templateItem, Map<String, TemplateDefinition> templates)
+    private void parseTemplateDefinition(Node templateItem, Map<String, TemplateDefinition> templates)
     {
         if (!templateItem.hasAttributes())
             return; // TODO: Throw error
@@ -304,7 +305,7 @@ public class BookDocument
 
         templates.put(n.getTextContent(), page);
 
-        parseChildElements(templateItem, page.elements, templates, true);
+        parseChildElements(this, templateItem, page.elements, templates, true);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;
@@ -312,7 +313,7 @@ public class BookDocument
 
     private void parseChapter(Node chapterItem)
     {
-        SectionData chapter = new SectionData(chapters.size());
+        ChapterData chapter = new ChapterData(chapters.size());
         chapters.add(chapter);
 
         if (chapterItem.hasAttributes())
@@ -323,6 +324,12 @@ public class BookDocument
             {
                 chapter.id = n.getTextContent();
                 chaptersByName.put(chapter.id, chapter.num);
+            }
+
+            n = attributes.getNamedItem("condition");
+            if (n != null)
+            {
+                chapter.condition = conditions.get(n.getTextContent());
             }
         }
 
@@ -344,19 +351,19 @@ public class BookDocument
         }
     }
 
-    private void parsePage(SectionData chapter, Node pageItem)
+    private void parsePage(ChapterData chapter, Node pageItem)
     {
         PageData page = new PageData();
         parseSection(chapter, pageItem, page);
     }
 
-    private void parseSection(SectionData chapter, Node pageItem)
+    private void parseSection(ChapterData chapter, Node pageItem)
     {
         PageData page = new PageGroup();
         parseSection(chapter, pageItem, page);
     }
 
-    private void parseSection(SectionData chapter, Node pageItem, PageData page)
+    private void parseSection(ChapterData chapter, Node pageItem, PageData page)
     {
         int num = chapter.sections.size();
         chapter.sections.add(page);
@@ -371,13 +378,19 @@ public class BookDocument
                 sectionsByName.put(page.id, new SectionRef(chapter.num, num));
                 chapter.sectionsByName.put(page.id, num);
             }
+
+            n = attributes.getNamedItem("condition");
+            if (n != null)
+            {
+                page.condition = conditions.get(n.getTextContent());
+            }
         }
 
-        parseChildElements(pageItem, page.elements, templates, true);
+        parseChildElements(this, pageItem, page.elements, templates, true);
     }
 
 
-    public static void parseChildElements(Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, boolean generateParagraphs)
+    public static void parseChildElements(IConditionSource book, Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, boolean generateParagraphs)
     {
         NodeList elementsList = pageItem.getChildNodes();
         for (int k = 0; k < elementsList.getLength(); k++)
@@ -387,7 +400,11 @@ public class BookDocument
             Element parsedElement = null;
 
             String nodeName = elementItem.getNodeName();
-            if (nodeName.equals("p") || nodeName.equals("title"))
+            if (nodeName.equals("page-break"))
+            {
+                parsedElement = new ElementBreak();
+            }
+            else if (nodeName.equals("p") || nodeName.equals("title"))
             {
                 ElementParagraph p = new ElementParagraph();
                 if (nodeName.equals("title"))
@@ -409,7 +426,7 @@ public class BookDocument
 
                             if (elementItem.hasAttributes())
                             {
-                                s.parse(elementItem.getAttributes());
+                                s.parse(book, elementItem.getAttributes());
                             }
 
                             p.spans.add(s);
@@ -417,7 +434,7 @@ public class BookDocument
                     }
                     else
                     {
-                        Element parsedChild = parseParagraphElement(childNode, childNode.getNodeName());
+                        Element parsedChild = parseParagraphElement(book, childNode, childNode.getNodeName());
 
                         if (parsedChild == null)
                         {
@@ -432,7 +449,7 @@ public class BookDocument
 
                 if (elementItem.hasAttributes())
                 {
-                    p.parse(elementItem.getAttributes());
+                    p.parse(book, elementItem.getAttributes());
                 }
 
                 parsedElement = p;
@@ -444,12 +461,12 @@ public class BookDocument
 
                 if (elementItem.hasAttributes())
                 {
-                    s.parse(elementItem.getAttributes());
+                    s.parse(book, elementItem.getAttributes());
                 }
 
                 List<Element> elementList = Lists.newArrayList();
 
-                parseChildElements(elementItem, elementList, templates, true);
+                parseChildElements(book, elementItem, elementList, templates, true);
 
                 s.innerElements.addAll(elementList);
 
@@ -461,12 +478,12 @@ public class BookDocument
 
                 if (elementItem.hasAttributes())
                 {
-                    rp.parse(elementItem.getAttributes());
+                    rp.parse(book, elementItem.getAttributes());
                 }
 
                 if (elementItem.hasChildNodes())
                 {
-                    rp.parseChildNodes(elementItem);
+                    rp.parseChildNodes(book, elementItem);
                 }
 
                 parsedElement = rp;
@@ -476,18 +493,18 @@ public class BookDocument
                 TemplateDefinition tDef = templates.get(nodeName);
 
                 ElementPanel t = new ElementPanel();
-                t.parse(tDef.attributes);
+                t.parse(book, tDef.attributes);
 
                 if (elementItem.hasAttributes())
                 {
-                    t.parse(elementItem.getAttributes());
+                    t.parse(book, elementItem.getAttributes());
                 }
 
                 List<Element> elementList = Lists.newArrayList();
 
-                parseChildElements(elementItem, elementList, templates, false);
+                parseChildElements(book, elementItem, elementList, templates, false);
 
-                List<Element> effectiveList = tDef.applyTemplate(elementList);
+                List<Element> effectiveList = tDef.applyTemplate(book, elementList);
 
                 t.innerElements.addAll(effectiveList);
 
@@ -504,7 +521,7 @@ public class BookDocument
             }
             else
             {
-                parsedElement = parseParagraphElement(elementItem, nodeName);
+                parsedElement = parseParagraphElement(book, elementItem, nodeName);
 
                 if (parsedElement == null)
                 {
@@ -520,8 +537,8 @@ public class BookDocument
 
                     if (elementItem.hasAttributes())
                     {
-                        p.parse(elementItem.getAttributes());
-                        parsedElement.parse(elementItem.getAttributes());
+                        p.parse(book, elementItem.getAttributes());
+                        parsedElement.parse(book, elementItem.getAttributes());
                     }
 
                     p.spans.add(parsedElement);
@@ -535,7 +552,7 @@ public class BookDocument
     }
 
     @Nullable
-    private static Element parseParagraphElement(Node elementItem, String nodeName)
+    private static Element parseParagraphElement(IConditionSource book, Node elementItem, String nodeName)
     {
         Element parsedElement = null;
         if (nodeName.equals("span"))
@@ -544,7 +561,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                link.parse(elementItem.getAttributes());
+                link.parse(book, elementItem.getAttributes());
             }
 
             parsedElement = link;
@@ -555,7 +572,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                link.parse(elementItem.getAttributes());
+                link.parse(book, elementItem.getAttributes());
             }
 
             parsedElement = link;
@@ -566,7 +583,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                s.parse(elementItem.getAttributes());
+                s.parse(book, elementItem.getAttributes());
             }
 
             parsedElement = s;
@@ -577,7 +594,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                i.parse(elementItem.getAttributes());
+                i.parse(book, elementItem.getAttributes());
             }
 
             parsedElement = i;
@@ -588,7 +605,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                i.parse(elementItem.getAttributes());
+                i.parse(book, elementItem.getAttributes());
             }
 
             parsedElement = i;
@@ -646,28 +663,75 @@ public class BookDocument
         return rendering;
     }
 
-    public class SectionData
+    public Predicate<ConditionContext> getCondition(String name)
+    {
+        return conditions.get(name);
+    }
+
+    public boolean reevaluateConditions(ConditionContext ctx)
+    {
+        boolean anyChanged = false;
+        for(ChapterData chapter : chapters)
+        {
+            anyChanged |= chapter.reevaluateConditions(ctx);
+        }
+
+        return anyChanged;
+    }
+
+    public class ChapterData
     {
         public final int num;
         public String id;
-        public IDisplayCondition condition;
+        public Predicate<ConditionContext> condition;
+        public boolean conditionResult;
 
         public final List<PageData> sections = Lists.newArrayList();
         public final Map<String, Integer> sectionsByName = Maps.newHashMap();
 
-        private SectionData(int num)
+        private ChapterData(int num)
         {
             this.num = num;
+        }
+
+        public boolean reevaluateConditions(ConditionContext ctx)
+        {
+            boolean oldValue = conditionResult;
+            conditionResult = condition == null || condition.test(ctx);
+
+            boolean anyChanged = conditionResult != oldValue;
+            for(PageData section : sections)
+            {
+                anyChanged |= section.reevaluateConditions(ctx);
+            }
+
+            return anyChanged;
+        }
+
+        public void reflow(VisualChapter ch, Size pageSize)
+        {
+            for(BookDocument.PageData section : sections)
+            {
+                if (!section.conditionResult)
+                    continue;
+
+                if (!com.google.common.base.Strings.isNullOrEmpty(section.id))
+                    ch.pagesByName.put(section.id, ch.pages.size());
+
+                ch.pages.addAll(section.reflow(pageSize));
+            }
         }
     }
 
     public class PageData
     {
         public String id;
+        public Predicate<ConditionContext> condition;
+        public boolean conditionResult;
 
         public final List<Element> elements = Lists.newArrayList();
 
-        public List<VisualPage> reflow(Size pageSize, int pageNumber)
+        public List<VisualPage> reflow(Size pageSize)
         {
             VisualPage page = new VisualPage();
             Rect pageBounds = new Rect(new Point(), pageSize);
@@ -675,10 +739,25 @@ public class BookDocument
             int top = 0;
             for(Element element : elements)
             {
-                top = element.reflow(page.children, getRendering(), new Rect(new Point(0, top), pageSize), pageBounds);
+                if (element.conditionResult)
+                    top = element.reflow(page.children, getRendering(), new Rect(new Point(0, top), pageSize), pageBounds);
             }
 
             return Collections.singletonList(page);
+        }
+
+        public boolean reevaluateConditions(ConditionContext ctx)
+        {
+            boolean oldValue = conditionResult;
+            conditionResult = condition== null || condition.test(ctx);
+
+            boolean anyChanged = conditionResult != oldValue;
+            for(Element element : elements)
+            {
+                anyChanged |= element.reevaluateConditions(ctx);
+            }
+
+            return anyChanged;
         }
     }
 
@@ -704,7 +783,7 @@ public class BookDocument
     public class PageGroup extends PageData
     {
         @Override
-        public List<VisualPage> reflow(Size pageSize, int pageNumber)
+        public List<VisualPage> reflow(Size pageSize)
         {
             List<VisualPage> pages = Lists.newArrayList();
 
@@ -714,15 +793,17 @@ public class BookDocument
             int top = pageBounds.position.y;
             for (Element element : elements)
             {
-                top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+                if (element.conditionResult)
+                    top = element.reflow(page.children, getRendering(), new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
             }
 
             boolean needsRepagination = false;
             for (VisualElement child : page.children)
             {
-                if (child.position.y + child.size.height > (pageBounds.position.y + pageBounds.size.height))
+                if (child instanceof VisualPageBreak || (child.position.y + child.size.height > (pageBounds.position.y + pageBounds.size.height)))
                 {
                     needsRepagination = true;
+                    break;
                 }
             }
 
@@ -731,24 +812,31 @@ public class BookDocument
                 VisualPage page2 = new VisualPage();
 
                 int offsetY = 0;
+                boolean pageBreakRequired = false;
                 for (VisualElement child : page.children)
                 {
                     int cpy = child.position.y + offsetY;
-                    if (cpy + child.size.height > (pageBounds.position.y + pageBounds.size.height)
-                            && child.position.y > pageBounds.position.y)
+                    if (pageBreakRequired || (cpy + child.size.height > (pageBounds.position.y + pageBounds.size.height)
+                                && child.position.y > pageBounds.position.y))
                     {
                         pages.add(page2);
                         page2 = new VisualPage();
 
-                        pageNumber++;
                         offsetY = pageBounds.position.y - child.position.y;
+                        pageBreakRequired = false;
                     }
 
-                    child.position = new Point(
-                            child.position.x,
-                            child.position.y + offsetY);
-                    page2.children.add(child);
-
+                    if (child instanceof VisualPageBreak)
+                    {
+                        pageBreakRequired = true;
+                    }
+                    else
+                    {
+                        child.position = new Point(
+                                child.position.x,
+                                child.position.y + offsetY);
+                        page2.children.add(child);
+                    }
                 }
 
                 pages.add(page2);
