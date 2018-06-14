@@ -5,8 +5,9 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiConfirmOpenLink;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import java.net.URI;
@@ -23,7 +24,8 @@ public class VisualLink extends VisualText
         private boolean isHovering;
     }
 
-    public String webTarget;
+    public String textTarget;
+    public String textAction;
     public SectionRef target;
     public int colorHover = 0xFF77cc66;
 
@@ -61,10 +63,44 @@ public class VisualLink extends VisualText
     @Override
     public void click(IBookGraphics nav)
     {
-        if (webTarget != null)
-            clickWeb(nav);
+        if (textTarget != null)
+        {
+            switch(textAction)
+            {
+                case "openUrl":
+                    clickWeb(nav);
+                    break;
+                case "copyText":
+                    clickCopyToClipboard(nav);
+                    break;
+            }
+        }
         if (target != null)
             nav.navigateTo(target);
+    }
+
+    public void clickCopyToClipboard(IBookGraphics nav)
+    {
+        GuiScreen parent = (GuiScreen) nav.owner();
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.displayGuiScreen(new GuiYesNo((result, id) -> {
+                    if (result)
+                    {
+                        GuiScreen.setClipboardString(textTarget);
+                        mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("text.copyToClipboard.success"));
+                    }
+                    mc.displayGuiScreen(parent);
+                },
+                I18n.format("text.copyToClipboard.line1"),
+                I18n.format("text.copyToClipboard.line2"),
+                0){
+            @Override
+            public void drawScreen(int mouseX, int mouseY, float partialTicks)
+            {
+                parent.drawScreen(-1, -1, partialTicks);
+                super.drawScreen(mouseX, mouseY, partialTicks);
+            }
+        });
     }
 
     public void clickWeb(IBookGraphics nav)
@@ -79,23 +115,23 @@ public class VisualLink extends VisualText
 
         try
         {
-            URI uri = new URI(webTarget);
+            URI uri = new URI(textTarget);
             String s = uri.getScheme();
 
             if (s == null)
             {
-                throw new URISyntaxException(webTarget, "Missing protocol");
+                throw new URISyntaxException(textTarget, "Missing protocol");
             }
 
             if (!PROTOCOLS.contains(s.toLowerCase(Locale.ROOT)))
             {
-                throw new URISyntaxException(webTarget, "Unsupported protocol: " + s.toLowerCase(Locale.ROOT));
+                throw new URISyntaxException(textTarget, "Unsupported protocol: " + s.toLowerCase(Locale.ROOT));
             }
 
             if (mc.gameSettings.chatLinksPrompt)
             {
                 ReflectionHelper.setPrivateValue(GuiScreen.class, parent, uri, "field_175286_t", "clickedLinkURI");
-                mc.displayGuiScreen(new GuiConfirmOpenLink(parent, webTarget, 31102009, false));
+                mc.displayGuiScreen(new GuiConfirmOpenLink(parent, textTarget, 31102009, false));
             }
             else
             {
@@ -104,7 +140,7 @@ public class VisualLink extends VisualText
         }
         catch (URISyntaxException urisyntaxexception)
         {
-            GuidebookMod.logger.error("Can't open url {}", webTarget, urisyntaxexception);
+            GuidebookMod.logger.error("Can't open url {}", textTarget, urisyntaxexception);
         }
     }
 

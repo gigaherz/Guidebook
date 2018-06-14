@@ -14,7 +14,8 @@ import java.util.List;
 
 public class ElementLink extends ElementSpan
 {
-    public String webTarget;
+    public String textTarget;
+    public String textAction;
     public SectionRef target;
     public int colorHover = 0xFF77cc66;
 
@@ -43,8 +44,9 @@ public class ElementLink extends ElementSpan
             else link.hoverContext = ctx;
             link.color = color;
             link.target = target;
-            link.webTarget = webTarget;
             link.colorHover = colorHover;
+            link.textTarget = textTarget;
+            link.textAction = textAction;
             links.add(link);
         }
         return links;
@@ -65,8 +67,22 @@ public class ElementLink extends ElementSpan
         attr = attributes.getNamedItem("href");
         if (attr != null)
         {
-            webTarget = attr.getTextContent();
+            textTarget = attr.getTextContent();
+            textAction = "openUrl";
         }
+
+        attr = attributes.getNamedItem("text");
+        if (attr != null)
+        {
+            textTarget = attr.getTextContent();
+        }
+
+        attr = attributes.getNamedItem("action");
+        if (attr != null)
+        {
+            textAction = attr.getTextContent();
+        }
+
     }
 
     @Override
@@ -79,8 +95,9 @@ public class ElementLink extends ElementSpan
         link.underline = underline;
 
         link.target = target.copy();
-        link.webTarget = webTarget;
         link.colorHover = colorHover;
+        link.textTarget = textTarget;
+        link.textAction = textAction;
 
         return link;
     }

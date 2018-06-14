@@ -51,9 +51,14 @@ public class GuiGuidebook extends GuiScreen
         return false;
     }
 
+    private boolean initialized = false;
     @Override
     public void initGui()
     {
+        if(initialized)
+           return;
+        initialized = true;
+
         EntityPlayer player = Minecraft.getMinecraft().player;
         ConditionContext conditionContext = new ConditionContext();
         conditionContext.setPlayer(player);
