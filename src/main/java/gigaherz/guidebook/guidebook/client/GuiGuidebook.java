@@ -56,59 +56,68 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void initGui()
     {
-        if(initialized)
-           return;
-        initialized = true;
-
-        EntityPlayer player = Minecraft.getMinecraft().player;
-        ConditionContext conditionContext = new ConditionContext();
-        conditionContext.setPlayer(player);
-
-        BookDocument theBook = BookRegistry.get(bookLocation);
-        book = theBook.getRendering();
-        boolean conditions = theBook.reevaluateConditions(conditionContext);
-        if (book == null || conditions)
+        // Called on initial open, and on changing resolution
+        if(!initialized)
         {
-            book = new BookRendering(theBook, this);
-            theBook.setRendering(book);
+            initialized = true;
+
+            EntityPlayer player = Minecraft.getMinecraft().player;
+            ConditionContext conditionContext = new ConditionContext();
+            conditionContext.setPlayer(player);
+
+            BookDocument theBook = BookRegistry.get(bookLocation);
+            book = theBook.getRendering();
+            boolean conditions = theBook.reevaluateConditions(conditionContext);
+            if (book == null || conditions)
+            {
+                book = new BookRendering(theBook, this);
+                theBook.setRendering(book);
+            }
+            background = new AnimatedBookBackground(this);
+
+            this.buttonList.clear();
+
+            int btnId = 0;
+
+            int left = (this.width - BookRendering.DEFAULT_BOOK_WIDTH) / 2;
+            int right = left + BookRendering.DEFAULT_BOOK_WIDTH;
+            int top = (this.height - BookRendering.DEFAULT_BOOK_HEIGHT) / 2 - 9;
+            int bottom = top + BookRendering.DEFAULT_BOOK_HEIGHT;
+            this.buttonHome = new SpriteButton(btnId++, left - 10, top - 8, 6);
+            this.buttonBack = new SpriteButton(btnId++, left + 8, top - 5, 2);
+            this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3);
+            if (useNaturalArrows)
+            {
+                this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1);
+                this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 0);
+                this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5);
+                this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4);
+            }
+            else
+            {
+                this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 0);
+                this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 1);
+                this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 4);
+                this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 5);
+            }
+            GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
         }
-        background = new AnimatedBookBackground(this);
 
-        this.buttonList.clear();
-
-        int btnId = 0;
-
-        int left = (this.width - BookRendering.DEFAULT_BOOK_WIDTH) / 2;
-        int right = left + BookRendering.DEFAULT_BOOK_WIDTH;
-        int top = (this.height - BookRendering.DEFAULT_BOOK_HEIGHT) / 2 - 9;
-        int bottom = top + BookRendering.DEFAULT_BOOK_HEIGHT;
-        this.buttonList.add(this.buttonHome = new SpriteButton(btnId++, left - 10, top - 8, 6));
-        this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left + 8, top - 5, 2));
-        this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
-        if (useNaturalArrows)
-        {
-            this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1));
-            this.buttonList.add(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 0));
-            this.buttonList.add(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5));
-            this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4));
-        }
-        else
-        {
-            this.buttonList.add(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 0));
-            this.buttonList.add(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 1));
-            this.buttonList.add(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 4));
-            this.buttonList.add(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 5));
-        }
-        GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
-
-        this.buttonHome.visible = book.getBook().home != null;
+        this.buttonList.add(this.buttonHome);
+        this.buttonList.add(this.buttonBack);
+        this.buttonList.add(this.buttonClose);
+        this.buttonList.add(this.buttonPreviousPage);
+        this.buttonList.add(this.buttonNextPage);
+        this.buttonList.add(this.buttonPreviousChapter);
+        this.buttonList.add(this.buttonNextChapter);
 
         updateButtonStates();
 
         repositionButtons();
     }
 
-    protected void actionPerformed(GuiButton button) throws IOException
+    @Override
+    protected void actionPerformed(GuiButton button)
     {
         if (button.enabled)
         {
@@ -187,14 +196,6 @@ public class GuiGuidebook extends GuiScreen
             return;
         }
         super.keyTyped(typedChar, keyCode);
-    }
-
-    @Override
-    public void onResize(Minecraft mcIn, int w, int h)
-    {
-        super.onResize(mcIn, w, h);
-
-        repositionButtons();
     }
 
     private void repositionButtons()

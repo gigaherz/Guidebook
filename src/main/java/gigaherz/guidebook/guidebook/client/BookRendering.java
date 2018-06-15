@@ -287,8 +287,9 @@ public class BookRendering implements IBookGraphics
         {
             GlStateManager.pushMatrix();
             {
+                GlStateManager.translate(left,top,0);
                 GlStateManager.scale(scale, scale, 1f);
-                fontRenderer.drawString(s, (int)(left / scale), (int)(top / scale), color);
+                fontRenderer.drawString(s, 0, 0, color);
             }
             GlStateManager.popMatrix();
         }
@@ -668,7 +669,7 @@ public class BookRendering implements IBookGraphics
         List<VisualElement> sizes = Lists.newArrayList();
         wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.getStringWidth(s);
-            sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT), scale));
+            sizes.add(new VisualText(s, new Size((int)(width2 * scale),(int)(font.FONT_HEIGHT * scale)), scale));
         }, text, width, firstLineWidth, true);
         return sizes;
     }
