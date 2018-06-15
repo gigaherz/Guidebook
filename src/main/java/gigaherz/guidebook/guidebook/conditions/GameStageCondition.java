@@ -2,9 +2,7 @@ package gigaherz.guidebook.guidebook.conditions;
 
 import com.google.common.base.Strings;
 import gigaherz.guidebook.guidebook.BookParsingException;
-import net.darkhax.gamestages.capabilities.PlayerDataHandler;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.darkhax.gamestages.GameStageHelper;
 import org.w3c.dom.Node;
 
 import java.util.function.Predicate;
@@ -18,8 +16,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         this.stageName = stageName;
     }
 
-    @CapabilityInject(PlayerDataHandler.IStageData.class)
-    public static void register(Capability<PlayerDataHandler.IStageData> cap)
+    public static void register()
     {
         ConditionManager.register("stage-locked", (doc, node) -> new Locked(parseStageName(node)));
         ConditionManager.register("stage-unlocked", (doc, node) -> new Unlocked(parseStageName(node)));
@@ -36,7 +33,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return !PlayerDataHandler.getStageData(conditionContext.getPlayer()).hasUnlockedStage(stageName);
+            return !GameStageHelper.getPlayerData(conditionContext.getPlayer()).hasStage(stageName);
         }
     }
 
@@ -51,7 +48,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return PlayerDataHandler.getStageData(conditionContext.getPlayer()).hasUnlockedStage(stageName);
+            return GameStageHelper.getPlayerData(conditionContext.getPlayer()).hasStage(stageName);
         }
     }
 

@@ -7,12 +7,14 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
+import gigaherz.guidebook.guidebook.conditions.GameStageCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -42,6 +44,9 @@ public class ClientProxy implements IModProxy
     public void preInit()
     {
         ModelHandle.init();
+
+        if (Loader.isModLoaded("gamestages"))
+            GameStageCondition.register();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
     }
