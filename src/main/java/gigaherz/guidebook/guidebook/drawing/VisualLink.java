@@ -5,7 +5,9 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.GuiConfirmOpenLink;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -65,7 +67,7 @@ public class VisualLink extends VisualText
     {
         if (textTarget != null)
         {
-            switch(textAction)
+            switch (textAction)
             {
                 case "openUrl":
                     clickWeb(nav);
@@ -84,16 +86,17 @@ public class VisualLink extends VisualText
         GuiScreen parent = (GuiScreen) nav.owner();
         Minecraft mc = Minecraft.getMinecraft();
         mc.displayGuiScreen(new GuiYesNo((result, id) -> {
-                    if (result)
-                    {
-                        GuiScreen.setClipboardString(textTarget);
-                        mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("text.copyToClipboard.success"));
-                    }
-                    mc.displayGuiScreen(parent);
-                },
+            if (result)
+            {
+                GuiScreen.setClipboardString(textTarget);
+                mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("text.copyToClipboard.success"));
+            }
+            mc.displayGuiScreen(parent);
+        },
                 I18n.format("text.copyToClipboard.line1"),
                 I18n.format("text.copyToClipboard.line2"),
-                0){
+                0)
+        {
             @Override
             public void drawScreen(int mouseX, int mouseY, float partialTicks)
             {

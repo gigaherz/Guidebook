@@ -55,10 +55,10 @@ public class ElementPanel extends Element
     public boolean reevaluateConditions(ConditionContext ctx)
     {
         boolean oldValue = conditionResult;
-        conditionResult = condition== null || condition.test(ctx);
+        conditionResult = condition == null || condition.test(ctx);
 
         boolean anyChanged = conditionResult != oldValue;
-        for(Element element : innerElements)
+        for (Element element : innerElements)
         {
             anyChanged |= element.reevaluateConditions(ctx);
         }
@@ -71,13 +71,13 @@ public class ElementPanel extends Element
     {
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
-        for(Element element : innerElements)
+        for (Element element : innerElements)
         {
             element.reflow(list, nav, adjustedBounds, pageBounds);
         }
         if (position != 0)
             return bounds.position.y;
-        return adjustedPosition.y+space;
+        return adjustedPosition.y + space;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ElementPanel extends Element
 
         ElementPanel paragraph = super.copy(new ElementPanel());
         paragraph.space = space;
-        for(Element element : innerElements)
+        for (Element element : innerElements)
         {
             Element t = element.applyTemplate(book, sourceElements);
             if (t != null)

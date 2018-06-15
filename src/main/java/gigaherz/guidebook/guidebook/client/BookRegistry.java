@@ -10,7 +10,10 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.recipe.RecipeProvider;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.*;
+import net.minecraft.client.resources.FolderResourcePack;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -48,7 +51,7 @@ public class BookRegistry
     public static void parseAllBooks(IResourceManager manager)
     {
         // Reload recipe caches
-        for(RecipeProvider recipeProvider : RecipeProvider.registry.getValuesCollection())
+        for (RecipeProvider recipeProvider : RecipeProvider.registry.getValuesCollection())
         {
             recipeProvider.reloadCache();
         }
@@ -94,7 +97,9 @@ public class BookRegistry
         }
     }
 
-    private static Type listType = new TypeToken<List<String>>() {}.getType();
+    private static Type listType = new TypeToken<List<String>>()
+    {
+    }.getType();
 
     private static void loadBooksData(Set<ResourceLocation> toLoad, IResource resource) throws IOException
     {
@@ -117,7 +122,7 @@ public class BookRegistry
             String pathWithoutExtension = path;
             String extension = "";
             int ext = path.lastIndexOf('.');
-            if(ext >= 0)
+            if (ext >= 0)
             {
                 pathWithoutExtension = path.substring(0, ext);
                 extension = path.substring(ext);
@@ -127,10 +132,11 @@ public class BookRegistry
             ResourceLocation localizedLoc = new ResourceLocation(domain, localizedPath);
 
             IResource bookResource;
-            try {
+            try
+            {
                 bookResource = manager.getResource(localizedLoc);
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 bookResource = null;
             }

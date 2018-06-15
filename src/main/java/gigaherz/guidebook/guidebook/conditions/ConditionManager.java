@@ -2,7 +2,6 @@ package gigaherz.guidebook.guidebook.conditions;
 
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.guidebook.BookDocument;
-import net.minecraftforge.common.crafting.IConditionFactory;
 import org.w3c.dom.Node;
 
 import java.util.Map;

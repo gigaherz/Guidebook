@@ -3,7 +3,6 @@ package gigaherz.guidebook.guidebook.conditions;
 import com.google.common.base.Strings;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import net.darkhax.gamestages.capabilities.PlayerDataHandler;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import org.w3c.dom.Node;

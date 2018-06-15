@@ -2,7 +2,6 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.Point;
@@ -49,7 +48,7 @@ public class ElementRecipe extends Element
             list.add(additionalRenderer);
         if (position != 0)
             return bounds.position.y;
-        return adjustedPosition.y+height;
+        return adjustedPosition.y + height;
     }
 
     @Override

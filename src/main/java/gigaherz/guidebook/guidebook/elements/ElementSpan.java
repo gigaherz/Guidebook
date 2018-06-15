@@ -37,11 +37,11 @@ public class ElementSpan extends Element
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
         List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth, scale);
-        for(VisualElement text : elements)
+        for (VisualElement text : elements)
         {
             if (!(text instanceof VisualText))
                 continue; // WTF?
-            ((VisualText)text).color = color;
+            ((VisualText) text).color = color;
         }
         return elements;
     }

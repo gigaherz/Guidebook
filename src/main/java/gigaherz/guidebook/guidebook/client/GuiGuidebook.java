@@ -53,11 +53,12 @@ public class GuiGuidebook extends GuiScreen
     }
 
     private boolean initialized = false;
+
     @Override
     public void initGui()
     {
         // Called on initial open, and on changing resolution
-        if(!initialized)
+        if (!initialized)
         {
             initialized = true;
 

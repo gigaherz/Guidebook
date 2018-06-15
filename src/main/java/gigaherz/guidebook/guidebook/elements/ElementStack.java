@@ -4,7 +4,10 @@ import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.drawing.*;
+import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualStack;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -37,7 +40,7 @@ public class ElementStack extends Element
     {
         int width = (int) (w * scale);
         int height = (int) (h * scale);
-        return new Size(width,height);
+        return new Size(width, height);
     }
 
     private VisualStack getVisual()
@@ -182,7 +185,6 @@ public class ElementStack extends Element
                 stacks = items_processed.toArray(new ItemStack[items_processed.size()]);
             }
         }
-
     }
 
     @Override

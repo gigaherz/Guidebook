@@ -15,7 +15,6 @@ import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import joptsimple.internal.Strings;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -33,7 +32,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class BookDocument implements IConditionSource
@@ -42,7 +44,7 @@ public class BookDocument implements IConditionSource
 
     private float fontSize = 1.0f;
 
-    public SectionRef home = new SectionRef(1,1);
+    public SectionRef home = new SectionRef(1, 1);
 
     private final ResourceLocation bookLocation;
     private String bookName;
@@ -225,7 +227,7 @@ public class BookDocument implements IConditionSource
                 {
                     parseStackLinks(firstLevelNode);
                 }
-                else if(nodeName.equals("conditions"))
+                else if (nodeName.equals("conditions"))
                 {
                     parseConditions(firstLevelNode);
                 }
@@ -293,7 +295,7 @@ public class BookDocument implements IConditionSource
                 throw new BookParsingException("Condition not found");
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new BookParsingException("Exception parsing condition", e);
         }
@@ -423,7 +425,7 @@ public class BookDocument implements IConditionSource
                 }
 
                 NodeList childList = elementItem.getChildNodes();
-                for(int q = 0; q < childList.getLength();q++)
+                for (int q = 0; q < childList.getLength(); q++)
                 {
                     Node childNode = childList.item(q);
                     if (childNode.getNodeType() == Node.TEXT_NODE)
@@ -519,12 +521,12 @@ public class BookDocument implements IConditionSource
 
                 parsedElement = t;
             }
-            else if(elementItem.getNodeType() == Node.TEXT_NODE)
+            else if (elementItem.getNodeType() == Node.TEXT_NODE)
             {
                 // Ignore? Generate paragraph?
                 // Ignore for now.
             }
-            else if(elementItem.getNodeType() == Node.COMMENT_NODE)
+            else if (elementItem.getNodeType() == Node.COMMENT_NODE)
             {
                 // Ignore.
             }
@@ -538,7 +540,7 @@ public class BookDocument implements IConditionSource
                 }
             }
 
-            if(parsedElement != null)
+            if (parsedElement != null)
             {
                 if (!parsedElement.supportsPageLevel() && generateParagraphs)
                 {
@@ -680,7 +682,7 @@ public class BookDocument implements IConditionSource
     public boolean reevaluateConditions(ConditionContext ctx)
     {
         boolean anyChanged = false;
-        for(ChapterData chapter : chapters)
+        for (ChapterData chapter : chapters)
         {
             anyChanged |= chapter.reevaluateConditions(ctx);
         }
@@ -709,7 +711,7 @@ public class BookDocument implements IConditionSource
             conditionResult = condition == null || condition.test(ctx);
 
             boolean anyChanged = conditionResult != oldValue;
-            for(PageData section : sections)
+            for (PageData section : sections)
             {
                 anyChanged |= section.reevaluateConditions(ctx);
             }
@@ -719,7 +721,7 @@ public class BookDocument implements IConditionSource
 
         public void reflow(VisualChapter ch, Size pageSize)
         {
-            for(BookDocument.PageData section : sections)
+            for (BookDocument.PageData section : sections)
             {
                 if (!section.conditionResult)
                     continue;
@@ -746,7 +748,7 @@ public class BookDocument implements IConditionSource
             Rect pageBounds = new Rect(new Point(), pageSize);
 
             int top = 0;
-            for(Element element : elements)
+            for (Element element : elements)
             {
                 if (element.conditionResult)
                     top = element.reflow(page.children, getRendering(), new Rect(new Point(0, top), pageSize), pageBounds);
@@ -758,10 +760,10 @@ public class BookDocument implements IConditionSource
         public boolean reevaluateConditions(ConditionContext ctx)
         {
             boolean oldValue = conditionResult;
-            conditionResult = condition== null || condition.test(ctx);
+            conditionResult = condition == null || condition.test(ctx);
 
             boolean anyChanged = conditionResult != oldValue;
-            for(Element element : elements)
+            for (Element element : elements)
             {
                 anyChanged |= element.reevaluateConditions(ctx);
             }
@@ -774,19 +776,19 @@ public class BookDocument implements IConditionSource
      * This class represents a group of pages clearly delimited by start/end of chapters, sections, or explicit page braks.
      * Example:
      * <book>
-     *     <chapter>
-     *         <section>
-     *             Group 1
-     *         </section>
-     *         <section>
-     *             Group 2
-     *         </section>
-     *     </chapter>
-     *     <chapter>
-     *         Group 3
-     *         <page_break />
-     *         Group 4
-     *     </chapter>
+     * <chapter>
+     * <section>
+     * Group 1
+     * </section>
+     * <section>
+     * Group 2
+     * </section>
+     * </chapter>
+     * <chapter>
+     * Group 3
+     * <page_break />
+     * Group 4
+     * </chapter>
      * </book>
      */
     public class PageGroup extends PageData
@@ -797,7 +799,7 @@ public class BookDocument implements IConditionSource
             List<VisualPage> pages = Lists.newArrayList();
 
             VisualPage page = new VisualPage();
-            Rect pageBounds = new Rect(new Point(0,0), pageSize);
+            Rect pageBounds = new Rect(new Point(0, 0), pageSize);
 
             int top = pageBounds.position.y;
             for (Element element : elements)
@@ -826,7 +828,7 @@ public class BookDocument implements IConditionSource
                 {
                     int cpy = child.position.y + offsetY;
                     if (pageBreakRequired || (cpy + child.size.height > (pageBounds.position.y + pageBounds.size.height)
-                                && child.position.y > pageBounds.position.y))
+                            && child.position.y > pageBounds.position.y))
                     {
                         pages.add(page2);
                         page2 = new VisualPage();

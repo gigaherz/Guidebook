@@ -42,7 +42,7 @@ public abstract class Element
     public boolean reevaluateConditions(ConditionContext ctx)
     {
         boolean oldValue = conditionResult;
-        conditionResult = condition== null || condition.test(ctx);
+        conditionResult = condition == null || condition.test(ctx);
 
         return conditionResult != oldValue;
     }
@@ -73,12 +73,12 @@ public abstract class Element
 
     public Point applyPosition(Point point, Point parent)
     {
-        switch(position)
+        switch (position)
         {
             case 0:
-                return new Point(point.x+x,point.y+y);
+                return new Point(point.x + x, point.y + y);
             case 1:
-                return new Point(parent.x+x,parent.y+y);
+                return new Point(parent.x + x, parent.y + y);
             case 2:
                 return new Point(x, y);
         }
@@ -86,7 +86,7 @@ public abstract class Element
         return new Point(point.x, point.y);
     }
 
-    protected<T extends Element> T copy(T other)
+    protected <T extends Element> T copy(T other)
     {
         other.position = position;
         other.x = x;

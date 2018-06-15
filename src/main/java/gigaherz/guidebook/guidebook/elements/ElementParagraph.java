@@ -28,10 +28,10 @@ public class ElementParagraph extends Element
     public boolean reevaluateConditions(ConditionContext ctx)
     {
         boolean oldValue = conditionResult;
-        conditionResult = condition== null || condition.test(ctx);
+        conditionResult = condition == null || condition.test(ctx);
 
         boolean anyChanged = conditionResult != oldValue;
-        for(Element element : spans)
+        for (Element element : spans)
         {
             anyChanged |= element.reevaluateConditions(ctx);
         }
@@ -50,7 +50,7 @@ public class ElementParagraph extends Element
 
         int firstInLine = paragraph.size();
 
-        for(Element element : spans)
+        for (Element element : spans)
         {
             int firstLineWidth = bounds.size.width - currentLineLeft - indent - indentFirstLine;
             List<VisualElement> pieces = element.measure(nav,
@@ -165,8 +165,8 @@ public class ElementParagraph extends Element
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
-        for(Element element : spans)
-            paragraph.spans.add(element.copy());
+        for (Element element : spans)
+        { paragraph.spans.add(element.copy()); }
         return paragraph;
     }
 
@@ -181,7 +181,7 @@ public class ElementParagraph extends Element
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
-        for(Element element : spans)
+        for (Element element : spans)
         {
             Element t = element.applyTemplate(book, sourceElements);
             if (t != null)
@@ -207,6 +207,5 @@ public class ElementParagraph extends Element
         p.spans.add(s);
         return p;
     }
-
 }
 

@@ -3,7 +3,10 @@ package gigaherz.guidebook.guidebook.elements;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.drawing.*;
+import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualImage;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -24,7 +27,7 @@ public class ElementImage extends Element
     {
         int width = (int) (w * scale);
         int height = (int) (h * scale);
-        return new Size(width,height);
+        return new Size(width, height);
     }
 
     private VisualImage getVisual()

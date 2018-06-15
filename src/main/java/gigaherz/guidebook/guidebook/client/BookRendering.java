@@ -2,15 +2,15 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.*;
-import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -283,11 +283,11 @@ public class BookRendering implements IBookGraphics
         FontRenderer fontRenderer = gui.getFontRenderer();
 
         // Does scaling need to be performed?
-        if(!(MathHelper.epsilonEquals(scale, 1.0f)))
+        if (!(MathHelper.epsilonEquals(scale, 1.0f)))
         {
             GlStateManager.pushMatrix();
             {
-                GlStateManager.translate(left,top,0);
+                GlStateManager.translate(left, top, 0);
                 GlStateManager.scale(scale, scale, 1f);
                 fontRenderer.drawString(s, 0, 0, color);
             }
@@ -349,7 +349,7 @@ public class BookRendering implements IBookGraphics
             Size pageSize = new Size(pageWidth, pageHeight);
             bc.reflow(ch, pageSize);
 
-            ch.totalPairs = (ch.pages.size()+1)/2;
+            ch.totalPairs = (ch.pages.size() + 1) / 2;
             chapters.add(ch);
         }
 
@@ -476,7 +476,7 @@ public class BookRendering implements IBookGraphics
         int right = guiWidth / 2 + innerMargin;
         int top = (guiHeight - pageHeight) / 2 - bottomMargin;
 
-        return new Point(leftPage ? left : right,top);
+        return new Point(leftPage ? left : right, top);
     }
 
     private void drawPage(int page)
@@ -496,10 +496,10 @@ public class BookRendering implements IBookGraphics
             e.draw(this);
         }
 
-        String cnt = String.valueOf(ch.startPair * 2 + page+1);
+        String cnt = String.valueOf(ch.startPair * 2 + page + 1);
         Size sz = measure(cnt);
 
-        addString((pageWidth-sz.width)/2, pageHeight + 2, cnt, 0xFF000000, 1.0f);
+        addString((pageWidth - sz.width) / 2, pageHeight + 2, cnt, 0xFF000000, 1.0f);
 
         GlStateManager.popMatrix();
     }
@@ -669,7 +669,7 @@ public class BookRendering implements IBookGraphics
         List<VisualElement> sizes = Lists.newArrayList();
         wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.getStringWidth(s);
-            sizes.add(new VisualText(s, new Size((int)(width2 * scale),(int)(font.FONT_HEIGHT * scale)), scale));
+            sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), scale));
         }, text, width, firstLineWidth, true);
         return sizes;
     }

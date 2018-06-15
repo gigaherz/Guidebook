@@ -137,7 +137,7 @@ public class SectionRef
     {
         if (!(obj instanceof SectionRef))
             return false;
-        SectionRef pr = (SectionRef)obj;
+        SectionRef pr = (SectionRef) obj;
         return resolvedNames && pr.resolvedNames && pr.chapter == chapter && pr.page == page;
     }
 

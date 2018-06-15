@@ -3,7 +3,6 @@ package gigaherz.guidebook;
 import com.google.common.collect.Lists;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
-import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.creativetab.CreativeTabs;
@@ -17,14 +16,11 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.discovery.ASMDataTable;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.util.List;
 
 @Mod.EventBusSubscriber
@@ -66,6 +62,7 @@ public class GuidebookMod
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
+
         logger = event.getModLog();
 
         Configuration config = new Configuration(event.getSuggestedConfigurationFile());

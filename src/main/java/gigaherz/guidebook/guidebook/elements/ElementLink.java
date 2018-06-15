@@ -32,12 +32,12 @@ public class ElementLink extends ElementSpan
         List<VisualElement> texts = super.measure(nav, width, firstLineWidth);
         List<VisualElement> links = Lists.newArrayList();
         VisualLink.SharedHoverContext ctx = null;
-        for(VisualElement e : texts)
+        for (VisualElement e : texts)
         {
             if (!(e instanceof VisualText))
                 continue; // WTF?
 
-            VisualText text = (VisualText)e;
+            VisualText text = (VisualText) e;
 
             VisualLink link = new VisualLink(text.text, text.size, scale);
             if (ctx == null) ctx = link.hoverContext;
@@ -82,7 +82,6 @@ public class ElementLink extends ElementSpan
         {
             textAction = attr.getTextContent();
         }
-
     }
 
     @Override
