@@ -23,8 +23,12 @@ public interface IModProxy
         return String.format("Guidebook - %s unknown", book);
     }
 
+    // The book registry is only available in the client.
     default Collection<ResourceLocation> getBooksList()
     {
         return Collections.emptyList();
     }
+
+    // The book registry is only available in the client.
+    default void registerBook(ResourceLocation bookLocation) {}
 }

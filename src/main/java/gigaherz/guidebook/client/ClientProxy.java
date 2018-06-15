@@ -47,6 +47,12 @@ public class ClientProxy implements IModProxy
     }
 
     @Override
+    public void registerBook(ResourceLocation bookLocation)
+    {
+        BookRegistry.registerBook(bookLocation);
+    }
+
+    @Override
     public Collection<ResourceLocation> getBooksList()
     {
         return BookRegistry.LOADED_BOOKS.keySet();
