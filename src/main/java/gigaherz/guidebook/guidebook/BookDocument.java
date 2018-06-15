@@ -15,6 +15,7 @@ import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import joptsimple.internal.Strings;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -40,6 +41,8 @@ public class BookDocument implements IConditionSource
     private static final float DEFAULT_FONT_SIZE = 1.0f;
 
     private float fontSize = 1.0f;
+
+    public SectionRef home = new SectionRef(1,1);
 
     private final ResourceLocation bookLocation;
     private String bookName;
@@ -176,6 +179,12 @@ public class BookDocument implements IConditionSource
                 {
                     Float f = Floats.tryParse(n.getTextContent());
                     fontSize = f != null ? f : DEFAULT_FONT_SIZE;
+                }
+                n = attributes.getNamedItem("home");
+                if (n != null)
+                {
+                    String ref = n.getTextContent();
+                    home = SectionRef.fromString(ref);
                 }
                 n = attributes.getNamedItem("dependencies");
                 if (n != null)

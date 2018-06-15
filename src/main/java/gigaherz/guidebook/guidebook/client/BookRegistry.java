@@ -82,11 +82,12 @@ public class BookRegistry
 
         loadRawBookFiles();
 
+        String lang = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
         for (ResourceLocation loc : toLoad)
         {
             if (!LOADED_BOOKS.containsKey(loc))
             {
-                BookDocument book = parseBook(manager, loc);
+                BookDocument book = parseBook(manager, loc, lang);
                 if (book != null)
                     LOADED_BOOKS.put(loc, book);
             }
@@ -105,13 +106,40 @@ public class BookRegistry
     }
 
     @Nullable
-    private static BookDocument parseBook(IResourceManager manager, ResourceLocation location)
+    private static BookDocument parseBook(IResourceManager manager, ResourceLocation location, String lang)
     {
         BookDocument bookDocument = new BookDocument(location);
         try
         {
-            IResource res = manager.getResource(bookDocument.getBookLocation());
-            try (InputStream stream = res.getInputStream())
+            ResourceLocation bookLocation = bookDocument.getBookLocation();
+            String domain = bookLocation.getResourceDomain();
+            String path = bookLocation.getResourcePath();
+            String pathWithoutExtension = path;
+            String extension = "";
+            int ext = path.lastIndexOf('.');
+            if(ext >= 0)
+            {
+                pathWithoutExtension = path.substring(0, ext);
+                extension = path.substring(ext);
+            }
+
+            String localizedPath = pathWithoutExtension + "." + lang + extension;
+            ResourceLocation localizedLoc = new ResourceLocation(domain, localizedPath);
+
+            IResource bookResource;
+            try {
+                bookResource = manager.getResource(localizedLoc);
+            }
+            catch(IOException e)
+            {
+                bookResource = null;
+            }
+
+            if (bookResource == null)
+            {
+                bookResource = manager.getResource(bookLocation);
+            }
+            try (InputStream stream = bookResource.getInputStream())
             {
                 if (!bookDocument.parseBook(stream))
                     return null;

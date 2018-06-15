@@ -33,6 +33,8 @@ public interface IBookGraphics
 
     void prevChapter();
 
+    void navigateHome();
+
     void navigateBack();
 
     int addString(int left, int top, String s, int color, float scale);
@@ -56,4 +58,8 @@ public interface IBookGraphics
     Size measure(String text);
 
     List<VisualElement> measure(String text, int width, int firstLineWidth, float scale);
+
+    int getActualBookHeight();
+
+    int getActualBookWidth();
 }

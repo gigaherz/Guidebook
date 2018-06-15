@@ -247,6 +247,15 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
+    public void navigateHome()
+    {
+        if (book.home != null)
+        {
+            navigateTo(book.home);
+        }
+    }
+
+    @Override
     public void navigateBack()
     {
         if (history.size() > 0)
@@ -662,5 +671,17 @@ public class BookRendering implements IBookGraphics
             sizes.add(new VisualText(s, new Size(width2, font.FONT_HEIGHT), scale));
         }, text, width, firstLineWidth, true);
         return sizes;
+    }
+
+    @Override
+    public int getActualBookHeight()
+    {
+        return bookHeight;
+    }
+
+    @Override
+    public int getActualBookWidth()
+    {
+        return bookWidth;
     }
 }

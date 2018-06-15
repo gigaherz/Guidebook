@@ -32,6 +32,7 @@ public class GuiGuidebook extends GuiScreen
     private GuiButton buttonNextChapter;
     private GuiButton buttonPreviousChapter;
     private GuiButton buttonBack;
+    private GuiButton buttonHome;
 
     private ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
     private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
@@ -81,7 +82,8 @@ public class GuiGuidebook extends GuiScreen
         int right = left + BookRendering.DEFAULT_BOOK_WIDTH;
         int top = (this.height - BookRendering.DEFAULT_BOOK_HEIGHT) / 2 - 9;
         int bottom = top + BookRendering.DEFAULT_BOOK_HEIGHT;
-        this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left - 9, top - 5, 2));
+        this.buttonList.add(this.buttonHome = new SpriteButton(btnId++, left - 10, top - 8, 6));
+        this.buttonList.add(this.buttonBack = new SpriteButton(btnId++, left + 8, top - 5, 2));
         this.buttonList.add(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3));
         if (useNaturalArrows)
         {
@@ -99,7 +101,11 @@ public class GuiGuidebook extends GuiScreen
         }
         GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
 
+        this.buttonHome.visible = book.getBook().home != null;
+
         updateButtonStates();
+
+        repositionButtons();
     }
 
     protected void actionPerformed(GuiButton button) throws IOException
@@ -109,6 +115,10 @@ public class GuiGuidebook extends GuiScreen
             if (button.id == buttonClose.id)
             {
                 background.startClosing();
+            }
+            else if (button.id == buttonHome.id)
+            {
+                book.navigateHome();
             }
             else if (button.id == buttonBack.id)
             {
@@ -138,6 +148,7 @@ public class GuiGuidebook extends GuiScreen
     private void updateButtonStates()
     {
         buttonClose.enabled = background.isFullyOpen();
+        buttonHome.enabled = background.isFullyOpen() && book.getBook().home != null;
         buttonBack.enabled = background.isFullyOpen() && book.canGoBack();
         buttonNextPage.enabled = background.isFullyOpen() && book.canGoNextPage();
         buttonPreviousPage.enabled = background.isFullyOpen() && book.canGoPrevPage();
@@ -145,6 +156,7 @@ public class GuiGuidebook extends GuiScreen
         buttonPreviousChapter.enabled = background.isFullyOpen() && book.canGoPrevChapter();
 
         buttonClose.visible = buttonClose.enabled;
+        buttonHome.visible = buttonHome.enabled;
         buttonBack.visible = buttonBack.enabled;
         buttonNextPage.visible = buttonNextPage.enabled;
         buttonPreviousPage.visible = buttonPreviousPage.enabled;
@@ -178,18 +190,28 @@ public class GuiGuidebook extends GuiScreen
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+    public void onResize(Minecraft mcIn, int w, int h)
+    {
+        super.onResize(mcIn, w, h);
+
+        repositionButtons();
+    }
+
+    private void repositionButtons()
     {
         book.setScalingFactor();
 
         float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
-        int scaledBookHeight = (int) (BookRendering.DEFAULT_BOOK_HEIGHT * bookScale);
+        float bookWidth = BookRendering.DEFAULT_BOOK_WIDTH * bookScale;
+        float bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * bookScale;
 
-        int left = (int) ((this.width - BookRendering.DEFAULT_BOOK_WIDTH * bookScale) / 2);
-        int right = (int) (left + BookRendering.DEFAULT_BOOK_WIDTH * bookScale);
-        int top = (int) ((this.height - BookRendering.DEFAULT_BOOK_HEIGHT * bookScale) / 2 - 9);
-        int bottom = (int) (top + BookRendering.DEFAULT_BOOK_HEIGHT * bookScale);
-        buttonBack.x = left - 9;
+        int left = (int) ((this.width - bookWidth) / 2);
+        int right = (int) (left + bookWidth);
+        int top = (int) ((this.height - bookHeight) / 2 - 9);
+        int bottom = (int) (top + bookHeight);
+        buttonHome.x = left - 10;
+        buttonHome.y = top - 8;
+        buttonBack.x = left + 8;
         buttonBack.y = top - 5;
         buttonClose.x = right - 6;
         buttonClose.y = top - 6;
@@ -201,9 +223,15 @@ public class GuiGuidebook extends GuiScreen
         buttonPreviousChapter.y = bottom - 13;
         buttonNextChapter.x = right - 23;
         buttonNextChapter.y = bottom - 13;
+    }
 
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+    {
+        float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
+        float bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * bookScale;
 
-        background.draw(partialTicks, scaledBookHeight, bookScale);
+        background.draw(partialTicks, (int) bookHeight, bookScale);
 
         if (background.isFullyOpen())
         {
@@ -258,15 +286,15 @@ public class GuiGuidebook extends GuiScreen
     {
         private final int whichIcon;
 
-        private static final int[] xPixel = {5, 5, 4, 4, 4, 4};
-        private static final int[] yPixel = {2, 16, 30, 64, 79, 93};
-        private static final int[] xSize = {17, 17, 18, 13, 21, 21};
-        private static final int[] ySize = {11, 11, 11, 13, 11, 11};
+        private static final int[] xPixel = {5, 5, 4, 4, 4, 4, 4, 29};
+        private static final int[] yPixel = {2, 16, 30, 64, 79, 93, 107, 107};
+        private static final int[] xSize = {17, 17, 18, 13, 21, 21, 15, 15};
+        private static final int[] ySize = {11, 11, 11, 13, 11, 11, 15, 15};
 
-        public SpriteButton(int buttonId, int x, int y, int back)
+        public SpriteButton(int buttonId, int x, int y, int iconIndex)
         {
-            super(buttonId, x, y, xSize[back], ySize[back], "");
-            this.whichIcon = back;
+            super(buttonId, x, y, xSize[iconIndex], ySize[iconIndex], "");
+            this.whichIcon = iconIndex;
         }
 
         @Override
