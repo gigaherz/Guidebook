@@ -425,15 +425,30 @@ public class BookDocument implements IConditionSource
                 }
 
                 NodeList childList = elementItem.getChildNodes();
-                for (int q = 0; q < childList.getLength(); q++)
+                int l = childList.getLength();
+                int firstText = -1;
+                int lastText = -1;
+                for (int q = 0; q < l; q++)
+                {
+                    Node childNode = childList.item(q);
+                    short type = childNode.getNodeType();
+                    if (type == Node.TEXT_NODE || type == Node.ELEMENT_NODE)
+                    {
+                        if (firstText < 0)
+                            firstText = q;
+                        lastText = q;
+                    }
+                }
+                for (int q = 0; q < l; q++)
                 {
                     Node childNode = childList.item(q);
                     if (childNode.getNodeType() == Node.TEXT_NODE)
                     {
-                        String st = ElementSpan.compactString(childNode.getTextContent());
+                        String st = ElementSpan.compactString(childNode.getTextContent(), q == firstText, q == lastText);
                         if (!Strings.isNullOrEmpty(st))
                         {
-                            ElementSpan s = new ElementSpan(st);
+                            // Trimming already performed above
+                            ElementSpan s = new ElementSpan(st, false, false);
 
                             if (elementItem.hasAttributes())
                             {
@@ -568,7 +583,7 @@ public class BookDocument implements IConditionSource
         Element parsedElement = null;
         if (nodeName.equals("span"))
         {
-            ElementSpan link = new ElementSpan(elementItem.getTextContent());
+            ElementSpan link = new ElementSpan(elementItem.getTextContent(), true, true);
 
             if (elementItem.hasAttributes())
             {

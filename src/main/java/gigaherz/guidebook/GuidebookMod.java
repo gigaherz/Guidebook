@@ -72,10 +72,6 @@ public class GuidebookMod
 
         giveOnFirstJoin = Lists.newArrayList(give);
 
-        BasicConditions.register();
-        CompositeCondition.register();
-        //AdvancementCondition.register();
-
         proxy.preInit();
     }
 

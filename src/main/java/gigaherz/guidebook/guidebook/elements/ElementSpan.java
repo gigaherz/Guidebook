@@ -19,9 +19,9 @@ public class ElementSpan extends Element
     public boolean italics;
     public boolean underline;
 
-    public ElementSpan(String text)
+    public ElementSpan(String text, boolean isFirstElement, boolean isLastElement)
     {
-        this.text = compactString(text);
+        this.text = compactString(text, isFirstElement, isLastElement);
     }
 
     private String getStringWithFormat()
@@ -117,7 +117,7 @@ public class ElementSpan extends Element
     @Override
     public Element copy()
     {
-        ElementSpan span = super.copy(new ElementSpan(text));
+        ElementSpan span = super.copy(new ElementSpan(text, false, false));
         span.color = color;
         span.bold = bold;
         span.italics = italics;
@@ -126,9 +126,11 @@ public class ElementSpan extends Element
     }
 
 
-    public static String compactString(String text)
+    public static String compactString(String text, boolean trimLeft, boolean trimRight)
     {
         String temp = text.replaceAll("[\n\r]+", "").replaceAll("[ \t]+", " ");
-        return " ".equals(temp) ? " " : temp.trim();
+        if (trimLeft) temp = temp.replaceAll("^[ \t]+", "");
+        if (trimRight) temp = temp.replaceAll("[ \t]+$", "");
+        return temp;
     }
 }

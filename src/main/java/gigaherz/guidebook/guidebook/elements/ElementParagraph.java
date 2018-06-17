@@ -46,7 +46,6 @@ public class ElementParagraph extends Element
         int currentLineTop = adjustedPosition.y;
         int currentLineLeft = indentFirstLine;
         int currentLineHeight = 0;
-        final Size spaceSize = nav.measure(" ");
 
         int firstInLine = paragraph.size();
 
@@ -68,7 +67,7 @@ public class ElementParagraph extends Element
                 if ((currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
                 {
                     if (paragraph.size() > firstInLine && alignment != 0)
-                        processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, spaceSize, firstInLine);
+                        processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, firstInLine);
 
                     currentLineTop += currentLineHeight;
                     currentLineLeft = 0;
@@ -83,7 +82,7 @@ public class ElementParagraph extends Element
                 current.position = element.applyPosition(new Point(adjustedPosition.x + currentLineLeft + indent, currentLineTop), bounds.position);
 
                 if (size.width > 0)
-                    currentLineLeft += size.width + spaceSize.width;
+                    currentLineLeft += size.width;
 
                 if (currentLineLeft > bounds.size.width)
                 {
@@ -99,16 +98,16 @@ public class ElementParagraph extends Element
         }
 
         if (paragraph.size() > firstInLine && alignment != 0)
-            processAlignment(paragraph, bounds.size.width, currentLineLeft, spaceSize, firstInLine);
+            processAlignment(paragraph, bounds.size.width, currentLineLeft, firstInLine);
 
         if (position != 0)
             return bounds.position.y;
         return currentLineTop + currentLineHeight + space;
     }
 
-    private void processAlignment(List<VisualElement> paragraph, int width, int currentLineLeft, Size spaceSize, int firstInLine)
+    private void processAlignment(List<VisualElement> paragraph, int width, int currentLineLeft, int firstInLine)
     {
-        int realWidth = currentLineLeft - spaceSize.width;
+        int realWidth = currentLineLeft;
 
         int leftOffset = width - realWidth;
         if (alignment == 1) // center
@@ -203,7 +202,7 @@ public class ElementParagraph extends Element
     public static ElementParagraph of(String text)
     {
         ElementParagraph p = new ElementParagraph();
-        ElementSpan s = new ElementSpan(text);
+        ElementSpan s = new ElementSpan(text, true, true);
         p.spans.add(s);
         return p;
     }

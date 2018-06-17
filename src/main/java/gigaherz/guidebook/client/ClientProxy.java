@@ -7,6 +7,8 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
+import gigaherz.guidebook.guidebook.conditions.BasicConditions;
+import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import gigaherz.guidebook.guidebook.conditions.GameStageCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -23,7 +25,7 @@ import java.util.Collection;
 
 import static gigaherz.common.client.ModelHelpers.registerItemModel;
 
-@Mod.EventBusSubscriber(Side.CLIENT)
+@Mod.EventBusSubscriber(value = Side.CLIENT, modid = GuidebookMod.MODID)
 public class ClientProxy implements IModProxy
 {
     public ClientProxy()
@@ -44,6 +46,10 @@ public class ClientProxy implements IModProxy
     public void preInit()
     {
         ModelHandle.init();
+
+        BasicConditions.register();
+        CompositeCondition.register();
+        //AdvancementCondition.register();
 
         if (Loader.isModLoaded("gamestages"))
             GameStageCondition.register();

@@ -21,7 +21,7 @@ public class ElementLink extends ElementSpan
 
     public ElementLink(String text)
     {
-        super(text);
+        super(text, true, true);
         underline = true;
         color = 0xFF7766cc;
     }
