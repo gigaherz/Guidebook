@@ -40,6 +40,7 @@
     "2.5.0": "Added automatic pagination and more.",
     "2.5.1": "Added support for loading books in other languages. Added home button.",
     "2.5.2": "Fix buttons disappearing on window resize. Fix positioning of scaled text elements.",
-    "2.5.3": "Workaround to avoid crashing when a mod registers a handler for the BookRegistryEvent in a dedicated server."
+    "2.5.3": "Workaround to avoid crashing when a mod registers a handler for the BookRegistryEvent in a dedicated server.",
+    "2.6.0": "Updated to Game Stages 2.0 API. Fixed handling of whitespace around the edges of tags."
   }
 }
