@@ -5,6 +5,7 @@ import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -19,6 +20,8 @@ public class ElementSpan extends Element
     public boolean italics;
     public boolean underline;
 
+    public String translationKey = null;
+
     public ElementSpan(String text, boolean isFirstElement, boolean isLastElement)
     {
         this.text = compactString(text, isFirstElement, isLastElement);
@@ -26,7 +29,15 @@ public class ElementSpan extends Element
 
     private String getStringWithFormat()
     {
-        String textWithFormat = text;
+        String textWithFormat;
+        if (translationKey != null)
+        {
+            textWithFormat = I18n.format(translationKey);
+        }
+        else
+        {
+            textWithFormat = text;
+        }
         if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
         if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
         if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
@@ -36,12 +47,11 @@ public class ElementSpan extends Element
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth, scale);
+        List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth, scale, position, baseline, verticalAlignment);
         for (VisualElement text : elements)
         {
-            if (!(text instanceof VisualText))
-                continue; // WTF?
-            ((VisualText) text).color = color;
+            if (text instanceof VisualText)
+                ((VisualText) text).color = color;
         }
         return elements;
     }
@@ -54,7 +64,7 @@ public class ElementSpan extends Element
         if (temporaryParagraph == null)
         {
             temporaryParagraph = new ElementParagraph();
-            temporaryParagraph.spans.add(this);
+            temporaryParagraph.inlines.add(this);
         }
         return temporaryParagraph.reflow(paragraph, nav, bounds, page);
     }
@@ -112,6 +122,13 @@ public class ElementSpan extends Element
                 // ignored
             }
         }
+
+        attr = attributes.getNamedItem("i18n");
+        if (attr != null)
+        {
+            translationKey = attr.getTextContent();
+        }
+
     }
 
     @Override

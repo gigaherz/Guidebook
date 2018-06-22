@@ -45,7 +45,7 @@ public class ElementStack extends Element
 
     private VisualStack getVisual()
     {
-        return new VisualStack(stacks, getVisualSize(), scale, z);
+        return new VisualStack(stacks, getVisualSize(), position, baseline, verticalAlignment, scale, z);
     }
 
     @Override

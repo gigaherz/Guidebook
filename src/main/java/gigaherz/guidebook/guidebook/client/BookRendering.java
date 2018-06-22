@@ -77,22 +77,23 @@ public class BookRendering implements IBookGraphics
         this.gui = gui;
     }
 
-    public void computeScaledResolution2(Minecraft minecraftClient, float scaleFactorCoef)
+    public void computeScaledResolution2(float scaleFactorCoef)
     {
-        this.scaledWidth = minecraftClient.displayWidth;
-        this.scaledHeight = minecraftClient.displayHeight;
+        int width = mc.displayWidth;
+        int height = mc.displayHeight;
+
         int scaleFactor = 1;
         double w = (DEFAULT_BOOK_WIDTH * 1.1) / scaleFactorCoef;
         double h = (DEFAULT_BOOK_HEIGHT * 1.1) / scaleFactorCoef;
-        boolean flag = minecraftClient.isUnicode();
-        int i = GuidebookMod.bookGUIScale < 0 ? minecraftClient.gameSettings.guiScale : GuidebookMod.bookGUIScale;
+        boolean flag = mc.isUnicode();
+        int i = GuidebookMod.bookGUIScale < 0 ? mc.gameSettings.guiScale : GuidebookMod.bookGUIScale;
 
         if (i == 0)
         {
             i = 1000;
         }
 
-        while (scaleFactor < i && this.scaledWidth / (scaleFactor + 1) >= w && this.scaledHeight / (scaleFactor + 1) >= h)
+        while (scaleFactor < i && width / (scaleFactor + 1) >= w && height / (scaleFactor + 1) >= h)
         {
             ++scaleFactor;
         }
@@ -102,8 +103,8 @@ public class BookRendering implements IBookGraphics
             --scaleFactor;
         }
 
-        this.scaledWidthD = (double) minecraftClient.displayWidth / (double) scaleFactor;
-        this.scaledHeightD = (double) minecraftClient.displayHeight / (double) scaleFactor;
+        this.scaledWidthD = (double) width / (double) scaleFactor;
+        this.scaledHeightD = (double) height / (double) scaleFactor;
         this.scaledWidth = MathHelper.ceil(scaledWidthD);
         this.scaledHeight = MathHelper.ceil(scaledHeightD);
     }
@@ -129,7 +130,7 @@ public class BookRendering implements IBookGraphics
         }
         else
         {
-            computeScaledResolution2(mc, fontSize);
+            computeScaledResolution2(fontSize);
 
             this.hasScale = true;
             this.scalingFactor = Math.min(gui.width / (float) scaledWidth, gui.height / (float) scaledHeight);
@@ -305,8 +306,8 @@ public class BookRendering implements IBookGraphics
     public boolean mouseClicked(int mouseButton)
     {
         Minecraft mc = Minecraft.getMinecraft();
-        int dw = hasScale ? scaledWidth : gui.width;
-        int dh = hasScale ? scaledHeight : gui.height;
+        int dw = scaledWidth;
+        int dh = scaledHeight;
         int mouseX = Mouse.getX() * dw / mc.displayWidth;
         int mouseY = dh - Mouse.getY() * dh / mc.displayHeight;
 
@@ -421,8 +422,8 @@ public class BookRendering implements IBookGraphics
     private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage)
     {
         Minecraft mc = Minecraft.getMinecraft();
-        int dw = hasScale ? scaledWidth : gui.width;
-        int dh = hasScale ? scaledHeight : gui.height;
+        int dw = scaledWidth;
+        int dh = scaledHeight;
         int mX = Mouse.getX() * dw / mc.displayWidth;
         int mY = dh - Mouse.getY() * dh / mc.displayHeight;
         Point offset = getPageOffset(isLeftPage);
@@ -463,18 +464,9 @@ public class BookRendering implements IBookGraphics
 
     Point getPageOffset(boolean leftPage)
     {
-        int guiWidth = gui.width;
-        int guiHeight = gui.height;
-
-        if (hasScale)
-        {
-            guiWidth = scaledWidth;
-            guiHeight = scaledHeight;
-        }
-
-        int left = guiWidth / 2 - pageWidth - innerMargin;
-        int right = guiWidth / 2 + innerMargin;
-        int top = (guiHeight - pageHeight) / 2 - bottomMargin;
+        int left = scaledWidth / 2 - pageWidth - innerMargin;
+        int right = scaledWidth / 2 + innerMargin;
+        int top = (scaledHeight - pageHeight) / 2 - bottomMargin;
 
         return new Point(leftPage ? left : right, top);
     }
@@ -655,6 +647,7 @@ public class BookRendering implements IBookGraphics
         {
             String s = str.substring(0, i);
             dest.accept(s);
+            dest.accept("\n"); // line break
             char c0 = str.charAt(i);
             boolean flag = c0 == ' ' || c0 == '\n';
             String s1 = FontRenderer.getFormatFromString(s) + str.substring(i + (flag ? 1 : 0));
@@ -663,13 +656,13 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale)
+    public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment)
     {
         FontRenderer font = gui.getFontRenderer();
         List<VisualElement> sizes = Lists.newArrayList();
         wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.getStringWidth(s);
-            sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), scale));
+            sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
         }, text, width, firstLineWidth, true);
         return sizes;
     }

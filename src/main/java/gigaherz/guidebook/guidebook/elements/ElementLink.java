@@ -34,20 +34,23 @@ public class ElementLink extends ElementSpan
         VisualLink.SharedHoverContext ctx = null;
         for (VisualElement e : texts)
         {
-            if (!(e instanceof VisualText))
-                continue; // WTF?
+            VisualElement el = e;
+            if (e instanceof VisualText)
+            {
+                VisualText text = (VisualText) e;
 
-            VisualText text = (VisualText) e;
-
-            VisualLink link = new VisualLink(text.text, text.size, scale);
-            if (ctx == null) ctx = link.hoverContext;
-            else link.hoverContext = ctx;
-            link.color = color;
-            link.target = target;
-            link.colorHover = colorHover;
-            link.textTarget = textTarget;
-            link.textAction = textAction;
-            links.add(link);
+                VisualLink link = new VisualLink(text.text, text.size, position, baseline, verticalAlignment, scale);
+                if (ctx == null) ctx = link.hoverContext;
+                else link.hoverContext = ctx;
+                link.color = color;
+                link.target = target;
+                link.colorHover = colorHover;
+                link.textTarget = textTarget;
+                link.textAction = textAction;
+                el = link;
+            }
+            // else TODO: clickable images in links
+            links.add(el);
         }
         return links;
     }

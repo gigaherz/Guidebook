@@ -8,9 +8,9 @@ public class VisualText extends VisualElement
     public int color;
     public float scale;
 
-    public VisualText(String text, Size size, float scale)
+    public VisualText(String text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
     {
-        super(size);
+        super(size, positionMode, baseline, verticalAlign);
         this.text = text;
         this.scale = scale;
     }
@@ -20,4 +20,7 @@ public class VisualText extends VisualElement
     {
         nav.addString(position.x, position.y, text, color, scale);
     }
+
+    @Override
+    public String getText() { return text; }
 }

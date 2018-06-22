@@ -25,14 +25,14 @@ public class ElementImage extends Element
 
     private Size getVisualSize()
     {
-        int width = (int) (w * scale);
-        int height = (int) (h * scale);
+        int width = (int) ((w > 0 ? w : tw) * scale);
+        int height = (int) ((h > 0 ? h : th) * scale);
         return new Size(width, height);
     }
 
     private VisualImage getVisual()
     {
-        return new VisualImage(getVisualSize(), textureLocation, tx, ty, tw, th);
+        return new VisualImage(getVisualSize(), position, baseline, verticalAlignment, textureLocation, tx, ty, tw, th);
     }
 
     @Override

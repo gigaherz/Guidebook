@@ -12,9 +12,9 @@ public class VisualImage extends VisualElement
     public int tw;
     public int th;
 
-    public VisualImage(Size size, ResourceLocation textureLocation, int tx, int ty, int tw, int th)
+    public VisualImage(Size size, int positionMode, float baseline, int verticalAlign, ResourceLocation textureLocation, int tx, int ty, int tw, int th)
     {
-        super(size);
+        super(size, positionMode, baseline, verticalAlign);
         this.textureLocation = textureLocation;
         this.tx = tx;
         this.ty = ty;

@@ -228,7 +228,7 @@ class CraftingRecipeProvider
         {
             int constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
             ArrayList<ElementStack> stackComponents = new ArrayList<>();
-            VisualElement additionalRenderer = new VisualElement(new Size())
+            VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
             {
                 @Override
                 public void draw(IBookGraphics nav)

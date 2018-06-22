@@ -455,7 +455,7 @@ public class BookDocument implements IConditionSource
                                 s.parse(book, elementItem.getAttributes());
                             }
 
-                            p.spans.add(s);
+                            p.inlines.add(s);
                         }
                     }
                     else
@@ -468,7 +468,7 @@ public class BookDocument implements IConditionSource
                         }
                         else
                         {
-                            p.spans.add(parsedChild);
+                            p.inlines.add(parsedChild);
                         }
                     }
                 }
@@ -567,7 +567,7 @@ public class BookDocument implements IConditionSource
                         parsedElement.parse(book, elementItem.getAttributes());
                     }
 
-                    p.spans.add(parsedElement);
+                    p.inlines.add(parsedElement);
 
                     parsedElement = p;
                 }

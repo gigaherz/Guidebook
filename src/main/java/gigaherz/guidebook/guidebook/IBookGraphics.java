@@ -57,7 +57,7 @@ public interface IBookGraphics
 
     Size measure(String text);
 
-    List<VisualElement> measure(String text, int width, int firstLineWidth, float scale);
+    List<VisualElement> measure(String text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment);
 
     int getActualBookHeight();
 

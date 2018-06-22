@@ -28,4 +28,10 @@ public class ElementBreak extends Element
     {
         return true;
     }
+
+    @Override
+    public boolean supportsSpanLevel()
+    {
+        return false;
+    }
 }

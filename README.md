@@ -14,6 +14,8 @@ repositories {
 
 ```gradle
 dependencies {
-    deobfCompile "gigaherz.guidebook:Guidebook-1.12.2:2.0.0"
+    // required as a dependency of guidebook
+    deobfCompile "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
+    deobfCompile "gigaherz.guidebook:Guidebook-1.12.2:2.6.0"
 }
 ```

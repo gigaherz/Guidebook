@@ -22,7 +22,7 @@ public class ElementParagraph extends Element
     public int indentFirstLine = 0; // First line?
     public int space = 2;
 
-    public final List<Element> spans = Lists.newArrayList();
+    public final List<Element> inlines = Lists.newArrayList();
 
     @Override
     public boolean reevaluateConditions(ConditionContext ctx)
@@ -31,7 +31,7 @@ public class ElementParagraph extends Element
         conditionResult = condition == null || condition.test(ctx);
 
         boolean anyChanged = conditionResult != oldValue;
-        for (Element element : spans)
+        for (Element element : inlines)
         {
             anyChanged |= element.reevaluateConditions(ctx);
         }
@@ -49,7 +49,7 @@ public class ElementParagraph extends Element
 
         int firstInLine = paragraph.size();
 
-        for (Element element : spans)
+        for (Element element : inlines)
         {
             int firstLineWidth = bounds.size.width - currentLineLeft - indent - indentFirstLine;
             List<VisualElement> pieces = element.measure(nav,
@@ -64,10 +64,11 @@ public class ElementParagraph extends Element
                 VisualElement current = pieces.get(i);
                 Size size = current.size;
 
-                if ((currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
+                boolean isLineBreak = "\n".equals(current.getText());
+
+                if (isLineBreak || (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
                 {
-                    if (paragraph.size() > firstInLine && alignment != 0)
-                        processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, firstInLine);
+                    processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, firstInLine);
 
                     currentLineTop += currentLineHeight;
                     currentLineLeft = 0;
@@ -75,6 +76,9 @@ public class ElementParagraph extends Element
 
                     firstInLine = paragraph.size();
                 }
+
+                if (isLineBreak)
+                    continue;
 
                 if (size.height > currentLineHeight)
                     currentLineHeight = size.height;
@@ -97,8 +101,7 @@ public class ElementParagraph extends Element
             }
         }
 
-        if (paragraph.size() > firstInLine && alignment != 0)
-            processAlignment(paragraph, bounds.size.width, currentLineLeft, firstInLine);
+        processAlignment(paragraph, bounds.size.width, currentLineLeft, firstInLine);
 
         if (position != 0)
             return bounds.position.y;
@@ -107,17 +110,72 @@ public class ElementParagraph extends Element
 
     private void processAlignment(List<VisualElement> paragraph, int width, int currentLineLeft, int firstInLine)
     {
-        int realWidth = currentLineLeft;
+        if (paragraph.size() <= firstInLine)
+            return;
 
-        int leftOffset = width - realWidth;
-        if (alignment == 1) // center
+        int realWidth = currentLineLeft;
+        int leftOffset = 0;
+        switch(alignment)
         {
-            leftOffset /= 2;
+            case 1: // center
+                leftOffset = (width - realWidth)/2;
+                break;
+            case 2: // right
+                leftOffset = width - realWidth;
+                break;
         }
+
+        int yMin = Integer.MAX_VALUE;
+        int yMax = Integer.MIN_VALUE;
+        int yBaseline = Integer.MIN_VALUE; // the biggest height difference from top to baseline.
         for (int i = firstInLine; i < paragraph.size(); i++)
         {
             VisualElement e = paragraph.get(i);
-            e.position = new Point(e.position.x + leftOffset, e.position.y);
+            if (e.positionMode == 0)
+            {
+                e.position = new Point(e.position.x + leftOffset, e.position.y);
+
+                yMin = Math.min(yMin, e.position.y);
+                yMax = Math.min(yMax, e.position.y + e.size.height);
+                yBaseline = Math.min(yBaseline, e.position.y + (int) (e.size.height * e.baseline));
+            }
+        }
+
+        final int yHeight = yMax - yMin;
+        int yMin2 = Integer.MAX_VALUE;
+        for (int i = firstInLine; i < paragraph.size(); i++)
+        {
+            VisualElement e = paragraph.get(i);
+            if (e.positionMode == 0)
+            {
+                if (e.verticalAlign == VA_MIDDLE)
+                {
+                    e.position = new Point(e.position.x, yMin + (yHeight - e.size.height) / 2);
+                }
+                else if (e.verticalAlign == VA_BASELINE)
+                {
+                    e.position = new Point(e.position.x, yBaseline - (int) (e.size.height * e.baseline));
+                }
+                else if (e.verticalAlign == VA_BOTTOM)
+                {
+                    e.position = new Point(e.position.x, yMax - e.size.height);
+                }
+
+                yMin2 = Math.min(yMin2, e.position.y);
+            }
+        }
+
+        if (yMin2 != yMin && yMin2 != Integer.MAX_VALUE)
+        {
+            int yOffset = yMin - yMin2;
+            for (int i = firstInLine; i < paragraph.size(); i++)
+            {
+                VisualElement e = paragraph.get(i);
+                if (e.positionMode == 0)
+                {
+                    e.position = new Point(e.position.x, e.position.y + yOffset);
+                }
+            }
         }
     }
 
@@ -164,8 +222,8 @@ public class ElementParagraph extends Element
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
-        for (Element element : spans)
-        { paragraph.spans.add(element.copy()); }
+        for (Element element : inlines)
+        { paragraph.inlines.add(element.copy()); }
         return paragraph;
     }
 
@@ -173,21 +231,21 @@ public class ElementParagraph extends Element
     @Override
     public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
     {
-        if (spans.size() == 0)
+        if (inlines.size() == 0)
             return null;
 
         ElementParagraph paragraph = super.copy(new ElementParagraph());
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
-        for (Element element : spans)
+        for (Element element : inlines)
         {
             Element t = element.applyTemplate(book, sourceElements);
             if (t != null)
-                paragraph.spans.add(t);
+                paragraph.inlines.add(t);
         }
 
-        if (paragraph.spans.size() == 0)
+        if (paragraph.inlines.size() == 0)
             return null;
 
         return paragraph;
@@ -199,11 +257,17 @@ public class ElementParagraph extends Element
         return true;
     }
 
+    @Override
+    public boolean supportsSpanLevel()
+    {
+        return false;
+    }
+
     public static ElementParagraph of(String text)
     {
         ElementParagraph p = new ElementParagraph();
         ElementSpan s = new ElementSpan(text, true, true);
-        p.spans.add(s);
+        p.inlines.add(s);
         return p;
     }
 }

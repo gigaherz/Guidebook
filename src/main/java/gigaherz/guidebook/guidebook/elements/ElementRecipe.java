@@ -191,4 +191,10 @@ public class ElementRecipe extends Element
     {
         return true;
     }
+
+    @Override
+    public boolean supportsSpanLevel()
+    {
+        return false;
+    }
 }

@@ -73,7 +73,7 @@ public class FurnaceRecipeProvider extends RecipeProvider
 
         if (inputStacks.size() > 0) // Should always be true
         {
-            VisualElement additionalRenderer = new VisualElement(new Size())
+            VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
             {
                 @Override
                 public void draw(IBookGraphics nav)

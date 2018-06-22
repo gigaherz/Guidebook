@@ -20,6 +20,12 @@ import java.util.function.Predicate;
 
 public abstract class Element
 {
+    public static final int VA_TOP = 0;
+    public static final int VA_MIDDLE = 1;
+    public static final int VA_BASELINE = 2;
+    public static final int VA_BOTTOM = 3;
+
+
     /* Positioning mode:
      * 0 = "relative" -- relative to the computed position (offset)
      * 1 = "absolute" -- relative to the containing Panel
@@ -35,6 +41,17 @@ public abstract class Element
 
     public int z = 0;
     public float scale = 1.0f;
+
+    // in proportion to the element's calculated height
+    public float baseline = 7 / 9f; // vanilla font has a baseline 7 pixels from the bottom, with 9px total height
+
+    /* Vertical align mode -- only applicable within a paragraph
+     * 0 = top
+     * 1 = middle
+     * 2 = baseline
+     * 3 = bottom
+     */
+    public int verticalAlignment = VA_BASELINE;
 
     public Predicate<ConditionContext> condition;
     public boolean conditionResult;
@@ -69,6 +86,10 @@ public abstract class Element
     public boolean supportsPageLevel()
     {
         return false;
+    }
+    public boolean supportsSpanLevel()
+    {
+        return true;
     }
 
     public Point applyPosition(Point point, Point parent)
@@ -158,6 +179,34 @@ public abstract class Element
                     position = 2;
                     break;
             }
+        }
+
+        attr = attributes.getNamedItem("vertical-align");
+        if (attr != null)
+        {
+            String a = attr.getTextContent();
+            switch (a)
+            {
+                case "top":
+                    verticalAlignment = VA_TOP;
+                    break;
+                case "middle":
+                    verticalAlignment = VA_MIDDLE;
+                    break;
+                case "baseline":
+                    verticalAlignment = VA_BASELINE;
+                    break;
+                case "bottom":
+                    verticalAlignment = VA_BOTTOM;
+                    break;
+            }
+        }
+
+        attr = attributes.getNamedItem("baseline");
+        if (attr != null)
+        {
+            Float f = Floats.tryParse(attr.getTextContent());
+            if (f != null) baseline = f;
         }
 
         attr = attributes.getNamedItem("condition");

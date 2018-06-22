@@ -62,6 +62,8 @@ public class GuiGuidebook extends GuiScreen
         {
             initialized = true;
 
+            background = new AnimatedBookBackground(this);
+
             EntityPlayer player = Minecraft.getMinecraft().player;
             ConditionContext conditionContext = new ConditionContext();
             conditionContext.setPlayer(player);
@@ -74,9 +76,6 @@ public class GuiGuidebook extends GuiScreen
                 book = new BookRendering(theBook, this);
                 theBook.setRendering(book);
             }
-            background = new AnimatedBookBackground(this);
-
-            this.buttonList.clear();
 
             int btnId = 0;
 
@@ -115,6 +114,13 @@ public class GuiGuidebook extends GuiScreen
         updateButtonStates();
 
         repositionButtons();
+
+        setupConditionsAndPosition();
+    }
+
+    private void setupConditionsAndPosition()
+    {
+        book.setScalingFactor();
     }
 
     @Override

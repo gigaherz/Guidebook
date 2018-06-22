@@ -12,9 +12,9 @@ public class VisualStack extends VisualElement
     public float scale = 1.0f;
     public int z;
 
-    public VisualStack(ItemStack[] stacks, Size size, float scale, int z)
+    public VisualStack(ItemStack[] stacks, Size size, int positionMode, float baseline, int verticalAlign, float scale, int z)
     {
-        super(size);
+        super(size, positionMode, baseline, verticalAlign);
         this.stacks = stacks;
         this.scale = scale;
         this.z = z;

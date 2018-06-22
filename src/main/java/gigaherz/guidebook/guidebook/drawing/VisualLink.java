@@ -33,9 +33,9 @@ public class VisualLink extends VisualText
 
     public SharedHoverContext hoverContext = new SharedHoverContext();
 
-    public VisualLink(String text, Size size, float scale)
+    public VisualLink(String text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
     {
-        super(text, size, scale);
+        super(text, size, positionMode, baseline, verticalAlign, scale);
     }
 
     @Override

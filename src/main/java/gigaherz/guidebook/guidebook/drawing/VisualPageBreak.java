@@ -6,7 +6,7 @@ public class VisualPageBreak extends VisualElement
 {
     public VisualPageBreak(Size size)
     {
-        super(size);
+        super(size, 0, 0, 0);
     }
 
     @Override
