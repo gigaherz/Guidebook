@@ -75,7 +75,7 @@ public class ElementPanel extends Element
         {
             element.reflow(list, nav, adjustedBounds, pageBounds);
         }
-        if (position != 0)
+        if (position != POS_RELATIVE)
             return bounds.position.y;
         return adjustedPosition.y + space;
     }

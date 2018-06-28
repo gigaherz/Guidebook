@@ -25,6 +25,9 @@ public abstract class Element
     public static final int VA_BASELINE = 2;
     public static final int VA_BOTTOM = 3;
 
+    public static final int POS_RELATIVE = 0;
+    public static final int POS_ABSOLUTE = 1;
+    public static final int POS_FIXED = 2;
 
     /* Positioning mode:
      * 0 = "relative" -- relative to the computed position (offset)
@@ -96,11 +99,11 @@ public abstract class Element
     {
         switch (position)
         {
-            case 0:
+            case POS_RELATIVE:
                 return new Point(point.x + x, point.y + y);
-            case 1:
+            case POS_ABSOLUTE:
                 return new Point(parent.x + x, parent.y + y);
-            case 2:
+            case POS_FIXED:
                 return new Point(x, y);
         }
 

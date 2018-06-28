@@ -13,7 +13,6 @@ import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -23,30 +22,71 @@ import java.util.List;
  */
 public class ElementRecipe extends Element
 {
-    private ElementStack[] recipeComponents;
-    private ElementImage background;
+    private ResourceLocation recipeProviderKey = new ResourceLocation(GuidebookMod.MODID, "shaped");
+    private ResourceLocation recipeKey;
+    private ElementStack recipeOutput;
     private int recipeIndex = 0; // An index to use to specify a certain recipe when multiple ones exist for the target output item
-    private VisualElement additionalRenderer;
     private int indent = 0;
-    private int height = 10;
 
-    // Only used to communicate across parsing methods at resource load; not needed to be duplicated
-    private RecipeProvider recipeProvider;
+    private RecipeProvider.ProvidedComponents retrieveRecipe(RecipeProvider recipeProvider, ElementStack output)
+    {
+        if (output == null ||output.stacks == null ||output.stacks.length == 0)
+            return null;
+
+        ItemStack targetOutput = output.stacks[0];
+
+        return recipeProvider.provideRecipeComponents(targetOutput, recipeIndex);
+    }
+
+    private RecipeProvider.ProvidedComponents retrieveRecipe(RecipeProvider recipeProvider, ResourceLocation recipeKey)
+    {
+        return recipeProvider.provideRecipeComponents(recipeKey);
+    }
 
     @Override
     public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect pageBounds)
     {
+        RecipeProvider recipeProvider = RecipeProvider.registry.get(recipeProviderKey);
+        RecipeProvider.ProvidedComponents components = null;
+
+        if (recipeProvider != null)
+        {
+            components = recipeKey != null
+                    ? retrieveRecipe(recipeProvider, recipeKey)
+                    : retrieveRecipe(recipeProvider, recipeOutput);
+        }
+
+        if (components == null)
+        {
+            ElementSpan s;
+            if (recipeProvider == null)
+                s = new ElementSpan(String.format("Recipe type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey), false, false);
+            else if (recipeKey != null)
+                s = new ElementSpan(String.format("Recipe not found for registry name: %s", recipeKey), false, false);
+            else if (recipeOutput != null)
+                s = new ElementSpan("Recipe not found for provided output item", false, false);
+            else
+                s = new ElementSpan("Recipe name or output not provided, could not identify recipe.", false, false);
+            return s.reflow(list, nav, bounds, pageBounds);
+        }
+
+        ElementImage background = components.background;
+        VisualElement additionalRenderer = components.delegate;
+        ElementStack[] ingredients = components.recipeComponents;
+        int height = h != 0 ? h : components.height;
+
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
-        for (int i = 0; i < recipeComponents.length; ++i)
+        for (int i = 0; i < ingredients.length; ++i)
         {
-            recipeComponents[i].reflow(list, nav, adjustedBounds, pageBounds);
+            ingredients[i].reflow(list, nav, adjustedBounds, pageBounds);
         }
+
         background.reflow(list, nav, adjustedBounds, pageBounds);
         if (additionalRenderer != null)
             list.add(additionalRenderer);
-        if (position != 0)
+        if (position != POS_RELATIVE)
             return bounds.position.y;
         return adjustedPosition.y + height;
     }
@@ -54,28 +94,18 @@ public class ElementRecipe extends Element
     @Override
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        // If a RecipeProvider was not loaded correctly or was not specified, fallback to the default
-        recipeProvider = RecipeProvider.registry.getValue(new ResourceLocation(GuidebookMod.MODID, "shaped"));
-
         Node attr = attributes.getNamedItem("type");
         if (attr != null)
         {
             String registryName = attr.getTextContent();
             // If no domain is specified, insert Guidebook's modid (mostly needed for default recipe providers)
-            ResourceLocation recipeProviderKey = new ResourceLocation((registryName.indexOf(':') == -1 ? GuidebookMod.MODID + ":" : "") + registryName);
-            if (RecipeProvider.registry.containsKey(recipeProviderKey))
-            {
-                recipeProvider = RecipeProvider.registry.getValue(recipeProviderKey);
-            }
-            else
-                GuidebookMod.logger.warn(String.format("<recipe> type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey));
+            recipeProviderKey = new ResourceLocation((registryName.indexOf(':') == -1 ? GuidebookMod.MODID + ":" : "") + registryName);
         }
 
         attr = attributes.getNamedItem("key");
         if (attr != null)
         {
-            ResourceLocation recipeKey = new ResourceLocation(attr.getTextContent());
-            retrieveRecipe(recipeKey);
+            recipeKey = new ResourceLocation(attr.getTextContent());
         }
 
         attr = attributes.getNamedItem("indent");
@@ -88,15 +118,8 @@ public class ElementRecipe extends Element
         attr = attributes.getNamedItem("index");
         if (attr != null)
         {
-            if (recipeComponents != null)
-            {
-                GuidebookMod.logger.warn("Recipe has index attribute '%s' specified but was already loaded via a key attribute. Ignoring index attribute.");
-            }
-            else
-            {
-                Integer recipeIndexObj = Ints.tryParse(attr.getTextContent());
-                if (recipeIndexObj != null) recipeIndex = recipeIndexObj;
-            }
+            Integer recipeIndexObj = Ints.tryParse(attr.getTextContent());
+            if (recipeIndexObj != null) recipeIndex = recipeIndexObj;
         }
     }
 
@@ -107,11 +130,6 @@ public class ElementRecipe extends Element
      */
     public void parseChildNodes(IConditionSource book, Node element)
     {
-        if (recipeComponents != null)
-        {
-            GuidebookMod.logger.warn("Recipe has child nodes but was already loaded via a key attribute. Ignoring child nodes.");
-            return;
-        }
         for (int i = 0; i < element.getChildNodes().getLength(); ++i)
         {
             Node childNode = element.getChildNodes().item(i);
@@ -127,10 +145,8 @@ public class ElementRecipe extends Element
                         {
                             if (stackNode.hasAttributes())
                             {
-                                ElementStack targetOutput = new ElementStack();
-                                targetOutput.parse(book, stackNode.getAttributes());
-                                ItemStack targetOutputItem = targetOutput.stacks[0];
-                                retrieveRecipe(targetOutputItem);
+                                recipeOutput = new ElementStack();
+                                recipeOutput.parse(book, stackNode.getAttributes());
                             }
                             else
                                 GuidebookMod.logger.warn("<recipe.result>'s <stack> sub-node has no attributes. Recipe not loaded");
@@ -143,45 +159,13 @@ public class ElementRecipe extends Element
         }
     }
 
-    private void retrieveRecipe(ItemStack targetOutput)
-    {
-        if (!recipeProvider.hasRecipe(targetOutput))
-            GuidebookMod.logger.warn(String.format("<recipe>'s specified output item '%s' does not have a recipe for type '%s'", targetOutput, recipeProvider.getRegistryName()));
-
-        retrieveRecipe(recipeProvider.provideRecipeComponents(targetOutput, recipeIndex));
-    }
-
-    private void retrieveRecipe(ResourceLocation recipeKey)
-    {
-        if (!recipeProvider.hasRecipe(recipeKey))
-            GuidebookMod.logger.warn(String.format("<recipe>'s specified key '%s' does not exist for type '%s'", recipeKey, recipeProvider.getRegistryName()));
-
-        retrieveRecipe(recipeProvider.provideRecipeComponents(recipeKey));
-    }
-
-    private void retrieveRecipe(@Nullable RecipeProvider.ProvidedComponents components)
-    {
-        assert components != null; // Sanity assertion
-
-        this.height = components.height;
-        this.background = components.background;
-        this.additionalRenderer = components.delegate;
-        this.recipeComponents = components.recipeComponents;
-    }
-
     @Override
     public Element copy()
     {
         ElementRecipe elementRecipe = super.copy(new ElementRecipe());
-        elementRecipe.recipeComponents = new ElementStack[recipeComponents.length];
-        for (int i = 0; i < recipeComponents.length; ++i)
-        {
-            elementRecipe.recipeComponents[i] = (ElementStack) recipeComponents[i].copy();
-        }
-        elementRecipe.background = (ElementImage) background.copy();
+        elementRecipe.recipeOutput = (ElementStack) recipeOutput.copy();
         elementRecipe.recipeIndex = recipeIndex;
-        elementRecipe.additionalRenderer = additionalRenderer;
-        elementRecipe.height = height;
+        elementRecipe.recipeKey = new ResourceLocation(recipeKey.toString());
         elementRecipe.indent = indent;
         return elementRecipe;
     }

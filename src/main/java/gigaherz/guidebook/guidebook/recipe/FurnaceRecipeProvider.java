@@ -34,28 +34,6 @@ public class FurnaceRecipeProvider extends RecipeProvider
     private static final int HEIGHT = BACKGROUND_H;
     private static final int LEFT_OFFSET = 38;
 
-    FurnaceRecipeProvider()
-    {
-        this.setRegistryName(new ResourceLocation(GuidebookMod.MODID, "furnace"));
-    }
-
-    @Override
-    public boolean hasRecipe(@Nonnull ItemStack targetOutput)
-    {
-        for (ItemStack result : FurnaceRecipes.instance().getSmeltingList().values())
-        {
-            if (result.isItemEqual(targetOutput)) return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean hasRecipe(@Nonnull ResourceLocation recipeKey)
-    {
-        GuidebookMod.logger.warn(String.format("[FurnaceRecipeProvider] Furnace recipe specified via recipeKey '%s', however furnace recipes are not registered using a ResourceLocation. Ignoring.", recipeKey));
-        return false;
-    }
-
     @Override
     @Nullable
     public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex)

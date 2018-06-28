@@ -5,6 +5,7 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -64,7 +65,7 @@ public class GuiGuidebook extends GuiScreen
 
             background = new AnimatedBookBackground(this);
 
-            EntityPlayer player = Minecraft.getMinecraft().player;
+            EntityPlayerSP player = Minecraft.getMinecraft().player;
             ConditionContext conditionContext = new ConditionContext();
             conditionContext.setPlayer(player);
 

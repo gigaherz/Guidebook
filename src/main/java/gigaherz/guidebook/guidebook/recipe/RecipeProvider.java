@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.recipe;
 
+import com.google.common.collect.Maps;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.ElementImage;
@@ -21,6 +22,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author joazlazer
@@ -31,52 +33,18 @@ import java.util.List;
  * - CraftingRecipeProvider.ShapelessRecipeProvider
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProvider>
+public abstract class RecipeProvider
 {
-    public static IForgeRegistry<RecipeProvider> registry;
+    public static final Map<ResourceLocation, RecipeProvider> registry = Maps.newHashMap();
 
-    /**
-     * Handles registry of the RecipeProvider registry to the meta-registry and register the default vanilla RecipeProvider's
-     */
-    @SuppressWarnings("unused")
-    @Mod.EventBusSubscriber(modid = GuidebookMod.MODID)
-    public static class RegistrationHandler
+    static
     {
-        @SubscribeEvent
-        @SuppressWarnings("unchecked")
-        public static void registerRegistries(RegistryEvent.NewRegistry event)
-        {
-            RegistryBuilder rb = new RegistryBuilder<RecipeProvider>();
-            rb.setType(RecipeProvider.class);
-            rb.setName(new ResourceLocation(GuidebookMod.MODID, "recipe_provider"));
-            registry = rb.create();
-        }
-
-        @SubscribeEvent
-        public static void registerDefaults(RegistryEvent.Register<RecipeProvider> event)
-        {
-            CraftingRecipeProvider crafting = new CraftingRecipeProvider();
-            event.getRegistry().register(crafting.new ShapedRecipeProvider());
-            event.getRegistry().register(crafting.new ShapelessRecipeProvider());
-            event.getRegistry().register(new FurnaceRecipeProvider());
-        }
+        CraftingRecipeProvider crafting = new CraftingRecipeProvider();
+        registry.put(GuidebookMod.location("crafting"), crafting);
+        registry.put(GuidebookMod.location("shaped"), crafting); // legacy
+        registry.put(GuidebookMod.location("shapeless"), crafting); // legacy
+        registry.put(GuidebookMod.location("smelting"), new FurnaceRecipeProvider());
     }
-
-    /**
-     * Whether the RecipeProvider implementation can provide a recipe that outputs the target item
-     *
-     * @param targetOutput A target ItemStack that was specified via XML
-     * @return True if the RecipeProvider can provide a recipe & its display components, and false if not
-     */
-    public abstract boolean hasRecipe(@Nonnull ItemStack targetOutput);
-
-    /**
-     * Whether the RecipeProvider implementation can provide a recipe that matches the specified key
-     *
-     * @param recipeKey The registry name for the recipe to be queried that was specified via XML
-     * @return True if the RecipeProvider can provide a recipe & its display components, and false if not
-     */
-    public abstract boolean hasRecipe(@Nonnull ResourceLocation recipeKey);
 
     /**
      * Prepares display of the recipe for the target item (if multiple, the (recipeIndex + 1)th occurrence) by creating a ProvidedComponents construct that contains:
@@ -104,15 +72,6 @@ public abstract class RecipeProvider extends IForgeRegistryEntry.Impl<RecipeProv
      */
     @Nullable
     public abstract ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey);
-
-    /**
-     * An optionally overridable method that gets called before book parsing which allows RecipeProviders to cache
-     * recipes retrieved from global registries (for efficiency).
-     */
-    public void reloadCache()
-    {
-
-    }
 
     /**
      * A helper method designed to validate ItemStacks from recipes with metadata that is OreDictionary.WILDCARD_VALUE

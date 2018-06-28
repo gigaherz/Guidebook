@@ -7,6 +7,7 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
+import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import gigaherz.guidebook.guidebook.conditions.GameStageCondition;
@@ -49,7 +50,7 @@ public class ClientProxy implements IModProxy
 
         BasicConditions.register();
         CompositeCondition.register();
-        //AdvancementCondition.register();
+        AdvancementCondition.register();
 
         if (Loader.isModLoaded("gamestages"))
             GameStageCondition.register();

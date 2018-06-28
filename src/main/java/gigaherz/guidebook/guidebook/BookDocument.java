@@ -420,7 +420,7 @@ public class BookDocument implements IConditionSource
                 ElementParagraph p = new ElementParagraph();
                 if (nodeName.equals("title"))
                 {
-                    p.alignment = 1;
+                    p.alignment = ElementParagraph.ALIGN_CENTER;
                     p.space = 4;
                 }
 

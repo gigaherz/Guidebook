@@ -8,128 +8,23 @@ import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.ShapedRecipes;
-import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.oredict.ShapedOreRecipe;
-import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author joazlazer
  * A class designed to provide both shaped and shapeless crafting recipes for display in Guidebooks
  */
-class CraftingRecipeProvider
+class CraftingRecipeProvider extends RecipeProvider
 {
-    public class ShapedRecipeProvider extends RecipeProvider
-    {
-        ShapedRecipeProvider()
-        {
-            this.setRegistryName(GuidebookMod.MODID, "shaped");
-        }
-
-        @Override
-        public boolean hasRecipe(@Nonnull ItemStack targetOutput)
-        {
-            return hasCraftingRecipe(targetOutput, Type.SHAPED);
-        }
-
-        @Override
-        public boolean hasRecipe(@Nonnull ResourceLocation recipeKey)
-        {
-            return hasCraftingRecipe(recipeKey, Type.SHAPED);
-        }
-
-        @Nullable
-        @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex)
-        {
-            return provideCraftingRecipeComponents(findRecipe(targetOutput, recipeIndex, Type.SHAPED), Type.SHAPED);
-        }
-
-        @Nullable
-        @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey)
-        {
-            return provideCraftingRecipeComponents(findRecipe(recipeKey), Type.SHAPED);
-        }
-    }
-
-    public class ShapelessRecipeProvider extends RecipeProvider
-    {
-        ShapelessRecipeProvider()
-        {
-            this.setRegistryName(GuidebookMod.MODID, "shapeless");
-        }
-
-        @Override
-        public void reloadCache()
-        {
-            // Only reload cache once
-            reloadCaches();
-        }
-
-        @Override
-        public boolean hasRecipe(@Nonnull ItemStack targetOutput)
-        {
-            return hasCraftingRecipe(targetOutput, Type.SHAPELESS);
-        }
-
-        @Override
-        public boolean hasRecipe(@Nonnull ResourceLocation recipeKey)
-        {
-            return hasCraftingRecipe(recipeKey, Type.SHAPELESS);
-        }
-
-        @Nullable
-        @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex)
-        {
-            return provideCraftingRecipeComponents(findRecipe(targetOutput, recipeIndex, Type.SHAPELESS), Type.SHAPELESS);
-        }
-
-        @Nullable
-        @Override
-        public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey)
-        {
-            return provideCraftingRecipeComponents(findRecipe(recipeKey), Type.SHAPELESS);
-        }
-    }
-
-    public enum Type
-    {
-        SHAPED,
-        SHAPELESS;
-
-        @Override
-        public String toString()
-        {
-            if (this == SHAPED) return "shaped";
-            else return "shapeless";
-        }
-    }
-
-    private ArrayList<IRecipe> shapedRecipes;
-    private ArrayList<IRecipe> shapelessRecipes;
-
-    private void reloadCaches()
-    {
-        shapelessRecipes = new ArrayList<>();
-        shapedRecipes = new ArrayList<>();
-        for (IRecipe recipe : ForgeRegistries.RECIPES.getValuesCollection())
-        {
-            if (recipe instanceof ShapelessOreRecipe) shapelessRecipes.add(recipe);
-            if (recipe instanceof ShapelessRecipes) shapelessRecipes.add(recipe);
-            if (recipe instanceof ShapedRecipes) shapedRecipes.add(recipe);
-            if (recipe instanceof ShapedOreRecipe) shapedRecipes.add(recipe);
-        }
-    }
-
     private static final int[] INPUT_SLOT_BASE_X = {4, 13};
     private static final int[] INPUT_SLOT_BASE_Y = {3, 3};
     private static final int INPUT_SLOT_OFFSET = 19;
@@ -145,146 +40,100 @@ class CraftingRecipeProvider
     private static final int[] HEIGHT = BACKGROUND_H;
     private static final int LEFT_OFFSET = 38;
 
-    private ArrayList<IRecipe> getCacheForType(Type type)
+    @Nullable
+    @Override
+    public ProvidedComponents provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex)
     {
-        return type == Type.SHAPELESS ? shapelessRecipes : shapedRecipes;
-    }
-
-    private boolean hasCraftingRecipe(ItemStack targetOutput, Type type)
-    {
-        // Query the shaped and shaped ore recipe caches
-        return queryRecipeCaches(targetOutput, 0, getCacheForType(type)) != null;
-    }
-
-    private boolean hasCraftingRecipe(ResourceLocation recipeKey, Type type)
-    {
-        // Query the recipe registry to find the specified registry key
-        if (type == Type.SHAPED && ForgeRegistries.RECIPES.containsKey(recipeKey))
-        {
-            IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeKey);
-            if (recipe instanceof ShapedRecipes || recipe instanceof ShapedOreRecipe) return true;
-            else
-            {
-                GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] Specified recipe '%s' was registered, but is not in the recipe category '%s'. Ignoring.", recipeKey, type.toString()));
-                return false;
-            }
-        }
-        else if (type == Type.SHAPELESS && ForgeRegistries.RECIPES.containsKey(recipeKey))
-        {
-            IRecipe recipe = ForgeRegistries.RECIPES.getValue(recipeKey);
-            if (recipe instanceof ShapelessRecipes || recipe instanceof ShapelessOreRecipe) return true;
-            else
-            {
-                GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] Specified recipe '%s' was registered, but is not in the recipe category '%s'. Ignoring.", recipeKey, type.toString()));
-                return false;
-            }
-        }
-        return false;
+        return provideCraftingRecipeComponents(getRecipesByOutput(targetOutput, recipeIndex));
     }
 
     @Nullable
-    private IRecipe queryRecipeCaches(@Nonnull ItemStack targetOutput, int recipeIndex, ArrayList<IRecipe> cache)
+    @Override
+    public ProvidedComponents provideRecipeComponents(@Nonnull ResourceLocation recipeKey)
     {
-        // Query either the shaped or shapeless recipe cache, but return the (recipeIndex + 1)th occurrence
-        for (IRecipe recipe : cache)
+        return provideCraftingRecipeComponents(getRecipeByName(recipeKey));
+    }
+
+    @Nullable
+    private IRecipe getRecipeByName(ResourceLocation name)
+    {
+        return ForgeRegistries.RECIPES.getValue(name);
+    }
+
+    @Nullable
+    private IRecipe getRecipesByOutput(@Nonnull ItemStack targetOutput, int recipeIndex)
+    {
+        return ForgeRegistries.RECIPES.getValuesCollection().stream()
+                .filter(r -> !r.isDynamic()
+                        && ItemStack.areItemsEqualIgnoreDurability(targetOutput, r.getRecipeOutput())
+                        /*&& ItemStack.areItemStackTagsEqual(targetOutput, r.getRecipeOutput())*/
+                )
+                .skip(recipeIndex).findFirst().orElse(null);
+    }
+
+    @Nullable
+    private RecipeProvider.ProvidedComponents provideCraftingRecipeComponents(@Nullable IRecipe recipe)
+    {
+        if (recipe == null)
+            return null;
+
+        int constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
+        ArrayList<ElementStack> stackComponents = new ArrayList<>();
+        VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
         {
-            if (recipe.getRecipeOutput().isItemEqual(targetOutput))
+            @Override
+            public void draw(IBookGraphics nav)
             {
-                if (recipeIndex > 0)
-                {
-                    --recipeIndex;
-                }
-                else
-                {
-                    return recipe;
-                }
             }
-        }
-        return null;
-    }
+        };
+        int gridWidth = constantIndex == 0 ? 3 : 2;
 
-    @Nullable
-    private IRecipe findRecipe(@Nonnull ResourceLocation recipeKey)
-    {
-        return ForgeRegistries.RECIPES.getValue(recipeKey);
-    }
-
-    @Nullable
-    private IRecipe findRecipe(@Nonnull ItemStack targetOutput, int recipeIndex, Type type)
-    {
-        IRecipe foundRecipe = queryRecipeCaches(targetOutput, recipeIndex, getCacheForType(type));
-        if (foundRecipe == null)
+        // Set up input slots
+        NonNullList<Ingredient> ingredients = recipe.getIngredients();
+        for (int i = 0; i < ingredients.size(); ++i)
         {
-            foundRecipe = queryRecipeCaches(targetOutput, 0, getCacheForType(type));
-            GuidebookMod.logger.warn(String.format("[CraftingRecipeProvider] <recipe> index '%d' was not found in the list of cached %s recipes for '%s'. Falling back to the first occurrence.", recipeIndex, type.toString(), targetOutput.toString()));
-        }
-        return foundRecipe;
-    }
+            ElementStack inputSlot = new ElementStack();
+            ItemStack[] matching = ingredients.get(i).getMatchingStacks();
+            if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
-    @Nullable
-    private RecipeProvider.ProvidedComponents provideCraftingRecipeComponents(@Nullable IRecipe recipe, Type type)
-    {
-        if (recipe != null)
-        {
-            int constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
-            ArrayList<ElementStack> stackComponents = new ArrayList<>();
-            VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
+            // Copy each stack
+            inputSlot.stacks = new ItemStack[matching.length];
+            for (int j = 0; j < matching.length; ++j)
             {
-                @Override
-                public void draw(IBookGraphics nav)
-                {
-                }
-            };
-            int gridWidth = constantIndex == 0 ? 3 : 2;
-
-            // Set up input slots
-            for (int i = 0; i < recipe.getIngredients().size(); ++i)
-            {
-                ElementStack inputSlot = new ElementStack();
-                ItemStack[] matching = recipe.getIngredients().get(i).getMatchingStacks();
-                if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
-
-                // Copy each stack
-                inputSlot.stacks = new ItemStack[matching.length];
-                for (int j = 0; j < matching.length; ++j)
-                {
-                    inputSlot.stacks[j] = matching[j].copy();
-                }
-
-                int posX = i % gridWidth;
-                int posY = i / gridWidth;
-                inputSlot.x = INPUT_SLOT_BASE_X[constantIndex] + (posX * INPUT_SLOT_OFFSET) + LEFT_OFFSET;
-                inputSlot.y = INPUT_SLOT_BASE_Y[constantIndex] + (posY * INPUT_SLOT_OFFSET);
-                stackComponents.add(inputSlot); // Only add the element if there is an item in the slot
+                inputSlot.stacks[j] = matching[j].copy();
             }
 
-            // Set up output slot element
-            ElementStack outputSlot = new ElementStack();
-            stackComponents.add(outputSlot);
-            List<ItemStack> stackList = RecipeProvider.copyAndExpand(recipe.getRecipeOutput());
-            outputSlot.stacks = stackList.toArray(new ItemStack[stackList.size()]);
-            outputSlot.x = OUTPUT_SLOT_X[constantIndex] + LEFT_OFFSET;
-            outputSlot.y = OUTPUT_SLOT_Y[constantIndex];
-
-            // Set up background image
-            ElementImage background = new ElementImage();
-            background.textureLocation = BACKGROUND_TEXTURE;
-            background.x = LEFT_OFFSET;
-            background.y = 0;
-            background.tx = BACKGROUND_U[constantIndex];
-            background.ty = BACKGROUND_V[constantIndex];
-            background.w = BACKGROUND_W[constantIndex];
-            background.h = BACKGROUND_H[constantIndex];
-
-            // Set up overall height
-            int height = HEIGHT[constantIndex];
-
-            ElementStack[] components = new ElementStack[stackComponents.size()];
-            stackComponents.toArray(components);
-            return new RecipeProvider.ProvidedComponents(height, components, background, additionalRenderer);
+            int posX = i % gridWidth;
+            int posY = i / gridWidth;
+            inputSlot.x = INPUT_SLOT_BASE_X[constantIndex] + (posX * INPUT_SLOT_OFFSET) + LEFT_OFFSET;
+            inputSlot.y = INPUT_SLOT_BASE_Y[constantIndex] + (posY * INPUT_SLOT_OFFSET);
+            stackComponents.add(inputSlot); // Only add the element if there is an item in the slot
         }
-        else
-            GuidebookMod.logger.error(String.format("[CraftingRecipeProvider] %s Recipe not found although hasRecipe(...) returned true. Something is wrong!", type.toString()));
-        return null;
+
+        // Set up output slot element
+        ElementStack outputSlot = new ElementStack();
+        stackComponents.add(outputSlot);
+        List<ItemStack> stackList = RecipeProvider.copyAndExpand(recipe.getRecipeOutput());
+        outputSlot.stacks = stackList.toArray(new ItemStack[stackList.size()]);
+        outputSlot.x = OUTPUT_SLOT_X[constantIndex] + LEFT_OFFSET;
+        outputSlot.y = OUTPUT_SLOT_Y[constantIndex];
+
+        // Set up background image
+        ElementImage background = new ElementImage();
+        background.textureLocation = BACKGROUND_TEXTURE;
+        background.x = LEFT_OFFSET;
+        background.y = 0;
+        background.tx = BACKGROUND_U[constantIndex];
+        background.ty = BACKGROUND_V[constantIndex];
+        background.w = BACKGROUND_W[constantIndex];
+        background.h = BACKGROUND_H[constantIndex];
+
+        // Set up overall height
+        int height = HEIGHT[constantIndex];
+
+        ElementStack[] components = new ElementStack[stackComponents.size()];
+        stackComponents.toArray(components);
+
+        return new ProvidedComponents(height, components, background, additionalRenderer);
     }
 }

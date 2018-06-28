@@ -60,7 +60,7 @@ public class ElementStack extends Element
         VisualStack element = getVisual();
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
-        if (position != 0)
+        if (position != POS_RELATIVE)
             return bounds.position.y;
         return bounds.position.y + element.size.height;
     }

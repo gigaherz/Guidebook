@@ -50,12 +50,6 @@ public class BookRegistry
 
     public static void parseAllBooks(IResourceManager manager)
     {
-        // Reload recipe caches
-        for (RecipeProvider recipeProvider : RecipeProvider.registry.getValuesCollection())
-        {
-            recipeProvider.reloadCache();
-        }
-
         TemplateLibrary.clear();
 
         LOADED_BOOKS.clear();

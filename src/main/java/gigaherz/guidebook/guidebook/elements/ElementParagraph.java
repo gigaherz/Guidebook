@@ -17,7 +17,11 @@ import java.util.List;
 
 public class ElementParagraph extends Element
 {
-    public int alignment = 0;
+    public static final int ALIGN_LEFT = 0;
+    public static final int ALIGN_CENTER = 1;
+    public static final int ALIGN_RIGHT = 2;
+
+    public int alignment = ALIGN_LEFT;
     public int indent = 0; // First line?
     public int indentFirstLine = 0; // First line?
     public int space = 2;
@@ -103,7 +107,7 @@ public class ElementParagraph extends Element
 
         processAlignment(paragraph, bounds.size.width, currentLineLeft, firstInLine);
 
-        if (position != 0)
+        if (position != POS_RELATIVE)
             return bounds.position.y;
         return currentLineTop + currentLineHeight + space;
     }
@@ -117,10 +121,10 @@ public class ElementParagraph extends Element
         int leftOffset = 0;
         switch(alignment)
         {
-            case 1: // center
+            case ALIGN_CENTER:
                 leftOffset = (width - realWidth)/2;
                 break;
-            case 2: // right
+            case ALIGN_RIGHT:
                 leftOffset = width - realWidth;
                 break;
         }
@@ -191,13 +195,13 @@ public class ElementParagraph extends Element
             switch (a)
             {
                 case "left":
-                    alignment = 0;
+                    alignment = ElementParagraph.ALIGN_LEFT;
                     break;
                 case "center":
-                    alignment = 1;
+                    alignment = ElementParagraph.ALIGN_CENTER;
                     break;
                 case "right":
-                    alignment = 2;
+                    alignment = ElementParagraph.ALIGN_RIGHT;
                     break;
             }
         }
