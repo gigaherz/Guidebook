@@ -44,7 +44,7 @@ public class BookDocument implements IConditionSource
 
     private float fontSize = 1.0f;
 
-    public SectionRef home = new SectionRef(1, 1);
+    public SectionRef home = new SectionRef(0, 0);
 
     private final ResourceLocation bookLocation;
     private String bookName;

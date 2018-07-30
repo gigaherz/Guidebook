@@ -17,3 +17,16 @@
 *.bak
 *.rhl
 /run
+command_build.bat
+command_runClient.bat
+.classpath
+.project
+.settings/org.eclipse.jdt.core.prefs
+CREDITS.txt
+forge-1.12.2-14.23.4.2745-mdk_Client.launch
+forge-1.12.2-14.23.4.2745-mdk_Server.launch
+gradle.properties
+LICENSE-Paulscode IBXM Library.txt
+LICENSE-Paulscode SoundSystem CodecIBXM.txt
+src/main/java/com/example/examplemod/ExampleMod.java
+/bin/
