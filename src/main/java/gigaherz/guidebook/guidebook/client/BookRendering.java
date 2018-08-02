@@ -533,7 +533,7 @@ public class BookRendering implements IBookGraphics
         if (w == 0) w = sw;
         if (h == 0) h = sh;
 
-        ResourceLocation locExpanded = new ResourceLocation(loc.getResourceDomain(), "textures/" + loc.getResourcePath() + ".png");
+        ResourceLocation locExpanded = new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
         gui.getRenderEngine().bindTexture(locExpanded);
 
         GlStateManager.enableRescaleNormal();

@@ -22,7 +22,7 @@ public class ItemGuidebook extends ItemRegistered
     {
         super(name);
         setMaxStackSize(1);
-        setUnlocalizedName(GuidebookMod.MODID + ".guidebook");
+        setTranslationKey(GuidebookMod.MODID + ".guidebook");
         setCreativeTab(GuidebookMod.tabMagic);
         setHasSubtypes(true);
     }

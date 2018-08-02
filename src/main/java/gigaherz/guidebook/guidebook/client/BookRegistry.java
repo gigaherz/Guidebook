@@ -111,8 +111,8 @@ public class BookRegistry
         try
         {
             ResourceLocation bookLocation = bookDocument.getBookLocation();
-            String domain = bookLocation.getResourceDomain();
-            String path = bookLocation.getResourcePath();
+            String domain = bookLocation.getNamespace();
+            String path = bookLocation.getPath();
             String pathWithoutExtension = path;
             String extension = "";
             int ext = path.lastIndexOf('.');

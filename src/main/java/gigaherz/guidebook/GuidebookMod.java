@@ -48,7 +48,7 @@ public class GuidebookMod
     public static CreativeTabs tabMagic = new CreativeTabs(MODID)
     {
         @Override
-        public ItemStack getTabIconItem()
+        public ItemStack createIcon()
         {
             return new ItemStack(guidebook);
         }
