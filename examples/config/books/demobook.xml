@@ -11,9 +11,11 @@
         <false name="false" />
         <not name="alt_false"><true /></not>
         <not name="alt_true"><false /></not>
+        <advancement-unlocked name="advancement_test" advancement="minecraft:end/root" />
+        <stage-unlocked name="test1" stage="test1" />
     </conditions>
 
-    <chapter condition="">
+    <chapter condition="test1">
         <section>
             <p scale="1.0">Left</p>
             <p align="center">Center</p>

@@ -33,7 +33,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return !GameStageHelper.getPlayerData(conditionContext.getPlayer()).hasStage(stageName);
+            return !GameStageHelper.clientHasStage(conditionContext.getPlayer(), stageName);
         }
     }
 
@@ -48,7 +48,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return GameStageHelper.getPlayerData(conditionContext.getPlayer()).hasStage(stageName);
+            return GameStageHelper.clientHasStage(conditionContext.getPlayer(), stageName);
         }
     }
 
