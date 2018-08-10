@@ -42,16 +42,16 @@
             <link indent="10" ref="intro:1">ааааааа ббббббббббббб вввв</link>
             <link indent="10" ref="intro:2">Сильные элементальные духи</link>
         </section>
-        <page>
+        <section>
             <p>Page 2</p>
             <p>Test (<link ref="chapter2">Click me</link>) test</p>
             <link href="https://minecraft.curseforge.com/projects/guidebook">Click me 2</link>
             <link action="copyText" text="Text to copy to the clipboard">Click me 3</link>
             <p>An image <image src="minecraft:items/coal" tw="16" th="16"/> mixed into the text.</p>
-        </page>
+        </section>
     </chapter>
     <chapter id="chapter2">
-        <page>
+        <section>
             <title>Using the template system</title>
 
             <big_recipe>
@@ -74,8 +74,8 @@
                 <stack item="minecraft:quartz"/>
                 <stack item="minecraft:quartz_block"/>
             </small_recipe>
-        </page>
-        <page>
+        </section>
+        <section>
             <title>Using the recipe tag</title>
             <recipe type="gbook:crafting" key="minecraft:iron_pickaxe"/>
             <recipe type="gbook:crafting" key="minecraft:quartz_block"/>
@@ -84,7 +84,7 @@
                     <stack item="minecraft:comparator"/>
                 </recipe.result>
             </recipe>
-        </page>
+        </section>
     </chapter>
     <chapter id="conditions">
         <section>
@@ -135,7 +135,7 @@
                 facilisis. Nam at tortor quis nisl vestibulum semper nec malesuada sapien. Vestibulum et enim tristique
                 diam varius imperdiet non at nisl.
             </p>
-            <page-break/>
+            <section-break/>
             <p>
                 Praesent consectetur ante turpis, non scelerisque felis iaculis vestibulum. Duis ut ipsum libero. Fusce
                 congue posuere urna ultrices luctus. Nullam tincidunt enim vitae tempus euismod. Ut iaculis facilisis

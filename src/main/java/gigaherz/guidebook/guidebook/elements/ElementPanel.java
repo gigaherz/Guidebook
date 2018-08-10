@@ -20,7 +20,7 @@ public class ElementPanel extends Element
 {
     public final List<Element> innerElements;
     public boolean asPercent;
-    public int space;
+    public Integer space;
 
     public ElementPanel()
     {
@@ -71,13 +71,14 @@ public class ElementPanel extends Element
     {
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
+        int yBottom = adjustedPosition.y;
         for (Element element : innerElements)
         {
-            element.reflow(list, nav, adjustedBounds, pageBounds);
+            yBottom = element.reflow(list, nav, adjustedBounds, pageBounds);
         }
         if (position != POS_RELATIVE)
             return bounds.position.y;
-        return adjustedPosition.y + space;
+        return space != null? (adjustedPosition.y + space) : yBottom;
     }
 
     @Override

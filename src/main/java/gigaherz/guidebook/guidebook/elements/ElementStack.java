@@ -27,7 +27,7 @@ public class ElementStack extends Element
 {
     public static final String WILDCARD = "*";
 
-    public ItemStack[] stacks;
+    public final NonNullList<ItemStack> stacks = NonNullList.create();
 
     public ElementStack()
     {
@@ -113,28 +113,25 @@ public class ElementStack extends Element
             {
                 if (((meta == OreDictionary.WILDCARD_VALUE) || meta == -1) && item.getHasSubtypes())
                 {
-                    NonNullList<ItemStack> processed_items = NonNullList.create();
-                    NonNullList<ItemStack> subitems = NonNullList.create();
+                    item.getSubItems(CreativeTabs.SEARCH, stacks);
 
-                    item.getSubItems(CreativeTabs.SEARCH, subitems);
-
-                    for (ItemStack subitem : subitems)
+                    for (int i = 0; i < stacks.size(); i++)
                     {
+                        ItemStack subitem = stacks.get(i);
+
                         subitem = subitem.copy();
 
                         subitem.setCount(stackSize);
                         subitem.setTagCompound(tag);
 
-                        processed_items.add(subitem);
+                        stacks.set(i, subitem);
                     }
-
-                    stacks = subitems.toArray(new ItemStack[subitems.size()]);
                 }
                 else
                 {
                     ItemStack stack = new ItemStack(item, stackSize, meta);
                     stack.setTagCompound(tag);
-                    stacks = new ItemStack[]{stack};
+                    stacks.add(stack);
                 }
             }
         }
@@ -149,9 +146,6 @@ public class ElementStack extends Element
 
             if (items.size() != 0)
             {
-                //init empty list to fill with resolved items
-                NonNullList<ItemStack> items_processed = NonNullList.create();
-
                 //foreach item: try to resolve wildcard meta data
                 for (ItemStack item : items)
                 {
@@ -171,18 +165,15 @@ public class ElementStack extends Element
 
                             subitem.setCount(stackSize);
                             subitem.setTagCompound(tag);
-                            items_processed.add(subitem);
+                            stacks.add(subitem);
                         }
                     }
                     else
                     {
                         item.setCount(stackSize);
-                        items_processed.add(item);
+                        stacks.add(item);
                     }
                 }
-
-                //
-                stacks = items_processed.toArray(new ItemStack[items_processed.size()]);
             }
         }
     }
@@ -190,20 +181,12 @@ public class ElementStack extends Element
     @Override
     public Element copy()
     {
-        ElementStack stack = super.copy(new ElementStack());
-        if (this.stacks != null)
+        ElementStack newStack = super.copy(new ElementStack());
+        for(ItemStack stack : stacks)
         {
-            stack.stacks = new ItemStack[this.stacks.length];
-            for (int i = 0; i < this.stacks.length; i++)
-            {
-                stack.stacks[i] = this.stacks[i].copy();
-            }
+            newStack.stacks.add(stack.copy());
         }
-        else
-        {
-            stack.stacks = null;
-        }
-        return stack;
+        return newStack;
     }
 
     @Override

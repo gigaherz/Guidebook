@@ -22,5 +22,8 @@ public class VisualText extends VisualElement
     }
 
     @Override
-    public String getText() { return text; }
+    public String getText()
+    {
+        return text;
+    }
 }

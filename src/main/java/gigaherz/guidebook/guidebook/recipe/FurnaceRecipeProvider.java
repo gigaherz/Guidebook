@@ -63,23 +63,19 @@ public class FurnaceRecipeProvider extends RecipeProvider
             // Set up input slot element
             ElementStack inputSlot = new ElementStack();
             recipeComponents[0] = inputSlot;
-            inputSlot.stacks = new ItemStack[inputStacks.size()];
-            inputStacks.toArray(inputSlot.stacks);
+            inputSlot.stacks.addAll(inputStacks);
             inputSlot.x = INPUT_SLOT_X + LEFT_OFFSET;
             inputSlot.y = INPUT_SLOT_Y;
 
             // Set up output slot element
             ElementStack outputSlot = new ElementStack();
             recipeComponents[1] = outputSlot;
-            ArrayList<ItemStack> outputStacks = new ArrayList<>();
-            outputSlot.stacks = new ItemStack[inputStacks.size()];
             // Add output stacks for each recipe in the same order as the input ones (in case the item quantities vary)
             for (ItemStack inputStack : inputStacks)
             {
                 // Use copyAndExpand utility method to fix WILDCARD_VALUE stack meta's and low-durability tools
-                outputStacks.addAll(copyAndExpand(FurnaceRecipes.instance().getSmeltingResult(inputStack)));
+                outputSlot.stacks.addAll(copyAndExpand(FurnaceRecipes.instance().getSmeltingResult(inputStack)));
             }
-            outputStacks.toArray(outputSlot.stacks);
             outputSlot.x = OUTPUT_SLOT_X + LEFT_OFFSET;
             outputSlot.y = OUTPUT_SLOT_Y;
 

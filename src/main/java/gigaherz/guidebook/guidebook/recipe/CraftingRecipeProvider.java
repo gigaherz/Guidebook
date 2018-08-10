@@ -17,7 +17,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author joazlazer
@@ -65,7 +64,7 @@ class CraftingRecipeProvider extends RecipeProvider
     {
         return ForgeRegistries.RECIPES.getValuesCollection().stream()
                 .filter(r -> !r.isDynamic()
-                        && ItemStack.areItemsEqualIgnoreDurability(targetOutput, r.getRecipeOutput())
+                                && ItemStack.areItemsEqualIgnoreDurability(targetOutput, r.getRecipeOutput())
                         /*&& ItemStack.areItemStackTagsEqual(targetOutput, r.getRecipeOutput())*/
                 )
                 .skip(recipeIndex).findFirst().orElse(null);
@@ -97,10 +96,9 @@ class CraftingRecipeProvider extends RecipeProvider
             if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
             // Copy each stack
-            inputSlot.stacks = new ItemStack[matching.length];
             for (int j = 0; j < matching.length; ++j)
             {
-                inputSlot.stacks[j] = matching[j].copy();
+                inputSlot.stacks.add(matching[j].copy());
             }
 
             int posX = i % gridWidth;
@@ -114,7 +112,7 @@ class CraftingRecipeProvider extends RecipeProvider
         ElementStack outputSlot = new ElementStack();
         stackComponents.add(outputSlot);
         List<ItemStack> stackList = RecipeProvider.copyAndExpand(recipe.getRecipeOutput());
-        outputSlot.stacks = stackList.toArray(new ItemStack[stackList.size()]);
+        outputSlot.stacks.addAll(stackList);
         outputSlot.x = OUTPUT_SLOT_X[constantIndex] + LEFT_OFFSET;
         outputSlot.y = OUTPUT_SLOT_Y[constantIndex];
 

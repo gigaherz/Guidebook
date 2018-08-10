@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.Point;
@@ -13,27 +14,28 @@ import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * @author joazlazer
- * A page element that will display a recipe provided by the specified recipe type's RecipeProvider and will render hoverable stacks,
+ * A section element that will display a recipe provided by the specified recipe type's RecipeProvider and will render hoverable stacks,
  * a background image, and additional components to display said recipe
  */
 public class ElementRecipe extends Element
 {
     private ResourceLocation recipeProviderKey = new ResourceLocation(GuidebookMod.MODID, "shaped");
     private ResourceLocation recipeKey;
-    private ElementStack recipeOutput;
+    private Element recipeOutput;
     private int recipeIndex = 0; // An index to use to specify a certain recipe when multiple ones exist for the target output item
     private int indent = 0;
 
     private RecipeProvider.ProvidedComponents retrieveRecipe(RecipeProvider recipeProvider, ElementStack output)
     {
-        if (output == null ||output.stacks == null ||output.stacks.length == 0)
+        if (output == null || output.stacks == null || output.stacks.size() == 0)
             return null;
 
-        ItemStack targetOutput = output.stacks[0];
+        ItemStack targetOutput = output.stacks.get(0);
 
         return recipeProvider.provideRecipeComponents(targetOutput, recipeIndex);
     }
@@ -49,11 +51,11 @@ public class ElementRecipe extends Element
         RecipeProvider recipeProvider = RecipeProvider.registry.get(recipeProviderKey);
         RecipeProvider.ProvidedComponents components = null;
 
-        if (recipeProvider != null)
+        if (recipeProvider != null && (recipeKey != null || recipeOutput instanceof ElementStack))
         {
             components = recipeKey != null
                     ? retrieveRecipe(recipeProvider, recipeKey)
-                    : retrieveRecipe(recipeProvider, recipeOutput);
+                    : retrieveRecipe(recipeProvider, (ElementStack) recipeOutput);
         }
 
         if (components == null)
@@ -64,7 +66,12 @@ public class ElementRecipe extends Element
             else if (recipeKey != null)
                 s = new ElementSpan(String.format("Recipe not found for registry name: %s", recipeKey), false, false);
             else if (recipeOutput != null)
-                s = new ElementSpan("Recipe not found for provided output item", false, false);
+            {
+                if (recipeOutput instanceof ElementStack)
+                    s = new ElementSpan("Recipe not found for provided output item.", false, false);
+                else
+                    s = new ElementSpan("Recipe output is not a stack element.", false, false);
+            }
             else
                 s = new ElementSpan("Recipe name or output not provided, could not identify recipe.", false, false);
             return s.reflow(list, nav, bounds, pageBounds);
@@ -128,6 +135,7 @@ public class ElementRecipe extends Element
      *
      * @param element The base <recipe> tag
      */
+    @Override
     public void parseChildNodes(IConditionSource book, Node element)
     {
         for (int i = 0; i < element.getChildNodes().getLength(); ++i)
@@ -141,15 +149,10 @@ public class ElementRecipe extends Element
                     for (int j = 0; j < childNode.getChildNodes().getLength(); ++j)
                     {
                         Node stackNode = childNode.getChildNodes().item(j);
-                        if (stackNode.getNodeName().equals("stack"))
+                        String stackNodeName = stackNode.getNodeName();
+                        if (stackNodeName.equals("stack") || stackNodeName.equals("element"))
                         {
-                            if (stackNode.hasAttributes())
-                            {
-                                recipeOutput = new ElementStack();
-                                recipeOutput.parse(book, stackNode.getAttributes());
-                            }
-                            else
-                                GuidebookMod.logger.warn("<recipe.result>'s <stack> sub-node has no attributes. Recipe not loaded");
+                            recipeOutput = BookDocument.parseParagraphElement(book, stackNode, stackNodeName);
                         }
                     }
                 }
@@ -159,13 +162,37 @@ public class ElementRecipe extends Element
         }
     }
 
+    @Nullable
+    @Override
+    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
+    {
+        ElementRecipe elementRecipe = super.copy(new ElementRecipe());
+        if (recipeOutput != null)
+        {
+            elementRecipe.recipeOutput = recipeOutput.applyTemplate(book, sourceElements);
+        }
+        elementRecipe.recipeIndex = recipeIndex;
+        if (recipeKey != null)
+        {
+            elementRecipe.recipeKey = new ResourceLocation(recipeKey.toString());
+        }
+        elementRecipe.indent = indent;
+        return elementRecipe;
+    }
+
     @Override
     public Element copy()
     {
         ElementRecipe elementRecipe = super.copy(new ElementRecipe());
-        elementRecipe.recipeOutput = (ElementStack) recipeOutput.copy();
+        if (recipeOutput != null)
+        {
+            elementRecipe.recipeOutput = recipeOutput.copy();
+        }
         elementRecipe.recipeIndex = recipeIndex;
-        elementRecipe.recipeKey = new ResourceLocation(recipeKey.toString());
+        if (recipeKey != null)
+        {
+            elementRecipe.recipeKey = new ResourceLocation(recipeKey.toString());
+        }
         elementRecipe.indent = indent;
         return elementRecipe;
     }

@@ -128,7 +128,6 @@ public class ElementSpan extends Element
         {
             translationKey = attr.getTextContent();
         }
-
     }
 
     @Override

@@ -119,10 +119,10 @@ public class ElementParagraph extends Element
 
         int realWidth = currentLineLeft;
         int leftOffset = 0;
-        switch(alignment)
+        switch (alignment)
         {
             case ALIGN_CENTER:
-                leftOffset = (width - realWidth)/2;
+                leftOffset = (width - realWidth) / 2;
                 break;
             case ALIGN_RIGHT:
                 leftOffset = width - realWidth;

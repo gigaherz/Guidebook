@@ -38,5 +38,8 @@ public abstract class VisualElement extends Rect
         return false;
     }
 
-    public String getText() { return ""; }
+    public String getText()
+    {
+        return "";
+    }
 }

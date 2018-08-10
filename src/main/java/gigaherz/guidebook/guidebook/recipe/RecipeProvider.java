@@ -11,13 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-import net.minecraftforge.registries.RegistryBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,7 +44,7 @@ public abstract class RecipeProvider
      * Prepares display of the recipe for the target item (if multiple, the (recipeIndex + 1)th occurrence) by creating a ProvidedComponents construct that contains:
      * - An array of Stack objects to represent ItemStacks to render
      * - An Image object to represent the background image
-     * - A height int that represents how much space this element should take up on the page
+     * - A height int that represents how much space this element should take up on the section
      * - An IRenderDelegate instance designed to be used via a lambda that allows a RecipeProvider implementation to draw additional items (i.e. Thaumcraft infusion essentia)
      *
      * @param targetOutput A target ItemStack that was specified via XML
@@ -64,7 +58,7 @@ public abstract class RecipeProvider
      * Prepares display of the recipe that matches the specified key by creating a ProvidedComponents construct that contains:
      * - An array of Stack objects to represent ItemStacks to render
      * - An Image object to represent the background image
-     * - A height int that represents how much space this element should take up on the page
+     * - A height int that represents how much space this element should take up on the section
      * - An IRenderDelegate instance designed to be used via a lambda that allows a RecipeProvider implementation to draw additional items (i.e. Thaumcraft infusion essentia)
      *
      * @param recipeKey The registry name for the recipe to be displayed that was specified via XML

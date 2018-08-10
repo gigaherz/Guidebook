@@ -10,27 +10,27 @@ import javax.annotation.Nullable;
 public class SectionRef
 {
     public int chapter;
-    public int page;
+    public int section;
 
     public boolean resolvedNames = false;
     public String chapterName;
-    public String pageName;
+    public String sectionName;
 
-    public SectionRef(int chapter, int page)
+    public SectionRef(int chapter, int section)
     {
         this.chapter = chapter;
-        this.page = page;
+        this.section = section;
         resolvedNames = true;
     }
 
-    public SectionRef(String chapter, @Nullable String page)
+    public SectionRef(String chapter, @Nullable String sectionName)
     {
         this.chapterName = chapter;
-        this.pageName = page;
+        this.sectionName = sectionName;
     }
 
     /**
-     * @param bookDocument the book which contains the referenced page
+     * @param bookDocument the book which contains the referenced section
      * @return <code>false</code> if the {@link SectionRef} has no valid target
      */
     public boolean resolve(BookDocument bookDocument)
@@ -51,47 +51,47 @@ public class SectionRef
                         chapter = bookDocument.chaptersByName.get(chapterName);
                     }
 
-                    if (!Strings.isNullOrEmpty(pageName))
+                    if (!Strings.isNullOrEmpty(sectionName))
                     {
-                        Integer pg = Ints.tryParse(pageName);
+                        Integer pg = Ints.tryParse(sectionName);
                         if (pg != null)
                         {
-                            page = pg;
+                            section = pg;
                         }
                         else
                         {
-                            page = bookDocument.chapters.get(chapter).sectionsByName.get(pageName);
+                            section = bookDocument.chapters.get(chapter).sectionsByName.get(sectionName);
                         }
                     }
                 }
-                else if (!Strings.isNullOrEmpty(pageName))
+                else if (!Strings.isNullOrEmpty(sectionName))
                 {
-                    SectionRef temp = bookDocument.sectionsByName.get(pageName);
+                    SectionRef temp = bookDocument.sectionsByName.get(sectionName);
                     temp.resolve(bookDocument);
                     chapter = temp.chapter;
-                    page = temp.page;
+                    section = temp.section;
                 }
                 else
                 {
                     //throw error if neither field is defined
-                    throw new InvalidPageRefException("Invalid format: missing page and chapter");
+                    throw new InvalidPageRefException("Invalid format: missing section and chapter");
                 }
             }
             catch (Exception e)
             {
-                //try to parse the page ref into a string: <chapter>:<page>
+                //try to parse the section ref into a string: <chapter>:<section>
                 String ref_string = (Strings.isNullOrEmpty(chapterName) ? "<none>" : (chapterName)) +
-                        ":" + (Strings.isNullOrEmpty(pageName) ? "<none>" : (pageName));
+                        ":" + (Strings.isNullOrEmpty(sectionName) ? "<none>" : (sectionName));
                 //log error
                 GuidebookMod.logger.error(
                         String.format(
-                                "Invalid page reference: \"%s\" in book \"%s\" caused by: %s",
+                                "Invalid section reference: \"%s\" in book \"%s\" caused by: %s",
                                 ref_string,
                                 bookDocument.getBookName(),
                                 e.toString()
                         )
                 );
-                return false; // =page ref has no valid target
+                return false; // =section ref has no valid target
             }
         }
         return true;
@@ -99,7 +99,7 @@ public class SectionRef
 
     public SectionRef copy()
     {
-        return new SectionRef(chapter, page);
+        return new SectionRef(chapter, section);
     }
 
     /**
@@ -138,7 +138,7 @@ public class SectionRef
         if (!(obj instanceof SectionRef))
             return false;
         SectionRef pr = (SectionRef) obj;
-        return resolvedNames && pr.resolvedNames && pr.chapter == chapter && pr.page == page;
+        return resolvedNames && pr.resolvedNames && pr.chapter == chapter && pr.section == section;
     }
 
     @Override
@@ -146,6 +146,6 @@ public class SectionRef
     {
         if (!resolvedNames)
             return 0;
-        return chapter * 313 + page;
+        return chapter * 313 + section;
     }
 }

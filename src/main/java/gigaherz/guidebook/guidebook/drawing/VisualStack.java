@@ -3,6 +3,7 @@ package gigaherz.guidebook.guidebook.drawing;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 
 public class VisualStack extends VisualElement
 {
@@ -12,10 +13,10 @@ public class VisualStack extends VisualElement
     public float scale = 1.0f;
     public int z;
 
-    public VisualStack(ItemStack[] stacks, Size size, int positionMode, float baseline, int verticalAlign, float scale, int z)
+    public VisualStack(NonNullList<ItemStack> stacks, Size size, int positionMode, float baseline, int verticalAlign, float scale, int z)
     {
         super(size, positionMode, baseline, verticalAlign);
-        this.stacks = stacks;
+        this.stacks = stacks.toArray(new ItemStack[0]);
         this.scale = scale;
         this.z = z;
     }

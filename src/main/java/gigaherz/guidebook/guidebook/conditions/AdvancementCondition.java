@@ -20,8 +20,10 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
     public final ResourceLocation advancement;
 
     private static Field f_advancementToProgress;
-    static {
-        f_advancementToProgress = ReflectionHelper.findField(ClientAdvancementManager.class, "field_192803_d","advancementToProgress");
+
+    static
+    {
+        f_advancementToProgress = ReflectionHelper.findField(ClientAdvancementManager.class, "field_192803_d", "advancementToProgress");
     }
 
     @SuppressWarnings("unchecked")
@@ -50,7 +52,6 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
     {
         ConditionManager.register("advancement-locked", (doc, node) -> new Locked(parseAdvancementLocation(node)));
         ConditionManager.register("advancement-unlocked", (doc, node) -> new Unlocked(parseAdvancementLocation(node)));
-
     }
 
     public static class Locked extends AdvancementCondition

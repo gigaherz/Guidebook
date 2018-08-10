@@ -32,7 +32,7 @@ public abstract class Element
     /* Positioning mode:
      * 0 = "relative" -- relative to the computed position (offset)
      * 1 = "absolute" -- relative to the containing Panel
-     * 2 = "fixed" -- relative to the page
+     * 2 = "fixed" -- relative to the section
      */
     @Nullable
     public int position = 0;
@@ -90,6 +90,7 @@ public abstract class Element
     {
         return false;
     }
+
     public boolean supportsSpanLevel()
     {
         return true;
@@ -217,5 +218,9 @@ public abstract class Element
         {
             condition = book.getCondition(attr.getTextContent());
         }
+    }
+
+    public void parseChildNodes(IConditionSource book, Node element)
+    {
     }
 }

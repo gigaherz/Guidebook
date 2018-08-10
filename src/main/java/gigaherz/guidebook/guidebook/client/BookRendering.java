@@ -32,13 +32,13 @@ public class BookRendering implements IBookGraphics
 
     private BookDocument book;
 
-    double scaledWidthD;
-    double scaledHeightD;
-    int scaledWidth;
-    int scaledHeight;
+    private double scaledWidthD;
+    private double scaledHeightD;
+    private int scaledWidth;
+    private int scaledHeight;
 
-    final Minecraft mc = Minecraft.getMinecraft();
-    final GuiGuidebook gui;
+    private final Minecraft mc = Minecraft.getMinecraft();
+    private final GuiGuidebook gui;
 
     private int bookWidth;
     private int bookHeight;
@@ -49,32 +49,34 @@ public class BookRendering implements IBookGraphics
     private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
     private int pageHeight = bookHeight - verticalMargin;
 
-    private class PageRef
-    {
-        public int chapter;
-        public int page;
-
-        public PageRef(int currentChapter, int currentPage)
-        {
-            chapter = currentChapter;
-            page = currentPage;
-        }
-    }
-
-    final List<VisualChapter> chapters = Lists.newArrayList();
+    private final List<VisualChapter> chapters = Lists.newArrayList();
     private int lastProcessedChapter = 0;
 
-    final java.util.Stack<PageRef> history = new java.util.Stack<>();
+    private final java.util.Stack<PageRef> history = new java.util.Stack<>();
     private int currentChapter = 0;
     private int currentPair = 0;
     private boolean hasScale;
 
     private float scalingFactor;
 
+    private VisualElement previousHovering = null;
+
     BookRendering(BookDocument book, GuiGuidebook gui)
     {
         this.book = book;
         this.gui = gui;
+    }
+
+    @Override
+    public Object owner()
+    {
+        return gui;
+    }
+
+    @Override
+    public BookDocument getBook()
+    {
+        return book;
     }
 
     public void computeScaledResolution2(float scaleFactorCoef)
@@ -110,7 +112,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void setScalingFactor()
+    public void refreshScalingFactor()
     {
         float fontSize = book.getFontSize();
 
@@ -183,14 +185,54 @@ public class BookRendering implements IBookGraphics
         return (currentChapter > 0);
     }
 
+    private boolean needChapter(int chapterNumber)
+    {
+        if (chapterNumber < 0 ||chapterNumber >= book.chapterCount())
+            return false;
+        BookDocument.ChapterData ch = book.getChapter(chapterNumber);
+        return ch.conditionResult && !ch.isEmpty();
+    }
+
+    private boolean needSection(int chapterNumber, int sectionNumber)
+    {
+        BookDocument.ChapterData ch = book.getChapter(chapterNumber);
+        if (sectionNumber < 0 || sectionNumber >= ch.sections.size())
+            return false;
+        BookDocument.PageData section = ch.sections.get(sectionNumber);
+        return section.conditionResult && !section.isEmpty();
+    }
+
+    private int findSectionStart(SectionRef ref)
+    {
+        VisualChapter vc = getVisualChapter(currentChapter);
+        for(int i=0;i<vc.pages.size();i++)
+        {
+            VisualPage page = vc.pages.get(i);
+            if (page.ref.section == ref.section)
+                return i/2;
+
+            if (page.ref.section > ref.section)
+                return 0; // give up
+        }
+        return 0;
+    }
+
     @Override
     public void navigateTo(final SectionRef target)
     {
         if (!target.resolve(book))
             return;
         pushHistory();
-        currentChapter = Math.max(0, Math.min(book.chapterCount() - 1, target.chapter));
-        currentPair = Math.max(0, Math.min(getVisualChapter(currentChapter).totalPairs - 1, target.page / 2));
+
+        if (!needChapter(target.chapter))
+            return;
+
+        if (!needSection(target.chapter, target.section))
+            return;
+
+        currentChapter = target.chapter;
+
+        currentPair = findSectionStart(target);
     }
 
     @Override
@@ -348,7 +390,7 @@ public class BookRendering implements IBookGraphics
             }
 
             Size pageSize = new Size(pageWidth, pageHeight);
-            bc.reflow(ch, pageSize);
+            bc.reflow(this, ch, pageSize);
 
             ch.totalPairs = (ch.pages.size() + 1) / 2;
             chapters.add(ch);
@@ -357,7 +399,7 @@ public class BookRendering implements IBookGraphics
         if (chapter >= chapters.size())
         {
             VisualChapter vc = new VisualChapter();
-            vc.pages.add(new VisualPage());
+            vc.pages.add(new VisualPage(new SectionRef(chapter,0)));
             return vc;
         }
 
@@ -381,8 +423,6 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
-
-    VisualElement previousHovering = null;
 
     @Override
     public boolean mouseHover(int mouseX, int mouseY)
@@ -462,7 +502,7 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    Point getPageOffset(boolean leftPage)
+    private Point getPageOffset(boolean leftPage)
     {
         int left = scaledWidth / 2 - pageWidth - innerMargin;
         int right = scaledWidth / 2 + innerMargin;
@@ -494,12 +534,6 @@ public class BookRendering implements IBookGraphics
         addString((pageWidth - sz.width) / 2, pageHeight + 2, cnt, 0xFF000000, 1.0f);
 
         GlStateManager.popMatrix();
-    }
-
-    @Override
-    public BookDocument getBook()
-    {
-        return book;
     }
 
     @Override
@@ -553,12 +587,6 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public Object owner()
-    {
-        return gui;
-    }
-
-    @Override
     public Size measure(String text)
     {
         FontRenderer font = gui.getFontRenderer();
@@ -566,101 +594,12 @@ public class BookRendering implements IBookGraphics
         return new Size(width, font.FONT_HEIGHT);
     }
 
-    private static boolean isFormatColor(char colorChar)
-    {
-        return colorChar >= '0' && colorChar <= '9' || colorChar >= 'a' && colorChar <= 'f' || colorChar >= 'A' && colorChar <= 'F';
-    }
-
-    private static int sizeStringToWidth(FontRenderer font, String str, int wrapWidth)
-    {
-        int i = str.length();
-        int j = 0;
-        int k = 0;
-        int l = -1;
-
-        for (boolean flag = false; k < i; ++k)
-        {
-            char c0 = str.charAt(k);
-
-            switch (c0)
-            {
-                case '\n':
-                    --k;
-                    break;
-                case ' ':
-                    l = k;
-                default:
-                    j += font.getCharWidth(c0);
-
-                    if (flag)
-                    {
-                        ++j;
-                    }
-
-                    break;
-                case '\u00a7':
-
-                    if (k < i - 1)
-                    {
-                        ++k;
-                        char c1 = str.charAt(k);
-
-                        if (c1 != 'l' && c1 != 'L')
-                        {
-                            if (c1 == 'r' || c1 == 'R' || isFormatColor(c1))
-                            {
-                                flag = false;
-                            }
-                        }
-                        else
-                        {
-                            flag = true;
-                        }
-                    }
-            }
-
-            if (c0 == '\n')
-            {
-                ++k;
-                l = k;
-                break;
-            }
-
-            if (j > wrapWidth)
-            {
-                break;
-            }
-        }
-
-        return k != i && l != -1 && l < k ? l : k;
-    }
-
-    private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<String> dest, String str, int wrapWidth, int wrapWidthFirstLine, boolean firstLine)
-    {
-        int i = sizeStringToWidth(font, str, firstLine ? wrapWidthFirstLine : wrapWidth);
-
-        if (str.length() <= i)
-        {
-            dest.accept(str);
-        }
-        else
-        {
-            String s = str.substring(0, i);
-            dest.accept(s);
-            dest.accept("\n"); // line break
-            char c0 = str.charAt(i);
-            boolean flag = c0 == ' ' || c0 == '\n';
-            String s1 = FontRenderer.getFormatFromString(s) + str.substring(i + (flag ? 1 : 0));
-            wrapFormattedStringToWidth(font, dest, s1, wrapWidth, wrapWidthFirstLine, false);
-        }
-    }
-
     @Override
     public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment)
     {
         FontRenderer font = gui.getFontRenderer();
         List<VisualElement> sizes = Lists.newArrayList();
-        wrapFormattedStringToWidth(font, (s) -> {
+        TextMetrics.wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.getStringWidth(s);
             sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
         }, text, width, firstLineWidth, true);
@@ -677,5 +616,109 @@ public class BookRendering implements IBookGraphics
     public int getActualBookWidth()
     {
         return bookWidth;
+    }
+
+    private static class TextMetrics
+    {
+        private static boolean isFormatColor(char colorChar)
+        {
+            return colorChar >= '0' && colorChar <= '9' || colorChar >= 'a' && colorChar <= 'f' || colorChar >= 'A' && colorChar <= 'F';
+        }
+
+        private static int sizeStringToWidth(FontRenderer font, String str, int wrapWidth)
+        {
+            int i = str.length();
+            int j = 0;
+            int k = 0;
+            int l = -1;
+
+            for (boolean flag = false; k < i; ++k)
+            {
+                char c0 = str.charAt(k);
+
+                switch (c0)
+                {
+                    case '\n':
+                        --k;
+                        break;
+                    case ' ':
+                        l = k;
+                    default:
+                        j += font.getCharWidth(c0);
+
+                        if (flag)
+                        {
+                            ++j;
+                        }
+
+                        break;
+                    case '\u00a7':
+
+                        if (k < i - 1)
+                        {
+                            ++k;
+                            char c1 = str.charAt(k);
+
+                            if (c1 != 'l' && c1 != 'L')
+                            {
+                                if (c1 == 'r' || c1 == 'R' || isFormatColor(c1))
+                                {
+                                    flag = false;
+                                }
+                            }
+                            else
+                            {
+                                flag = true;
+                            }
+                        }
+                }
+
+                if (c0 == '\n')
+                {
+                    ++k;
+                    l = k;
+                    break;
+                }
+
+                if (j > wrapWidth)
+                {
+                    break;
+                }
+            }
+
+            return k != i && l != -1 && l < k ? l : k;
+        }
+
+        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<String> dest, String str, int wrapWidth, int wrapWidthFirstLine, boolean firstLine)
+        {
+            int i = sizeStringToWidth(font, str, firstLine ? wrapWidthFirstLine : wrapWidth);
+
+            if (str.length() <= i)
+            {
+                dest.accept(str);
+            }
+            else
+            {
+                String s = str.substring(0, i);
+                dest.accept(s);
+                dest.accept("\n"); // line break
+                char c0 = str.charAt(i);
+                boolean flag = c0 == ' ' || c0 == '\n';
+                String s1 = FontRenderer.getFormatFromString(s) + str.substring(i + (flag ? 1 : 0));
+                wrapFormattedStringToWidth(font, dest, s1, wrapWidth, wrapWidthFirstLine, false);
+            }
+        }
+    }
+
+    private class PageRef
+    {
+        public int chapter;
+        public int page;
+
+        public PageRef(int currentChapter, int currentPage)
+        {
+            chapter = currentChapter;
+            page = currentPage;
+        }
     }
 }

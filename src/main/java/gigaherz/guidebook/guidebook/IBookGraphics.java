@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface IBookGraphics
 {
-    void setScalingFactor();
+    void refreshScalingFactor();
 
     float getScalingFactor();
 

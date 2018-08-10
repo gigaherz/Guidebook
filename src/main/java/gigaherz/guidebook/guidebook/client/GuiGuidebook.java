@@ -12,7 +12,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -121,7 +120,7 @@ public class GuiGuidebook extends GuiScreen
 
     private void setupConditionsAndPosition()
     {
-        book.setScalingFactor();
+        book.refreshScalingFactor();
     }
 
     @Override
@@ -208,7 +207,7 @@ public class GuiGuidebook extends GuiScreen
 
     private void repositionButtons()
     {
-        book.setScalingFactor();
+        book.refreshScalingFactor();
 
         float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
         float bookWidth = BookRendering.DEFAULT_BOOK_WIDTH * bookScale;
