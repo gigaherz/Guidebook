@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.12.2-latest": "2.5.2",
-    "1.12.2-recommended": "2.5.2",
+    "1.12.2-latest": "2.8.0",
+    "1.12.2-recommended": "2.8.0",
     "1.12-latest": "1.7.3",
     "1.12-recommended": "1.7.3",
     "1.11.2-latest": "1.7.3",
@@ -41,6 +41,10 @@
     "2.5.1": "Added support for loading books in other languages. Added home button.",
     "2.5.2": "Fix buttons disappearing on window resize. Fix positioning of scaled text elements.",
     "2.5.3": "Workaround to avoid crashing when a mod registers a handler for the BookRegistryEvent in a dedicated server.",
-    "2.6.0": "Updated to Game Stages 2.0 API. Fixed handling of whitespace around the edges of tags."
+    "2.6.0": "Updated to Game Stages 2.0 API. Fixed handling of whitespace around the edges of tags.",
+    "2.6.5": "Implemented vertical alignment.",
+    "2.7.0": "Advancement conditions.",
+    "2.7.1": "Fix GameStages conditions. ",
+    "2.8.0": "Try to fix navigation when the page counts are thrown off by the conditions."
   }
 }
