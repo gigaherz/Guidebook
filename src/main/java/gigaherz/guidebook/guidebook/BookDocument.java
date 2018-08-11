@@ -379,7 +379,7 @@ public class BookDocument implements IConditionSource
 
             String nodeName = pageItem.getNodeName();
 
-            if (nodeName.equals("section"))
+            if (nodeName.equals("page"))
             {
                 parsePage(chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
             }
@@ -762,7 +762,7 @@ public class BookDocument implements IConditionSource
         {
             for (BookDocument.PageData section : sections)
             {
-                if (!section.conditionResult)
+                if (!section.conditionResult || section.isEmpty())
                     continue;
 
                 if (!com.google.common.base.Strings.isNullOrEmpty(section.id))

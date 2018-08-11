@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.12.2-latest": "2.8.0",
-    "1.12.2-recommended": "2.8.0",
+    "1.12.2-latest": "2.8.1",
+    "1.12.2-recommended": "2.8.1",
     "1.12-latest": "1.7.3",
     "1.12-recommended": "1.7.3",
     "1.11.2-latest": "1.7.3",
@@ -45,6 +45,7 @@
     "2.6.5": "Implemented vertical alignment.",
     "2.7.0": "Advancement conditions.",
     "2.7.1": "Fix GameStages conditions. ",
-    "2.8.0": "Try to fix navigation when the page counts are thrown off by the conditions."
+    "2.8.0": "Try to fix navigation when the page counts are thrown off by the conditions.",
+    "2.8.1": "Fix section parsing (broken automatic pagination). Attempt to actually fix crashing on navigation..."
   }
 }

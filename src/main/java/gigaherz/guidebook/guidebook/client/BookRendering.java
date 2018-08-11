@@ -155,39 +155,165 @@ public class BookRendering implements IBookGraphics
         return scalingFactor;
     }
 
-    @Override
-    public boolean canGoBack()
+    private void pushHistory()
     {
-        return (currentPair > 0 || currentChapter > 0);
+        history.push(new PageRef(currentChapter, currentPair * 2));
     }
 
     @Override
     public boolean canGoNextPage()
     {
-        return (currentPair + 1 < getVisualChapter(currentChapter).totalPairs || currentChapter + 1 < book.chapterCount());
+        return (getNextPair() >= 0 || canGoNextChapter());
+    }
+
+    @Override
+    public void nextPage()
+    {
+        int pg = getNextPair();
+        if (pg >= 0)
+        {
+            pushHistory();
+            currentPair = pg;
+        }
+        else
+        {
+            nextChapter();
+        }
     }
 
     @Override
     public boolean canGoPrevPage()
     {
-        return (currentPair > 0 || currentChapter > 0);
+        return getPrevPair() >= 0 || canGoPrevChapter();
+    }
+
+    @Override
+    public void prevPage()
+    {
+        int pg = getPrevPair();
+        if (pg >= 0)
+        {
+            pushHistory();
+            currentPair = pg;
+        }
+        else
+        {
+            prevChapter(true);
+        }
     }
 
     @Override
     public boolean canGoNextChapter()
     {
-        return (currentChapter + 1 < book.chapterCount());
+        return getNextChapter() >= 0;
+    }
+
+    @Override
+    public void nextChapter()
+    {
+        int ch = getNextChapter();
+        if (ch >= 0)
+        {
+            pushHistory();
+            currentPair = 0;
+            currentChapter = ch;
+        }
     }
 
     @Override
     public boolean canGoPrevChapter()
     {
-        return (currentChapter > 0);
+        return getPrevChapter() >= 0;
+    }
+
+    @Override
+    public void prevChapter()
+    {
+        prevChapter(false);
+    }
+
+    private void prevChapter(boolean lastPage)
+    {
+        int ch = getPrevChapter();
+        if (ch >= 0)
+        {
+            pushHistory();
+            currentPair = 0;
+            currentChapter = ch;
+            if (lastPage) { currentPair = getVisualChapter(ch).totalPairs - 1; }
+        }
+    }
+
+    @Override
+    public boolean canGoBack()
+    {
+        return history.size() > 0;
+    }
+
+    @Override
+    public void navigateBack()
+    {
+        if (history.size() > 0)
+        {
+            PageRef target = history.pop();
+            //target.resolve(book);
+            currentChapter = target.chapter;
+            currentPair = target.page / 2;
+        }
+        else
+        {
+            currentChapter = 0;
+            currentPair = 0;
+        }
+    }
+
+    @Override
+    public void navigateHome()
+    {
+        if (book.home != null)
+        {
+            navigateTo(book.home);
+        }
+    }
+
+    private int getNextChapter()
+    {
+        for (int i = currentChapter+1; i < book.chapterCount(); i++)
+        {
+            if (needChapter(i))
+                return i;
+        }
+        return -1;
+    }
+
+    private int getPrevChapter()
+    {
+        for (int i = currentChapter-1; i >= 0; i--)
+        {
+            if (needChapter(i))
+                return i;
+        }
+        return -1;
+    }
+
+    private int getNextPair()
+    {
+        VisualChapter ch = getVisualChapter(currentChapter);
+        if (currentPair + 1 >= ch.totalPairs)
+            return -1;
+        return currentPair + 1;
+    }
+
+    private int getPrevPair()
+    {
+        if (currentPair - 1 < 0)
+            return -1;
+        return currentPair - 1;
     }
 
     private boolean needChapter(int chapterNumber)
     {
-        if (chapterNumber < 0 ||chapterNumber >= book.chapterCount())
+        if (chapterNumber < 0 || chapterNumber >= book.chapterCount())
             return false;
         BookDocument.ChapterData ch = book.getChapter(chapterNumber);
         return ch.conditionResult && !ch.isEmpty();
@@ -235,89 +361,36 @@ public class BookRendering implements IBookGraphics
         currentPair = findSectionStart(target);
     }
 
-    @Override
-    public void nextPage()
+    private VisualChapter getVisualChapter(int chapter)
     {
-        if (currentPair + 1 < getVisualChapter(currentChapter).totalPairs)
+        while (chapters.size() <= chapter && lastProcessedChapter < book.chapterCount())
         {
-            pushHistory();
-            currentPair++;
-        }
-        else if (currentChapter + 1 < book.chapterCount())
-        {
-            pushHistory();
-            currentPair = 0;
-            currentChapter++;
-        }
-    }
+            BookDocument.ChapterData bc = book.getChapter(lastProcessedChapter++);
+            if (!bc.conditionResult)
+                continue;
 
-    @Override
-    public void prevPage()
-    {
-        if (currentPair > 0)
-        {
-            pushHistory();
-            currentPair--;
-        }
-        else if (currentChapter > 0)
-        {
-            pushHistory();
-            currentChapter--;
-            currentPair = getVisualChapter(currentChapter).totalPairs - 1;
-        }
-    }
+            VisualChapter ch = new VisualChapter();
+            if (chapters.size() > 0)
+            {
+                VisualChapter prev = chapters.get(chapters.size() - 1);
+                ch.startPair = prev.startPair + prev.totalPairs;
+            }
 
-    @Override
-    public void nextChapter()
-    {
-        if (currentChapter + 1 < book.chapterCount())
-        {
-            pushHistory();
-            currentPair = 0;
-            currentChapter++;
-        }
-    }
+            Size pageSize = new Size(pageWidth, pageHeight);
+            bc.reflow(this, ch, pageSize);
 
-    @Override
-    public void prevChapter()
-    {
-        if (currentChapter > 0)
-        {
-            pushHistory();
-            currentPair = 0;
-            currentChapter--;
+            ch.totalPairs = (ch.pages.size() + 1) / 2;
+            chapters.add(ch);
         }
-    }
 
-    @Override
-    public void navigateHome()
-    {
-        if (book.home != null)
+        if (chapter >= chapters.size())
         {
-            navigateTo(book.home);
+            VisualChapter vc = new VisualChapter();
+            vc.pages.add(new VisualPage(new SectionRef(chapter,0)));
+            return vc;
         }
-    }
 
-    @Override
-    public void navigateBack()
-    {
-        if (history.size() > 0)
-        {
-            PageRef target = history.pop();
-            //target.resolve(book);
-            currentChapter = target.chapter;
-            currentPair = target.page / 2;
-        }
-        else
-        {
-            currentChapter = 0;
-            currentPair = 0;
-        }
-    }
-
-    private void pushHistory()
-    {
-        history.push(new PageRef(currentChapter, currentPair * 2));
+        return chapters.get(chapter);
     }
 
     @Override
@@ -372,38 +445,6 @@ public class BookRendering implements IBookGraphics
         }
 
         return false;
-    }
-
-    private VisualChapter getVisualChapter(int chapter)
-    {
-        while (chapters.size() <= chapter && lastProcessedChapter < book.chapterCount())
-        {
-            BookDocument.ChapterData bc = book.getChapter(lastProcessedChapter++);
-            if (!bc.conditionResult)
-                continue;
-
-            VisualChapter ch = new VisualChapter();
-            if (chapters.size() > 0)
-            {
-                VisualChapter prev = chapters.get(chapters.size() - 1);
-                ch.startPair = prev.startPair + prev.totalPairs;
-            }
-
-            Size pageSize = new Size(pageWidth, pageHeight);
-            bc.reflow(this, ch, pageSize);
-
-            ch.totalPairs = (ch.pages.size() + 1) / 2;
-            chapters.add(ch);
-        }
-
-        if (chapter >= chapters.size())
-        {
-            VisualChapter vc = new VisualChapter();
-            vc.pages.add(new VisualPage(new SectionRef(chapter,0)));
-            return vc;
-        }
-
-        return chapters.get(chapter);
     }
 
     private boolean mouseClickPage(int mX, int mY, VisualPage pg, boolean isLeftPage)
