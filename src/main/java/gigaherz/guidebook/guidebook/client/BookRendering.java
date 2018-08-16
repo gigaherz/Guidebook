@@ -8,9 +8,11 @@ import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -278,7 +280,7 @@ public class BookRendering implements IBookGraphics
 
     private int getNextChapter()
     {
-        for (int i = currentChapter+1; i < book.chapterCount(); i++)
+        for (int i = currentChapter + 1; i < book.chapterCount(); i++)
         {
             if (needChapter(i))
                 return i;
@@ -288,7 +290,7 @@ public class BookRendering implements IBookGraphics
 
     private int getPrevChapter()
     {
-        for (int i = currentChapter-1; i >= 0; i--)
+        for (int i = currentChapter - 1; i >= 0; i--)
         {
             if (needChapter(i))
                 return i;
@@ -331,11 +333,11 @@ public class BookRendering implements IBookGraphics
     private int findSectionStart(SectionRef ref)
     {
         VisualChapter vc = getVisualChapter(currentChapter);
-        for(int i=0;i<vc.pages.size();i++)
+        for (int i = 0; i < vc.pages.size(); i++)
         {
             VisualPage page = vc.pages.get(i);
             if (page.ref.section == ref.section)
-                return i/2;
+                return i / 2;
 
             if (page.ref.section > ref.section)
                 return 0; // give up
@@ -386,7 +388,7 @@ public class BookRendering implements IBookGraphics
         if (chapter >= chapters.size())
         {
             VisualChapter vc = new VisualChapter();
-            vc.pages.add(new VisualPage(new SectionRef(chapter,0)));
+            vc.pages.add(new VisualPage(new SectionRef(chapter, 0)));
             return vc;
         }
 
@@ -618,7 +620,35 @@ public class BookRendering implements IBookGraphics
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-        Gui.drawScaledCustomSizeModalRect(x, y, tx, ty, w, h, (int) (w * scale), (int) (h * scale), sw, sh);
+        drawFlexible(x, y, tx, ty, w, h, sw, sh, scale);
+    }
+
+    private static void drawFlexible(int x, int y, float tx, float ty, int tw, int th, int w, int h, float scale)
+    {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        float hs = h * scale;
+        float ws = w * scale;
+        float tsw = 1.0f / tw;
+        float tsh = 1.0f / th;
+        bufferbuilder
+                .pos(x, y + hs, 0.0D)
+                .tex(tx * tsw, (ty + h) * tsh)
+                .endVertex();
+        bufferbuilder
+                .pos(x + ws, y + hs, 0.0D)
+                .tex((tx + tw) * tsw, (ty + th) * tsh)
+                .endVertex();
+        bufferbuilder
+                .pos(x + ws, y, 0.0D)
+                .tex((tx + tw) * tsw, ty * tsh)
+                .endVertex();
+        bufferbuilder
+                .pos(x, y, 0.0D)
+                .tex(tx * tsw, ty * tsh)
+                .endVertex();
+        tessellator.draw();
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ElementImage extends Element
 
     private VisualImage getVisual()
     {
-        return new VisualImage(getVisualSize(), position, baseline, verticalAlignment, textureLocation, tx, ty, tw, th);
+        return new VisualImage(getVisualSize(), position, baseline, verticalAlignment, textureLocation, tx, ty, tw, th, (w > 0 ? w : tw), (h > 0 ? h : th), scale);
     }
 
     @Override
