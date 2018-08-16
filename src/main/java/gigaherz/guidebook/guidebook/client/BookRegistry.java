@@ -9,12 +9,10 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.FolderResourcePack;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.client.resources.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.io.FileUtils;
 
@@ -78,7 +76,10 @@ public class BookRegistry
 
         loadRawBookFiles();
 
-        String lang = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode();
+        LanguageManager lm = Minecraft.getMinecraft().getLanguageManager();
+
+        String lang = ObfuscationReflectionHelper.getPrivateValue(LanguageManager.class, lm, "field_135048_c");
+        if (lang == null) lang = "en_us";
         for (ResourceLocation loc : toLoad)
         {
             if (!LOADED_BOOKS.containsKey(loc))
