@@ -623,7 +623,7 @@ public class BookRendering implements IBookGraphics
         drawFlexible(x, y, tx, ty, w, h, sw, sh, scale);
     }
 
-    private static void drawFlexible(int x, int y, float tx, float ty, int tw, int th, int w, int h, float scale)
+    private static void drawFlexible(int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
     {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
@@ -638,11 +638,11 @@ public class BookRendering implements IBookGraphics
                 .endVertex();
         bufferbuilder
                 .pos(x + ws, y + hs, 0.0D)
-                .tex((tx + tw) * tsw, (ty + th) * tsh)
+                .tex((tx + w) * tsw, (ty + h) * tsh)
                 .endVertex();
         bufferbuilder
                 .pos(x + ws, y, 0.0D)
-                .tex((tx + tw) * tsw, ty * tsh)
+                .tex((tx + w) * tsw, ty * tsh)
                 .endVertex();
         bufferbuilder
                 .pos(x, y, 0.0D)
