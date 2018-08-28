@@ -618,7 +618,18 @@ public class BookDocument implements IConditionSource
         Element parsedElement = null;
         if (nodeName.equals("span"))
         {
-            ElementSpan link = new ElementSpan(elementItem.getTextContent(), true, true);
+            ElementSpan span = new ElementSpan(elementItem.getTextContent(), true, true);
+
+            if (elementItem.hasAttributes())
+            {
+                span.parse(book, elementItem.getAttributes());
+            }
+
+            parsedElement = span;
+        }
+        else if (nodeName.equals("link"))
+        {
+            ElementLink link = new ElementLink(elementItem.getTextContent());
 
             if (elementItem.hasAttributes())
             {
@@ -627,9 +638,9 @@ public class BookDocument implements IConditionSource
 
             parsedElement = link;
         }
-        else if (nodeName.equals("link"))
+        else if (nodeName.equals("dyn"))
         {
-            ElementLink link = new ElementLink(elementItem.getTextContent());
+            ElementDynamic link = new ElementDynamic(elementItem.getTextContent());
 
             if (elementItem.hasAttributes())
             {

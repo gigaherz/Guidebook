@@ -1,7 +1,9 @@
 <book title="Guidebook Manual" cover="gbook:covers/default" fontSize="0.6">
 
   <include ref="gbook:xml/standard.xml" />
-
+  <conditions>
+    <advancement-unlocked name="advancement_test" advancement="minecraft:adventure/adventuring_time" />
+  </conditions>
   <chapter>
     <section>
       <!--
@@ -39,6 +41,8 @@
       <link indent="8" ref="XML:stacks">2.4. Item Stacks</link>
       <link ref="templates">3. Templates (WIP)</link>
       <link indent="8" ref="templates:recipes">3.1. Recipes (WIP)</link>
+      <link ref="dynamic">4. Dynamic values (WIP)</link>
+      <link indent="8" ref="dynamic:dynamic_key">4.1. Key</link>
     </section>
   </chapter>
   <chapter id="API">
@@ -298,6 +302,22 @@
         <stack ore="plankWood" />
         <stack item="minecraft:trapdoor" />
       </big_recipe>
+    </section>
+  </chapter>
+  <chapter id="dynamic">
+    <section>
+    <title>Dynamic values</title>
+    <p>Dynamic values are parts of text that change based on user settings.</p>
+    <p space="12" >You can create them using the following code:</p>
+    <p space="12" indent="8" color="505050">&lt;dyn type="key" key="key.drop"/&gt;</p>
+    <p>Depending on the "type" value, it can display different things.</p>
+  </section>
+    <section id="dynamic_key">
+      <title bold="true">type="key"</title>
+      <p>This type displays keybind for given action. It requires "key" to be declared as well (you can lookup possible values for "key" in options.txt file in minecraft folder).</p>
+      <p space="12" >This is what previously used example would look like:</p>
+      <p space="12" indent="8">Press <dyn type="key" key="key.drop"/> to drop currently held item.</p>
+      <p>Now try changing your keybind for dropping items. You will see that the value updates accordingly.</p>
     </section>
   </chapter>
   <stack-links>

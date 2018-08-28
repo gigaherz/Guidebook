@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ElementSpan extends Element
 {
-    public final String text;
+    public String text;
     public int color = 0xFF000000;
     public boolean bold;
     public boolean italics;
