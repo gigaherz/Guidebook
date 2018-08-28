@@ -8,9 +8,6 @@
 /MinecraftForge-*.txt
 /README.txt
 /forge-*-changelog.txt
-/gradle
-/gradlew
-/gradlew.bat
 /Paulscode * License.txt
 /*.iml
 
