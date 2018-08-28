@@ -41,7 +41,7 @@ minecraft {
 configurations {
     // configuration that holds jars to embed inside the jar
     embed
-    embed.transitive = false;
+    embed.transitive = false
 }
 
 dependencies {
