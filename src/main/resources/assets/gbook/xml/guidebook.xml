@@ -3,6 +3,27 @@
   <include ref="gbook:xml/standard.xml" />
   <conditions>
     <advancement-unlocked name="advancement_test" advancement="minecraft:adventure/adventuring_time" />
+    <mod-loaded name="mod_test" modid="primitivemobs" />
+    <max name="exac0" value="2">
+      <false/>
+      <false/>
+      <false/>
+    </max>
+    <max name="exac1" value="2">
+      <true/>
+      <false/>
+      <false/>
+    </max>
+    <max name="exac2" value="2">
+      <true/>
+      <true/>
+      <false/>
+    </max>
+    <max name="exac3" value="2">
+      <true/>
+      <true/>
+      <true/>
+    </max>
   </conditions>
   <chapter>
     <section>
@@ -43,6 +64,7 @@
       <link indent="8" ref="templates:recipes">3.1. Recipes (WIP)</link>
       <link ref="dynamic">4. Dynamic values (WIP)</link>
       <link indent="8" ref="dynamic:dynamic_key">4.1. Key</link>
+      <link indent="8" ref="dynamic:dynamic_username">4.2. Username</link>
     </section>
   </chapter>
   <chapter id="API">
@@ -306,18 +328,25 @@
   </chapter>
   <chapter id="dynamic">
     <section>
-    <title>Dynamic values</title>
-    <p>Dynamic values are parts of text that change based on user settings.</p>
-    <p space="12" >You can create them using the following code:</p>
-    <p space="12" indent="8" color="505050">&lt;dyn type="key" key="key.drop"/&gt;</p>
-    <p>Depending on the "type" value, it can display different things.</p>
-  </section>
+      <title bold="true" scale="1.5" space="10">Dynamic values</title>
+      <p>Dynamic values are parts of text that change based on user settings.</p>
+      <p space="12" >You can create them using the following code:</p>
+      <p space="12" indent="8" color="505050" scale="0.8">&lt;dyn type="key" key="key.drop"/&gt;</p>
+      <p>Depending on the "type" value, it can display different things.</p>
+    </section>
     <section id="dynamic_key">
-      <title bold="true">type="key"</title>
+      <title scale="1.3" space="6">type="key"</title>
       <p>This type displays keybind for given action. It requires "key" to be declared as well (you can lookup possible values for "key" in options.txt file in minecraft folder).</p>
       <p space="12" >This is what previously used example would look like:</p>
       <p space="12" indent="8">Press <dyn type="key" key="key.drop"/> to drop currently held item.</p>
       <p>Now try changing your keybind for dropping items. You will see that the value updates accordingly.</p>
+    </section>
+    <section id="dynamic_username">
+      <title scale="1.3" space="6">type="username"</title>
+      <p space="12" >This type simply displays name of the user reading this book.</p>
+      <p space="12"  indent="8" color="505050" >&lt;dyn type="username"/&gt;</p>
+      <p space="12" >Would look like this:</p>
+      <p space="12" indent="8">Hello <dyn type="username"/>!</p>
     </section>
   </chapter>
   <stack-links>

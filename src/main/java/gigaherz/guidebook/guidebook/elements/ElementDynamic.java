@@ -3,19 +3,11 @@ package gigaherz.guidebook.guidebook.elements;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.settings.KeyBindingMap;
-
 import java.util.Map;
-
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-
 import com.google.common.base.Strings;
-
-import ca.weblite.objc.Client;
 
 public class ElementDynamic extends ElementSpan
 {
@@ -61,6 +53,9 @@ public class ElementDynamic extends ElementSpan
 				e.printStackTrace();
 			}
 			break;
+        case "username":
+        	text = ctx.getPlayer().getDisplayNameString();
+        	break;
         }
         return oldValue != text;
     }
