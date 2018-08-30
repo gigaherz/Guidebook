@@ -26,6 +26,7 @@ import java.util.List;
 public class ElementStack extends Element
 {
     public static final String WILDCARD = "*";
+    public int CYCLE_TIME = 1000;
 
     public final NonNullList<ItemStack> stacks = NonNullList.create();
 
@@ -45,7 +46,7 @@ public class ElementStack extends Element
 
     private VisualStack getVisual()
     {
-        return new VisualStack(stacks, getVisualSize(), position, baseline, verticalAlignment, scale, z);
+        return new VisualStack(stacks, getVisualSize(), position, baseline, verticalAlignment, scale, z, CYCLE_TIME);
     }
 
     @Override
@@ -175,6 +176,11 @@ public class ElementStack extends Element
                     }
                 }
             }
+        }
+        
+        attr = attributes.getNamedItem("speed");
+        if(attr != null) {
+        	CYCLE_TIME = Integer.parseInt(attr.getTextContent());
         }
     }
 
