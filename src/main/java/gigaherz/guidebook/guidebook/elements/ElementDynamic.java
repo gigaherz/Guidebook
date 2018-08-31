@@ -9,6 +9,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import com.google.common.base.Strings;
 
+/***
+ * Dynamic elements are basically text elements, which content depends on user settings.
+ * 
+ * @author Filmos
+ */
 public class ElementDynamic extends ElementSpan
 {
 	NamedNodeMap attr;
@@ -32,6 +37,10 @@ public class ElementDynamic extends ElementSpan
         text = "";
         
         switch(attr.getNamedItem("type").getTextContent()) {
+        /***
+         * This type displays keybind for given action. It requires "key" to be declared as well.
+         * @author Filmos
+         */
         case "key":
 			try {
 				java.lang.reflect.Field KEYBIND_ARRAY = KeyBinding.class.getDeclaredField("KEYBIND_ARRAY");
@@ -53,6 +62,10 @@ public class ElementDynamic extends ElementSpan
 				e.printStackTrace();
 			}
 			break;
+		/***
+		 * This type displays name of the user reading this book.
+		 * @author Filmos
+		 */
         case "username":
         	text = ctx.getPlayer().getDisplayNameString();
         	break;

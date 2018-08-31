@@ -92,6 +92,11 @@ public abstract class CompositeCondition implements Predicate<ConditionContext>
         return name;
     }
     
+    /***
+     * Returns true if number of true conditions is exactly n. Requires 'value' to be specified as well. 
+     * 
+     * @author Filmos
+     */
     public static class Exac extends CompositeCondition
     {
     	private final int value;
@@ -116,6 +121,11 @@ public abstract class CompositeCondition implements Predicate<ConditionContext>
         }
     }
     
+    /***
+     * Returns true if number of true conditions is equal or greater than n. Requires 'value' to be specified as well.
+     * 
+     * @author Filmos
+     */
     public static class Min extends CompositeCondition
     {
     	private final int value;
@@ -140,6 +150,11 @@ public abstract class CompositeCondition implements Predicate<ConditionContext>
         }
     }
     
+    /***
+     * Returns true if number of true conditions is equal or less than n. Requires 'value' to be specified as well.
+     * 
+     * @author Filmos
+     */
     public static class Max extends CompositeCondition
     {
     	private final int value;
