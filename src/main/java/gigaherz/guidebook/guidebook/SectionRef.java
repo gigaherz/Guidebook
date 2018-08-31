@@ -108,7 +108,12 @@ public class SectionRef
      */
     public static class InvalidPageRefException extends Exception
     {
-        public InvalidPageRefException(String s)
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public InvalidPageRefException(String s)
         {
             super(s);
         }

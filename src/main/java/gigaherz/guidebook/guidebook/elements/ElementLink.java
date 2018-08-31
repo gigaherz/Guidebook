@@ -7,6 +7,7 @@ import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualLink;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
+import gigaherz.guidebook.guidebook.ClickData;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -14,9 +15,7 @@ import java.util.List;
 
 public class ElementLink extends ElementSpan
 {
-    public String textTarget;
-    public String textAction;
-    public SectionRef target;
+    public ClickData clickData;
     public int colorHover = 0xFF77cc66;
 
     public ElementLink(String text)
@@ -43,10 +42,8 @@ public class ElementLink extends ElementSpan
                 if (ctx == null) ctx = link.hoverContext;
                 else link.hoverContext = ctx;
                 link.color = color;
-                link.target = target;
+                link.clickData = clickData;
                 link.colorHover = colorHover;
-                link.textTarget = textTarget;
-                link.textAction = textAction;
                 el = link;
             }
             // else TODO: clickable images in links
@@ -59,32 +56,7 @@ public class ElementLink extends ElementSpan
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         super.parse(book, attributes);
-
-        Node attr = attributes.getNamedItem("ref");
-        if (attr != null)
-        {
-            String ref = attr.getTextContent();
-            target = SectionRef.fromString(ref);
-        }
-
-        attr = attributes.getNamedItem("href");
-        if (attr != null)
-        {
-            textTarget = attr.getTextContent();
-            textAction = "openUrl";
-        }
-
-        attr = attributes.getNamedItem("text");
-        if (attr != null)
-        {
-            textTarget = attr.getTextContent();
-        }
-
-        attr = attributes.getNamedItem("action");
-        if (attr != null)
-        {
-            textAction = attr.getTextContent();
-        }
+        clickData = new ClickData(attributes);
     }
 
     @Override
@@ -96,11 +68,8 @@ public class ElementLink extends ElementSpan
         link.italics = italics;
         link.underline = underline;
 
-        link.target = target.copy();
+        link.clickData = clickData.copy();
         link.colorHover = colorHover;
-        link.textTarget = textTarget;
-        link.textAction = textAction;
-
         return link;
     }
 }
