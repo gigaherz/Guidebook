@@ -47,7 +47,9 @@ public class ElementStack extends Element
 
     private VisualStack getVisual()
     {
-        return new VisualStack(stacks, getVisualSize(), position, baseline, verticalAlignment, scale, z, CYCLE_TIME);
+    	VisualStack vis = new VisualStack(stacks, getVisualSize(), position, baseline, verticalAlignment, scale, z, CYCLE_TIME);
+    	vis.clickData = clickData;
+        return vis;
     }
 
     @Override
@@ -91,6 +93,12 @@ public class ElementStack extends Element
         }
     }
     
+    /***
+     * Adds items to the stack based on attributes.
+     * Used multiple item if stack is constructed with <item> elements
+     * @param book Condition source
+     * @param attributes Attributes
+     */
     void subParse(IConditionSource book, NamedNodeMap attributes)
     {
         int meta = 0;

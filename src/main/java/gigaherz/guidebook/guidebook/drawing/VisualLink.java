@@ -26,7 +26,6 @@ public class VisualLink extends VisualText
         private boolean isHovering;
     }
 
-    public ClickData clickData;
     public int colorHover = 0xFF77cc66;
 
     public SharedHoverContext hoverContext = new SharedHoverContext();
@@ -58,12 +57,6 @@ public class VisualLink extends VisualText
     public void mouseOut(IBookGraphics nav, int x, int y)
     {
         hoverContext.isHovering = false;
-    }
-
-    @Override
-    public void click(IBookGraphics nav)
-    {
-        clickData.click(nav);
     }
 
 }

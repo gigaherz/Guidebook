@@ -2,6 +2,8 @@ package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
+
+import gigaherz.guidebook.guidebook.ClickData;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
@@ -58,6 +60,8 @@ public abstract class Element
 
     public Predicate<ConditionContext> condition;
     public boolean conditionResult;
+
+    public ClickData clickData;
 
     public boolean reevaluateConditions(ConditionContext ctx)
     {

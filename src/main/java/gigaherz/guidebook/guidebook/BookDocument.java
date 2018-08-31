@@ -488,6 +488,8 @@ public class BookDocument implements IConditionSource
                             p.inlines.add(s);
                         }
                     }
+                    else if(childNode.getNodeName().equals("link"))
+                    	parseLink(book, childNode, p.inlines);
                     else
                     {
                         Element parsedChild = parseParagraphElement(book, childNode, childNode.getNodeName());
@@ -590,19 +592,25 @@ public class BookDocument implements IConditionSource
                 }
             }
 
-            if (parsedElement != null)
+            if (parsedElement != null || nodeName.equals("link"))
             {
-                if (!parsedElement.supportsPageLevel() && generateParagraphs)
+                if ((nodeName.equals("link") || !parsedElement.supportsPageLevel()) && generateParagraphs)
                 {
                     ElementParagraph p = new ElementParagraph();
 
                     if (elementItem.hasAttributes())
                     {
                         p.parse(book, elementItem.getAttributes());
-                        parsedElement.parse(book, elementItem.getAttributes());
                     }
-
-                    p.inlines.add(parsedElement);
+                    
+                    if(nodeName.equals("link"))
+                    	parseLink(book, elementItem,p.inlines);
+                    else {
+                        parsedElement.parse(book, elementItem.getAttributes());
+	                    p.inlines.add(parsedElement);
+                    }
+                    
+                    
 
                     parsedElement = p;
                 }
@@ -610,8 +618,42 @@ public class BookDocument implements IConditionSource
                 elements.add(parsedElement);
             }
         }
-    }
 
+    }
+    
+
+    /***
+     * Since link element may contain other elements, it has to be parsed as a special case.
+     * This function does just that.
+     * @param book Condition source
+     * @param elementItem Link element
+     * @param list List to which add new elements
+     * @author Filmos
+     */
+    public static void parseLink(IConditionSource book, Node elementItem, List<Element> list) 
+    {
+    	ClickData clickData = new ClickData(elementItem.getAttributes());
+    	NodeList childList = elementItem.getChildNodes();
+        int l = childList.getLength();
+    	for(int q=0;q<l;q++) {
+    		Node childNode = childList.item(q);
+    		if (childNode.getNodeType() == Node.TEXT_NODE) {
+    			ElementLink link = new ElementLink(childNode.getTextContent());
+
+                if (elementItem.hasAttributes())
+                {
+                    link.parse(book, elementItem.getAttributes());
+                }
+                list.add(link);
+    		}
+    		else if(childNode.getNodeType() == Node.COMMENT_NODE) {}
+    		else {
+	        	Element parsedChild = parseParagraphElement(book, childNode, childNode.getNodeName());
+	        	parsedChild.clickData = clickData;
+	        	list.add(parsedChild);
+    		}
+    	}
+    }
     @Nullable
     public static Element parseParagraphElement(IConditionSource book, Node elementItem, String nodeName)
     {
@@ -626,17 +668,6 @@ public class BookDocument implements IConditionSource
             }
 
             parsedElement = span;
-        }
-        else if (nodeName.equals("link"))
-        {
-            ElementLink link = new ElementLink(elementItem.getTextContent());
-
-            if (elementItem.hasAttributes())
-            {
-                link.parse(book, elementItem.getAttributes());
-            }
-
-            parsedElement = link;
         }
         else if (nodeName.equals("dyn"))
         {

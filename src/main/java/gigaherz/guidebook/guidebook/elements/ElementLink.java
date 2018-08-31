@@ -15,7 +15,6 @@ import java.util.List;
 
 public class ElementLink extends ElementSpan
 {
-    public ClickData clickData;
     public int colorHover = 0xFF77cc66;
 
     public ElementLink(String text)
