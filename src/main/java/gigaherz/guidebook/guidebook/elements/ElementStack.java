@@ -19,6 +19,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.oredict.OreDictionary;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,13 +68,35 @@ public class ElementStack extends Element
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(IConditionSource book, NamedNodeMap attributes) 
+    {
+        super.parse(book, attributes);
+
+        Node attr = attributes.getNamedItem("speed");
+        if(attr != null) {
+        	CYCLE_TIME = Integer.parseInt(attr.getTextContent());
+        }
+        subParse(book, attributes);
+    }
+    @Override
+    public void parseChildNodes(IConditionSource book, Node element)
+    {
+    	NodeList childList = element.getChildNodes();
+    	int l = childList.getLength();
+        for (int q = 0; q < l; q++)
+        {
+            Node childNode = childList.item(q);
+            if(childNode.getNodeName()=="item")
+            	subParse(book, childNode.getAttributes());
+        }
+    }
+    
+    void subParse(IConditionSource book, NamedNodeMap attributes)
     {
         int meta = 0;
         int stackSize = 1;
+        int startI = stacks.size();
         NBTTagCompound tag = new NBTTagCompound();
-
-        super.parse(book, attributes);
 
         Node attr = attributes.getNamedItem("meta");
         if (attr != null)
@@ -116,7 +139,7 @@ public class ElementStack extends Element
                 {
                     item.getSubItems(CreativeTabs.SEARCH, stacks);
 
-                    for (int i = 0; i < stacks.size(); i++)
+                    for (int i = startI; i < stacks.size(); i++)
                     {
                         ItemStack subitem = stacks.get(i);
 
@@ -176,11 +199,6 @@ public class ElementStack extends Element
                     }
                 }
             }
-        }
-        
-        attr = attributes.getNamedItem("speed");
-        if(attr != null) {
-        	CYCLE_TIME = Integer.parseInt(attr.getTextContent());
         }
     }
 

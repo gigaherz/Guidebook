@@ -657,6 +657,10 @@ public class BookDocument implements IConditionSource
             {
                 s.parse(book, elementItem.getAttributes());
             }
+            if(elementItem.hasChildNodes())
+            {
+            	s.parseChildNodes(book, elementItem);
+            }
 
             parsedElement = s;
         }
