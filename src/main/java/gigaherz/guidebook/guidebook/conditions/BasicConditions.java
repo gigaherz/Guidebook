@@ -10,10 +10,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import gigaherz.guidebook.GuidebookMod;
 import org.w3c.dom.Node;
 
+import java.io.File;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -28,6 +31,7 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         ConditionManager.register("key-set", (doc, node) -> new KeySet(node));
         ConditionManager.register("has-item", (doc, node) -> new HasItem(parseItemName(node),node));
         ConditionManager.register("creative", (doc, node) -> new IsCreative());
+        ConditionManager.register("config", (doc, node) -> new Config(node));
     }
 
     public static class True extends BasicConditions
@@ -164,7 +168,7 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         	//this.itemStack = new ItemStack(Item.REGISTRY.getObject(item),1,-1);
         	this.item = Item.REGISTRY.getObject(item);
         	Node attr = attributes.getAttributes().getNamedItem("meta");
-            if (attr != null)
+            if (attr != null && !Strings.isNullOrEmpty(attr.getTextContent()))
             {
                 if (attr.getTextContent().equals("*"))
                     meta = -1;
@@ -209,6 +213,78 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         public boolean test(ConditionContext conditionContext)
         {
             return conditionContext.getPlayer().isCreative();
+        }
+    }
+    
+    /***
+     * Returns true if given setting in config is equal to given value. Requires following attributes:  
+     * 'file' - name of the file inside the config folder, can also be a sub-path  
+     * 'category' - name of category in which field is located (this is that text right outside `{` inside config file)  
+     * 'field' -  name of field to check  
+     * 'type' - type of that field, possible values are "int", "double", "string" and "bool"  
+     * 'value' - value to compare to (returns true if value from config file is equal to this one)  
+     * 
+     * @author Filmos
+     */
+    public static class Config extends BasicConditions
+    {
+    	public static Configuration config;
+    	public static String category, field;
+    	public static String type;
+    	public static String value;
+    	public Config(Node node) 
+    	{
+        	Node attr = node.getAttributes().getNamedItem("file");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'key'.");
+    		File f = new File(GuidebookMod.configPath+"\\"+attr.getTextContent());
+			if(f.exists() && !f.isDirectory())
+				config = new Configuration(f);
+			
+			attr = node.getAttributes().getNamedItem("cat");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'cat'.");
+            category = attr.getTextContent();
+			attr = node.getAttributes().getNamedItem("field");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'field'.");
+            field = attr.getTextContent();
+			attr = node.getAttributes().getNamedItem("type");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'type'.");
+            type = attr.getTextContent();
+			attr = node.getAttributes().getNamedItem("value");
+            if (type!="bool" && (attr == null || Strings.isNullOrEmpty(attr.getTextContent())))
+                throw new BookParsingException("Missing required XML attribute 'value'.");
+            value = attr.getTextContent();
+    		
+    	}
+        @Override
+        public boolean test(ConditionContext conditionContext)
+        {
+        	if(config == null) return false;
+        	config.load();
+        	switch(type) {
+        	case "bool":
+        		Boolean def = true;
+        		if(value == "false") def=false;
+        		return config.get(category, field, !def).getBoolean()==def;
+        	case "int":
+        		int def1, pch = 7;
+        		def1 = Integer.parseInt(value);
+        		if(def1 == 7) pch = 13;
+        		return config.get(category, field, pch).getInt()==def1;
+        	case "double":
+        		double def11, pch1 = 7;
+        		def11 = Double.parseDouble(value);
+        		if(def11 == 7) pch1 = 13;
+        		return config.get(category, field, pch1).getDouble()==def11;
+        	case "string":
+        		String pch11 = "7";
+        		if(value.equals("7")) pch11 = "7!";
+        		return config.get(category, field, pch11).getString()==value;
+        	}
+            return false;
         }
     }
 }

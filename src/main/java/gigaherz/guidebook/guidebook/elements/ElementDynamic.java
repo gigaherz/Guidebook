@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.elements;
 
+import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
@@ -68,6 +69,9 @@ public class ElementDynamic extends ElementSpan
 		 */
         case "username":
         	text = ctx.getPlayer().getDisplayNameString();
+        	break;
+        case "config path":
+        	text = GuidebookMod.configPath;
         	break;
         }
         return oldValue != text;
