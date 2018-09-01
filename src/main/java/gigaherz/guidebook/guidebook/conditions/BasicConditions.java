@@ -32,6 +32,7 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         ConditionManager.register("has-item", (doc, node) -> new HasItem(parseItemName(node),node));
         ConditionManager.register("creative", (doc, node) -> new IsCreative());
         ConditionManager.register("config", (doc, node) -> new Config(node));
+        ConditionManager.register("config-contains", (doc, node) -> new ConfigContains(node));
     }
 
     public static class True extends BasicConditions
@@ -283,6 +284,88 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         		String pch11 = "7";
         		if(value.equals("7")) pch11 = "7!";
         		return config.get(category, field, pch11).getString()==value;
+        	}
+            return false;
+        }
+    }
+    /***
+     * Similiar to config condition, but detects if given value is inside the list from the field
+     * 
+     * @author Filmos
+     */
+    public static class ConfigContains extends BasicConditions
+    {
+    	public static Configuration config;
+    	public static String category, field;
+    	public static String type;
+    	public static String value;
+    	public ConfigContains(Node node) 
+    	{
+        	Node attr = node.getAttributes().getNamedItem("file");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'key'.");
+    		File f = new File(GuidebookMod.configPath+"\\"+attr.getTextContent());
+			if(f.exists() && !f.isDirectory())
+				config = new Configuration(f);
+			
+			attr = node.getAttributes().getNamedItem("cat");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'cat'.");
+            category = attr.getTextContent();
+			attr = node.getAttributes().getNamedItem("field");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'field'.");
+            field = attr.getTextContent();
+			attr = node.getAttributes().getNamedItem("type");
+            if (attr == null || Strings.isNullOrEmpty(attr.getTextContent()))
+                throw new BookParsingException("Missing required XML attribute 'type'.");
+            type = attr.getTextContent();
+			attr = node.getAttributes().getNamedItem("value");
+            if (type!="bool" && (attr == null || Strings.isNullOrEmpty(attr.getTextContent())))
+                throw new BookParsingException("Missing required XML attribute 'value'.");
+            value = attr.getTextContent();
+    		
+    	}
+        @Override
+        public boolean test(ConditionContext conditionContext)
+        {
+        	if(config == null) return false;
+        	config.load();
+			switch(type) {
+        	case "bool":
+        		Boolean def = true;
+        		if(value == "false") def=false;
+        		boolean[] zb = config.get(category, field, !def).getBooleanList();
+        		for(boolean x: zb) {
+        			if(x==def) return true;
+        		}
+        		return false;
+        	case "int":
+        		int def1, pch = 7;
+        		def1 = Integer.parseInt(value);
+        		if(def1 == 7) pch = 13;
+        		int[] zb1 = config.get(category, field, pch).getIntList();
+        		for(int x: zb1) {
+        			if(x==def1) return true;
+        		}
+        		return false;
+        	case "double":
+        		double def11, pch1 = 7;
+        		def11 = Double.parseDouble(value);
+        		if(def11 == 7) pch1 = 13;
+        		double[] zb2 = config.get(category, field, pch1).getDoubleList();
+        		for(double x: zb2) {
+        			if(x==def11) return true;
+        		}
+        		return false;
+        	case "string":
+        		String pch11 = "7";
+        		if(value.equals("7")) pch11 = "7!";
+        		String[] zb3 = config.get(category, field, pch11).getStringList();
+        		for(String x: zb3) {
+        			if(x==value) return true;
+        		}
+        		return false;
         	}
             return false;
         }
