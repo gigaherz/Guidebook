@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GuideCommand
     extends CommandBase
@@ -34,9 +35,9 @@ public class GuideCommand
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
-        if(args.length == 2)
+        if(args.length == 1)
         {
-
+            return subCommands.stream().filter(c -> c.startsWith(args[0])).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
