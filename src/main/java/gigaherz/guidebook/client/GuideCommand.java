@@ -44,13 +44,13 @@ public class GuideCommand
     @Override
     public String getName()
     {
-        return "guide";
+        return "gbook";
     }
 
     @Override
     public String getUsage(ICommandSender sender)
     {
-        return "guide [" + String.join(" | ", subCommands) + "]";
+        return getName() + " [" + String.join(" | ", subCommands) + "]";
     }
 
     @Override
