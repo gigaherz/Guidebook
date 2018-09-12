@@ -20,9 +20,9 @@ public abstract class CompositeCondition implements Predicate<ConditionContext>
         IDisplayConditionFactory all = (doc, node) -> new All(BookDocument.parseChildConditions(doc, node));
         IDisplayConditionFactory not = (doc, node) -> new Not(BookDocument.parseChildConditions(doc, node));
         ConditionManager.register("any", any);
-        ConditionManager.register("and", any);
+        ConditionManager.register("or", any);
         ConditionManager.register("all", all);
-        ConditionManager.register("or", all);
+        ConditionManager.register("and", all);
         ConditionManager.register("not", not);
     }
 

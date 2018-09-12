@@ -134,7 +134,15 @@ public class VisualLink extends VisualText
             if (mc.gameSettings.chatLinksPrompt)
             {
                 ReflectionHelper.setPrivateValue(GuiScreen.class, parent, uri, "field_175286_t", "clickedLinkURI");
-                mc.displayGuiScreen(new GuiConfirmOpenLink(parent, textTarget, 31102009, false));
+                mc.displayGuiScreen(new GuiConfirmOpenLink(parent, textTarget, 31102009, false)
+                {
+                    @Override
+                    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+                    {
+                        parent.drawScreen(-1, -1, partialTicks);
+                        super.drawScreen(mouseX, mouseY, partialTicks);
+                    }
+                });
             }
             else
             {
