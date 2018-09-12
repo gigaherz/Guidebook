@@ -13,6 +13,7 @@ import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import gigaherz.guidebook.guidebook.conditions.GameStageCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.obj.OBJLoader;
@@ -56,6 +57,8 @@ public class ClientProxy implements IModProxy
             GameStageCondition.register();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
+
+        ClientCommandHandler.instance.registerCommand(new GuideCommand());
     }
 
     @Override

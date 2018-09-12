@@ -565,6 +565,14 @@ public class BookDocument implements IConditionSource
 
                 parseChildElements(book, elementItem, elementList, templates, false);
 
+                if(elementList.isEmpty())
+                {
+                    if(!elementItem.getTextContent().trim().isEmpty())
+                    {
+                        elementList.add(new ElementSpan(elementItem.getTextContent(), true, true));
+                    }
+                }
+
                 List<Element> effectiveList = tDef.applyTemplate(book, elementList);
 
                 t.innerElements.addAll(effectiveList);
