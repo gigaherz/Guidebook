@@ -28,7 +28,18 @@ import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
 public class BookRegistry
 {
     public static final Set<ResourceLocation> REGISTRY = Sets.newHashSet();
-    public static final Map<ResourceLocation, BookDocument> LOADED_BOOKS = Maps.newHashMap();
+
+    private static boolean booksLoaded = false;
+    private static final Map<ResourceLocation, BookDocument> LOADED_BOOKS = Maps.newHashMap();
+
+    public static Map<ResourceLocation, BookDocument> getLoadedBooks()
+    {
+        if (!booksLoaded)
+        {
+            parseAllBooks(Minecraft.getMinecraft().getResourceManager());
+        }
+        return Collections.unmodifiableMap(LOADED_BOOKS);
+    }
 
     public static void registerBook(ResourceLocation loc)
     {
@@ -40,13 +51,15 @@ public class BookRegistry
     @Nullable
     public static BookDocument get(ResourceLocation loc)
     {
-        return LOADED_BOOKS.get(loc);
+        return getLoadedBooks().get(loc);
     }
 
     private static boolean initialized = false;
 
     public static void parseAllBooks(IResourceManager manager)
     {
+        booksLoaded = true;
+
         TemplateLibrary.clear();
 
         LOADED_BOOKS.clear();

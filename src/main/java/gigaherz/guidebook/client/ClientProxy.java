@@ -55,7 +55,6 @@ public class ClientProxy implements IModProxy
 
         if (Loader.isModLoaded("gamestages"))
             GameStageCondition.register();
-
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
         ClientCommandHandler.instance.registerCommand(new GuideCommand());
@@ -70,7 +69,7 @@ public class ClientProxy implements IModProxy
     @Override
     public Collection<ResourceLocation> getBooksList()
     {
-        return BookRegistry.LOADED_BOOKS.keySet();
+        return BookRegistry.getLoadedBooks().keySet();
     }
 
     @Override

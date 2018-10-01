@@ -142,7 +142,7 @@ public class BookBakedModel implements IBakedModel
             if (particle != null)
                 textures.add(particle);
 
-            for (BookDocument renderer : BookRegistry.LOADED_BOOKS.values())
+            for (BookDocument renderer : BookRegistry.getLoadedBooks().values())
             {
                 renderer.findTextures(textures);
             }

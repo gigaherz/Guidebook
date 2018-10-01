@@ -34,7 +34,6 @@ public abstract class Element
      * 1 = "absolute" -- relative to the containing Panel
      * 2 = "fixed" -- relative to the section
      */
-    @Nullable
     public int position = 0;
 
     public int x = 0;
