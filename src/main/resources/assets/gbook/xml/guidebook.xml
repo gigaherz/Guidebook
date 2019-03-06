@@ -27,7 +27,9 @@
       <p align="center" scale="1.5">by Gigaherz</p>
     </section>
     <section>
-      <title>Index</title>
+      <page_title>
+        <title>Index</title>
+      </page_title>
       <link ref="API">1. Adding new Books</link>
       <link indent="8" ref="API:registry">1.1. Book Registry (for mods)</link>
       <link indent="8" ref="API:respack">1.2. Resource Packs (for adv. maps)</link>
@@ -43,7 +45,9 @@
   </chapter>
   <chapter id="API">
     <section>
-      <title>Adding new books</title>
+      <page_title>
+        <title>Adding new books</title>
+      </page_title>
       <p>Guidebook has 3 ways to declare new books, designed for different purposes.</p>
       <p space="8">For modders: <link ref=":registry">the book registry API.</link></p>
       <p space="8">For adventure map authors: <link ref=":respack">resource packs.</link></p>
@@ -54,7 +58,9 @@
       <p>This is available in the configuration file.</p>
     </section>
     <section id="registry">
-      <title>Book Registry</title>
+      <page_title>
+        <title>Book Registry</title>
+      </page_title>
       <p space="8">The preferred way to access the registry is through the BookRegistryEvent. An example of use is provided below:</p>
       <p>@Optional.Method(modid="gbook")</p>
       <p>@SubscribeEvent</p>

@@ -2,7 +2,7 @@ package gigaherz.guidebook.guidebook.recipe;
 
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
@@ -61,14 +61,14 @@ public class FurnaceRecipeProvider extends RecipeProvider
             ElementStack[] recipeComponents = new ElementStack[2];
 
             // Set up input slot element
-            ElementStack inputSlot = new ElementStack();
+            ElementStack inputSlot = new ElementStack(false, false);
             recipeComponents[0] = inputSlot;
             inputSlot.stacks.addAll(inputStacks);
             inputSlot.x = INPUT_SLOT_X + LEFT_OFFSET;
             inputSlot.y = INPUT_SLOT_Y;
 
             // Set up output slot element
-            ElementStack outputSlot = new ElementStack();
+            ElementStack outputSlot = new ElementStack(false, false);
             recipeComponents[1] = outputSlot;
             // Add output stacks for each recipe in the same order as the input ones (in case the item quantities vary)
             for (ItemStack inputStack : inputStacks)
@@ -80,7 +80,7 @@ public class FurnaceRecipeProvider extends RecipeProvider
             outputSlot.y = OUTPUT_SLOT_Y;
 
             // Set up background image
-            ElementImage background = new ElementImage();
+            ElementImage background = new ElementImage(false, false);
             background.textureLocation = BACKGROUND_TEXTURE;
             background.x = LEFT_OFFSET;
             background.y = 0;

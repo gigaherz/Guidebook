@@ -5,9 +5,10 @@ import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
-import gigaherz.guidebook.guidebook.drawing.Point;
-import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.util.Point;
+import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -71,14 +72,21 @@ public class ElementPanel extends Element
     {
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
-        int yBottom = adjustedPosition.y;
+        int top = adjustedPosition.y;
         for (Element element : innerElements)
         {
-            yBottom = element.reflow(list, nav, adjustedBounds, pageBounds);
+            if (element.conditionResult)
+            {
+                Point tempPos = new Point(adjustedPosition.x, top);
+                Size tempSize = new Size(adjustedBounds.size.width, adjustedBounds.size.height - (top - adjustedPosition.y));
+                Rect tempBounds = new Rect(tempPos, tempSize);
+
+                top = element.reflow(list, nav, tempBounds, pageBounds);
+            }
         }
         if (position != POS_RELATIVE)
             return bounds.position.y;
-        return space != null? (adjustedPosition.y + space) : yBottom;
+        return space != null? (adjustedPosition.y + space) : top;
     }
 
     @Override

@@ -29,9 +29,8 @@ group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming
 archivesBaseName = "Guidebook-1.12.2"
 
 minecraft {
-    version = "1.12.2-14.23.4.2760"
+    version = "1.12.2-14.23.5.2796"
     runDir = "run"
-
     mappings = "stable_39"
 
     replace "@VERSION@", project.version

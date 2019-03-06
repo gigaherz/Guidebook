@@ -7,6 +7,7 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientAdvancementManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.w3c.dom.Node;
 
@@ -23,7 +24,7 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
 
     static
     {
-        f_advancementToProgress = ReflectionHelper.findField(ClientAdvancementManager.class, "field_192803_d", "advancementToProgress");
+        f_advancementToProgress = ObfuscationReflectionHelper.findField(ClientAdvancementManager.class, "field_192803_d");
     }
 
     @SuppressWarnings("unchecked")

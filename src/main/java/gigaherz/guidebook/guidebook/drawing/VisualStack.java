@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.drawing;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 

@@ -6,6 +6,8 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.*;
+import gigaherz.guidebook.guidebook.util.Point;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -32,15 +34,18 @@ public class BookRendering implements IBookGraphics
     public static final int DEFAULT_BOTTOM_MARGIN = 8;
     public static final int DEFAULT_VERTICAL_MARGIN = 18;
 
+    private final Minecraft mc = Minecraft.getMinecraft();
+    private final GuiGuidebook gui;
+
     private BookDocument book;
+
+    private boolean hasScale;
+    private float scalingFactor;
 
     private double scaledWidthD;
     private double scaledHeightD;
     private int scaledWidth;
     private int scaledHeight;
-
-    private final Minecraft mc = Minecraft.getMinecraft();
-    private final GuiGuidebook gui;
 
     private int bookWidth;
     private int bookHeight;
@@ -57,9 +62,6 @@ public class BookRendering implements IBookGraphics
     private final java.util.Stack<PageRef> history = new java.util.Stack<>();
     private int currentChapter = 0;
     private int currentPair = 0;
-    private boolean hasScale;
-
-    private float scalingFactor;
 
     private VisualElement previousHovering = null;
 
@@ -67,6 +69,20 @@ public class BookRendering implements IBookGraphics
     {
         this.book = book;
         this.gui = gui;
+    }
+
+    @Override
+    public void resetRendering(boolean contentsChanged)
+    {
+        chapters.clear();
+        lastProcessedChapter = 0;
+        previousHovering = null;
+        if(contentsChanged)
+        {
+            history.clear();
+            currentChapter = 0;
+            currentPair = 0;
+        }
     }
 
     @Override
@@ -114,8 +130,10 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void refreshScalingFactor()
+    public boolean refreshScalingFactor()
     {
+        float oldScale = scalingFactor;
+
         float fontSize = book.getFontSize();
 
         if (MathHelper.epsilonEquals(fontSize, 1.0f))
@@ -149,6 +167,8 @@ public class BookRendering implements IBookGraphics
 
         this.pageWidth = this.bookWidth / 2 - this.innerMargin - this.outerMargin;
         this.pageHeight = this.bookHeight - this.verticalMargin - this.bottomMargin;
+
+        return !MathHelper.epsilonEquals(scalingFactor, oldScale);
     }
 
     @Override
@@ -651,6 +671,49 @@ public class BookRendering implements IBookGraphics
         tessellator.draw();
     }
 
+    public void drawCustomTexture(ResourceLocation loc, int dx, int dy, int dw, int dh, int sx, int sy, int sw, int sh, int tw, int th)
+    {
+        ResourceLocation locExpanded = new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
+        gui.getRenderEngine().bindTexture(locExpanded);
+
+        GlStateManager.enableRescaleNormal();
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+        drawCustomQuad(dx, dy, dw, dh, sx, sy, sw, sh, tw, th);
+    }
+
+    private static void drawCustomQuad(int dx, int dy, int dw, int dh, float sx, int sy, int sw, float sh, int tw, int th)
+    {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        float tsx = sx / (float)tw;
+        float tsy = sy / (float)th;
+        float tsw = sw / (float)tw;
+        float tsh = sh / (float)th;
+        bufferbuilder
+                .pos(dx, dy + dh, 0.0D)
+                .tex(tsx, tsy + tsh)
+                .endVertex();
+        bufferbuilder
+                .pos(dx + dw, dy + dh, 0.0D)
+                .tex(tsx + tsw, tsy + tsh)
+                .endVertex();
+        bufferbuilder
+                .pos(dx + dw, dy, 0.0D)
+                .tex(tsx + tsw, tsy)
+                .endVertex();
+        bufferbuilder
+                .pos(dx, dy, 0.0D)
+                .tex(tsx, tsy)
+                .endVertex();
+        tessellator.draw();
+    }
+
     @Override
     public void drawTooltip(ItemStack stack, int x, int y)
     {
@@ -673,7 +736,7 @@ public class BookRendering implements IBookGraphics
         TextMetrics.wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.getStringWidth(s);
             sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
-        }, text, width, firstLineWidth, true);
+        }, text, width/scale, firstLineWidth/scale, true);
         return sizes;
     }
 
@@ -696,7 +759,7 @@ public class BookRendering implements IBookGraphics
             return colorChar >= '0' && colorChar <= '9' || colorChar >= 'a' && colorChar <= 'f' || colorChar >= 'A' && colorChar <= 'F';
         }
 
-        private static int sizeStringToWidth(FontRenderer font, String str, int wrapWidth)
+        private static int sizeStringToWidth(FontRenderer font, String str, float wrapWidth)
         {
             int i = str.length();
             int j = 0;
@@ -760,7 +823,7 @@ public class BookRendering implements IBookGraphics
             return k != i && l != -1 && l < k ? l : k;
         }
 
-        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<String> dest, String str, int wrapWidth, int wrapWidthFirstLine, boolean firstLine)
+        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<String> dest, String str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
         {
             int i = sizeStringToWidth(font, str, firstLine ? wrapWidthFirstLine : wrapWidth);
 

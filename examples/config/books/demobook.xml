@@ -1,4 +1,6 @@
-<book title="Demo / Feature test book" cover="gbook:demo" fontSize="0.6" home="1:2">
+<book title="Demo / Feature test book" cover="gbook:demo" fontSize="0.6" home="0:0"
+      xmlns="http://localhost/gbook/base"
+      xmlns:minecraft="http://localhost/gbook/minecraft-addons">
 
     <include ref="gbook:xml/standard.xml"/>
 
@@ -6,6 +8,10 @@
         <all name="water_and_earth">
             <item-exists registry-name="minecraft:iron_ingot"/>
             <true/>
+            <all>
+                <item-exists registry-name="minecraft:iron_ingot"/>
+                <true/>
+            </all>
         </all>
         <true name="true" />
         <false name="false" />
@@ -15,8 +21,12 @@
         <stage-unlocked name="test1" stage="test1" />
     </conditions>
 
-    <chapter condition="test1">
+    <chapter>
         <section>
+            <link ref="0:1">Test</link>
+            <link ref="chapter2">Test</link>
+        </section>
+        <section condition="test1">
             <p scale="1.0">Left</p>
             <p align="center">Center</p>
             <p align="right">Right</p>
@@ -41,6 +51,7 @@
             <p indent="60">D</p>
             <link indent="10" ref="intro:1">ааааааа ббббббббббббб вввв</link>
             <link indent="10" ref="intro:2">Сильные элементальные духи</link>
+            <p condition="advancement_test">Has entered the end.</p>
         </section>
         <section>
             <p>Page 2</p>
@@ -48,9 +59,10 @@
             <link href="https://minecraft.curseforge.com/projects/guidebook">Click me 2</link>
             <link action="copyText" text="Text to copy to the clipboard">Click me 3</link>
             <p>An image <image src="minecraft:items/coal" tw="16" th="16"/> mixed into the text.</p>
+            <p>An image <image src="minecraft:items/coal" tw="16" th="16" scale="3.0"/> mixed into the text.</p>
         </section>
     </chapter>
-    <chapter id="chapter2">
+    <chapter id="chapter2" condition="test1">
         <section>
             <title>Using the template system</title>
 
@@ -77,7 +89,7 @@
         </section>
         <section>
             <title>Using the recipe tag</title>
-            <recipe type="gbook:crafting" key="minecraft:iron_pickaxe"/>
+            <minecraft:recipe type="gbook:crafting" key="minecraft:iron_pickaxe"/>
             <recipe type="gbook:crafting" key="minecraft:quartz_block"/>
             <recipe type="shaped">
                 <recipe.result>

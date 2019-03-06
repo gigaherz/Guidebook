@@ -4,8 +4,8 @@ import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.drawing.Rect;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.util.Rect;
+import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualStack;
 import net.minecraft.creativetab.CreativeTabs;
@@ -23,14 +23,15 @@ import org.w3c.dom.Node;
 import java.util.Collections;
 import java.util.List;
 
-public class ElementStack extends Element
+public class ElementStack extends ElementInline
 {
     public static final String WILDCARD = "*";
 
     public final NonNullList<ItemStack> stacks = NonNullList.create();
 
-    public ElementStack()
+    public ElementStack(boolean isFirstElement, boolean isLastElement)
     {
+        super(isFirstElement, isLastElement);
         // default size
         w = 16;
         h = 16;
@@ -179,9 +180,9 @@ public class ElementStack extends Element
     }
 
     @Override
-    public Element copy()
+    public ElementInline copy()
     {
-        ElementStack newStack = super.copy(new ElementStack());
+        ElementStack newStack = super.copy(new ElementStack(isFirstElement, isLastElement));
         for(ItemStack stack : stacks)
         {
             newStack.stacks.add(stack.copy());

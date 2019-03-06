@@ -3,19 +3,25 @@ package gigaherz.guidebook.guidebook.templates;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.Element;
+import gigaherz.guidebook.guidebook.elements.ElementInline;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class TemplateElement extends Element
+public class TemplateElement extends ElementInline
 {
     int index;
     private NamedNodeMap attributes;
+
+    public TemplateElement(boolean isFirstElement, boolean isLastElement)
+    {
+        super(isFirstElement, isLastElement);
+    }
 
     @Override
     public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect page)
@@ -34,15 +40,15 @@ public class TemplateElement extends Element
         if (attr != null)
         {
             index = Ints.tryParse(attr.getTextContent());
-        }
 
-        attributes.removeNamedItem("index");
+            attributes.removeNamedItem("index");
+        }
     }
 
     @Override
-    public Element copy()
+    public ElementInline copy()
     {
-        TemplateElement temp = super.copy(new TemplateElement());
+        TemplateElement temp = super.copy(new TemplateElement(isFirstElement, isLastElement));
         temp.index = index;
         temp.attributes = attributes;
         return temp;

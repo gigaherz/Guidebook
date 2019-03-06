@@ -2,7 +2,7 @@ package gigaherz.guidebook.guidebook.recipe;
 
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
@@ -91,7 +91,7 @@ class CraftingRecipeProvider extends RecipeProvider
         NonNullList<Ingredient> ingredients = recipe.getIngredients();
         for (int i = 0; i < ingredients.size(); ++i)
         {
-            ElementStack inputSlot = new ElementStack();
+            ElementStack inputSlot = new ElementStack(false, false);
             ItemStack[] matching = ingredients.get(i).getMatchingStacks();
             if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
@@ -109,7 +109,7 @@ class CraftingRecipeProvider extends RecipeProvider
         }
 
         // Set up output slot element
-        ElementStack outputSlot = new ElementStack();
+        ElementStack outputSlot = new ElementStack(false, false);
         stackComponents.add(outputSlot);
         List<ItemStack> stackList = RecipeProvider.copyAndExpand(recipe.getRecipeOutput());
         outputSlot.stacks.addAll(stackList);
@@ -117,7 +117,7 @@ class CraftingRecipeProvider extends RecipeProvider
         outputSlot.y = OUTPUT_SLOT_Y[constantIndex];
 
         // Set up background image
-        ElementImage background = new ElementImage();
+        ElementImage background = new ElementImage(false, false);
         background.textureLocation = BACKGROUND_TEXTURE;
         background.x = LEFT_OFFSET;
         background.y = 0;

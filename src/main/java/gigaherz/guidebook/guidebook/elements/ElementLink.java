@@ -1,12 +1,10 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.collect.Lists;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.SectionRef;
+import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
-import gigaherz.guidebook.guidebook.drawing.VisualLink;
-import gigaherz.guidebook.guidebook.drawing.VisualText;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -14,45 +12,25 @@ import java.util.List;
 
 public class ElementLink extends ElementSpan
 {
-    public String textTarget;
-    public String textAction;
-    public SectionRef target;
-    public int colorHover = 0xFF77cc66;
+    public LinkContext ctx = new LinkContext();
 
-    public ElementLink(String text)
+    public ElementLink(boolean isFirstElement, boolean isLastElement, ElementInline... addRuns)
     {
-        super(text, true, true);
-        underline = true;
-        color = 0xFF7766cc;
+        super(isFirstElement, isLastElement, addRuns);
     }
 
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
         List<VisualElement> texts = super.measure(nav, width, firstLineWidth);
-        List<VisualElement> links = Lists.newArrayList();
-        VisualLink.SharedHoverContext ctx = null;
-        for (VisualElement e : texts)
-        {
-            VisualElement el = e;
-            if (e instanceof VisualText)
+        texts.forEach(e -> {
+            if (e instanceof LinkHelper.ILinkable)
             {
-                VisualText text = (VisualText) e;
-
-                VisualLink link = new VisualLink(text.text, text.size, position, baseline, verticalAlignment, scale);
-                if (ctx == null) ctx = link.hoverContext;
-                else link.hoverContext = ctx;
-                link.color = color;
-                link.target = target;
-                link.colorHover = colorHover;
-                link.textTarget = textTarget;
-                link.textAction = textAction;
-                el = link;
+                LinkHelper.ILinkable linkable = (LinkHelper.ILinkable) e;
+                linkable.setLinkContext(ctx);
             }
-            // else TODO: clickable images in links
-            links.add(el);
-        }
-        return links;
+        });
+        return texts;
     }
 
     @Override
@@ -64,42 +42,39 @@ public class ElementLink extends ElementSpan
         if (attr != null)
         {
             String ref = attr.getTextContent();
-            target = SectionRef.fromString(ref);
+            ctx.target = SectionRef.fromString(ref);
         }
 
         attr = attributes.getNamedItem("href");
         if (attr != null)
         {
-            textTarget = attr.getTextContent();
-            textAction = "openUrl";
+            ctx.textTarget = attr.getTextContent();
+            ctx.textAction = "openUrl";
         }
 
         attr = attributes.getNamedItem("text");
         if (attr != null)
         {
-            textTarget = attr.getTextContent();
+            ctx.textTarget = attr.getTextContent();
         }
 
         attr = attributes.getNamedItem("action");
         if (attr != null)
         {
-            textAction = attr.getTextContent();
+            ctx.textAction = attr.getTextContent();
         }
     }
 
     @Override
-    public Element copy()
+    public ElementInline copy()
     {
-        ElementLink link = super.copy(new ElementLink(text));
-        link.color = color;
-        link.bold = bold;
-        link.italics = italics;
-        link.underline = underline;
+        ElementLink link = super.copy(new ElementLink(isFirstElement, isLastElement));
+        for(ElementInline run : inlines)
+        {
+            link.inlines.add(run.copy());
+        }
 
-        link.target = target.copy();
-        link.colorHover = colorHover;
-        link.textTarget = textTarget;
-        link.textAction = textAction;
+        link.ctx = ctx.copy();
 
         return link;
     }

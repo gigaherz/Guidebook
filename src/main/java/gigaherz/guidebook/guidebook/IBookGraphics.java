@@ -1,6 +1,6 @@
 package gigaherz.guidebook.guidebook;
 
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface IBookGraphics
 {
-    void refreshScalingFactor();
+    boolean refreshScalingFactor();
 
     float getScalingFactor();
 
@@ -62,4 +62,6 @@ public interface IBookGraphics
     int getActualBookHeight();
 
     int getActualBookWidth();
+
+    void resetRendering(boolean contentsChanged);
 }

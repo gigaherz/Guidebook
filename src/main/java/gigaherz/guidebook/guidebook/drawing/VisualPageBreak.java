@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.util.Size;
 
 public class VisualPageBreak extends VisualElement
 {

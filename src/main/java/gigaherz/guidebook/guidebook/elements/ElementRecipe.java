@@ -5,8 +5,8 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.drawing.Point;
-import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.util.Point;
+import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.recipe.RecipeProvider;
 import net.minecraft.item.ItemStack;
@@ -62,18 +62,18 @@ public class ElementRecipe extends Element
         {
             ElementSpan s;
             if (recipeProvider == null)
-                s = new ElementSpan(String.format("Recipe type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey), false, false);
+                s = ElementSpan.of(String.format("Recipe type specifies a RecipeProvider with key '%s', which hasn't been registered.", recipeProviderKey), TextStyle.ERROR);
             else if (recipeKey != null)
-                s = new ElementSpan(String.format("Recipe not found for registry name: %s", recipeKey), false, false);
+                s = ElementSpan.of(String.format("Recipe not found for registry name: %s", recipeKey), TextStyle.ERROR);
             else if (recipeOutput != null)
             {
                 if (recipeOutput instanceof ElementStack)
-                    s = new ElementSpan("Recipe not found for provided output item.", false, false);
+                    s = ElementSpan.of("Recipe not found for provided output item.", TextStyle.ERROR);
                 else
-                    s = new ElementSpan("Recipe output is not a stack element.", false, false);
+                    s = ElementSpan.of("Recipe output is not a stack element.", TextStyle.ERROR);
             }
             else
-                s = new ElementSpan("Recipe name or output not provided, could not identify recipe.", false, false);
+                s = ElementSpan.of("Recipe name or output not provided, could not identify recipe.", TextStyle.ERROR);
             return s.reflow(list, nav, bounds, pageBounds);
         }
 
@@ -152,7 +152,7 @@ public class ElementRecipe extends Element
                         String stackNodeName = stackNode.getNodeName();
                         if (stackNodeName.equals("stack") || stackNodeName.equals("element"))
                         {
-                            recipeOutput = BookDocument.parseParagraphElement(book, stackNode, stackNodeName);
+                            recipeOutput = BookDocument.parseParagraphElement(book, stackNode, stackNodeName, false, false, TextStyle.DEFAULT);
                         }
                     }
                 }

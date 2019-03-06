@@ -1,4 +1,4 @@
-package gigaherz.guidebook.guidebook.drawing;
+package gigaherz.guidebook.guidebook.util;
 
 public class Point
 {

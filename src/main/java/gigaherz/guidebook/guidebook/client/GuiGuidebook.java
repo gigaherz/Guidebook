@@ -4,6 +4,8 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import jdk.nashorn.internal.ir.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
@@ -12,8 +14,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
@@ -71,10 +75,14 @@ public class GuiGuidebook extends GuiScreen
             BookDocument theBook = BookRegistry.get(bookLocation);
             book = theBook.getRendering();
             boolean conditions = theBook.reevaluateConditions(conditionContext);
-            if (book == null || conditions)
+            if (book == null)
             {
                 book = new BookRendering(theBook, this);
                 theBook.setRendering(book);
+            }
+            else if(conditions || book.refreshScalingFactor())
+            {
+                book.resetRendering(conditions);
             }
 
             int btnId = 0;

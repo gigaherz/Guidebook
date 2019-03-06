@@ -1,12 +1,10 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.primitives.Floats;
-import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
-import gigaherz.guidebook.guidebook.drawing.Point;
-import gigaherz.guidebook.guidebook.drawing.Rect;
+import gigaherz.guidebook.guidebook.util.Point;
+import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
@@ -124,49 +122,16 @@ public abstract class Element
 
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        Node attr = attributes.getNamedItem("x");
-        if (attr != null)
-        {
-            Integer i = Ints.tryParse(attr.getTextContent());
-            x = i != null ? i : 0;
-        }
+        x = getAttribute(attributes, "x", x);
+        y = getAttribute(attributes, "y", y);
+        z = getAttribute(attributes, "z", z);
+        w = getAttribute(attributes, "w", w);
+        h = getAttribute(attributes, "h", h);
+        scale = getAttribute(attributes, "scale", scale);
 
-        attr = attributes.getNamedItem("y");
-        if (attr != null)
-        {
-            Integer i = Ints.tryParse(attr.getTextContent());
-            y = i != null ? i : 0;
-        }
+        baseline = getAttribute(attributes, "baseline", baseline);
 
-        attr = attributes.getNamedItem("w");
-        if (attr != null)
-        {
-            Integer i = Ints.tryParse(attr.getTextContent());
-            w = i != null ? i : 0;
-        }
-
-        attr = attributes.getNamedItem("h");
-        if (attr != null)
-        {
-            Integer i = Ints.tryParse(attr.getTextContent());
-            h = i != null ? i : 0;
-        }
-
-        attr = attributes.getNamedItem("z");
-        if (attr != null)
-        {
-            Integer i = Ints.tryParse(attr.getTextContent());
-            z = i != null ? i : 0;
-        }
-
-        attr = attributes.getNamedItem("scale");
-        if (attr != null)
-        {
-            Float f = Floats.tryParse(attr.getTextContent());
-            if (f != null) scale = f;
-        }
-
-        attr = attributes.getNamedItem("align");
+        Node attr = attributes.getNamedItem("align");
         if (attr != null)
         {
             String a = attr.getTextContent();
@@ -205,13 +170,6 @@ public abstract class Element
             }
         }
 
-        attr = attributes.getNamedItem("baseline");
-        if (attr != null)
-        {
-            Float f = Floats.tryParse(attr.getTextContent());
-            if (f != null) baseline = f;
-        }
-
         attr = attributes.getNamedItem("condition");
         if (attr != null)
         {
@@ -221,5 +179,108 @@ public abstract class Element
 
     public void parseChildNodes(IConditionSource book, Node element)
     {
+    }
+
+    protected static String getAttribute(NamedNodeMap attributes, String name, String def)
+    {
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if (text != null)
+                return text;
+        }
+        return def;
+    }
+
+    protected static ResourceLocation getAttribute(NamedNodeMap attributes, String name, ResourceLocation def)
+    {
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if (text != null)
+                return new ResourceLocation(text);
+        }
+        return def;
+    }
+
+    protected static boolean getAttribute(NamedNodeMap attributes, String name, boolean def)
+    {
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if ("".equals(text) || "true".equals(text))
+                return true;
+            if ("false".equals(text))
+                return false;
+        }
+        return def;
+    }
+
+    protected static int getAttribute(NamedNodeMap attributes, String name, int def)
+    {
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            try
+            {
+                return Integer.parseInt(text);            }
+            catch (NumberFormatException e)
+            {
+                // ignored
+            }
+        }
+        return def;
+    }
+
+    protected static float getAttribute(NamedNodeMap attributes, String name, float def)
+    {
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            try
+            {
+                return Float.parseFloat(text);
+            }
+            catch (NumberFormatException e)
+            {
+                // ignored
+            }
+        }
+        return def;
+    }
+
+    protected static int getColorAttribute(NamedNodeMap attributes, String name, int def)
+    {
+        Node attr = attributes.getNamedItem("color");
+        if (attr != null)
+        {
+            String c = attr.getTextContent();
+
+            if (c.startsWith("#"))
+                c = c.substring(1);
+
+            try
+            {
+                if (c.length() <= 6)
+                {
+                    return 0xFF000000 | Integer.parseInt(c, 16);
+                }
+                else
+                {
+                    return Integer.parseInt(c, 16);
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                // ignored
+            }
+        }
+
+        return def;
     }
 }

@@ -1,87 +1,53 @@
-package gigaherz.guidebook.guidebook.drawing;
+package gigaherz.guidebook.guidebook.util;
 
 import com.google.common.collect.Sets;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
-import gigaherz.guidebook.guidebook.SectionRef;
+import gigaherz.guidebook.guidebook.elements.LinkContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Set;
 
-public class VisualLink extends VisualText
+public class LinkHelper
 {
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
 
-    public static class SharedHoverContext
+    public interface ILinkable
     {
-        private boolean isHovering;
+        void setLinkContext(LinkContext ctx);
     }
 
-    public String textTarget;
-    public String textAction;
-    public SectionRef target;
-    public int colorHover = 0xFF77cc66;
-
-    public SharedHoverContext hoverContext = new SharedHoverContext();
-
-    public VisualLink(String text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
+    public static void click(IBookGraphics nav, LinkContext context)
     {
-        super(text, size, positionMode, baseline, verticalAlign, scale);
-    }
-
-    @Override
-    public void draw(IBookGraphics nav)
-    {
-        nav.addString(position.x, position.y, text, hoverContext.isHovering ? colorHover : color, scale);
-    }
-
-    @Override
-    public boolean wantsHover()
-    {
-        return true;
-    }
-
-    @Override
-    public void mouseOver(IBookGraphics nav, int x, int y)
-    {
-        hoverContext.isHovering = true;
-    }
-
-    @Override
-    public void mouseOut(IBookGraphics nav, int x, int y)
-    {
-        hoverContext.isHovering = false;
-    }
-
-    @Override
-    public void click(IBookGraphics nav)
-    {
-        if (textTarget != null)
+        if (context.textTarget != null && context.textAction != null)
         {
-            switch (textAction)
+            switch (context.textAction)
             {
                 case "openUrl":
-                    clickWeb(nav);
+                    clickWeb(nav, context.textTarget);
                     break;
                 case "copyText":
-                    clickCopyToClipboard(nav);
+                    clickCopyToClipboard(nav, context.textTarget);
                     break;
             }
         }
-        if (target != null)
-            nav.navigateTo(target);
+        if (context.target != null)
+        {
+            nav.navigateTo(context.target);
+        }
     }
 
-    public void clickCopyToClipboard(IBookGraphics nav)
+
+    public static void clickCopyToClipboard(IBookGraphics nav, String textTarget)
     {
         GuiScreen parent = (GuiScreen) nav.owner();
         Minecraft mc = Minecraft.getMinecraft();
@@ -106,7 +72,7 @@ public class VisualLink extends VisualText
         });
     }
 
-    public void clickWeb(IBookGraphics nav)
+    public static void clickWeb(IBookGraphics nav, String textTarget)
     {
         GuiScreen parent = (GuiScreen) nav.owner();
         Minecraft mc = Minecraft.getMinecraft();
@@ -133,7 +99,7 @@ public class VisualLink extends VisualText
 
             if (mc.gameSettings.chatLinksPrompt)
             {
-                ReflectionHelper.setPrivateValue(GuiScreen.class, parent, uri, "field_175286_t", "clickedLinkURI");
+                ObfuscationReflectionHelper.setPrivateValue(GuiScreen.class, parent, uri, "field_175286_t");
                 mc.displayGuiScreen(new GuiConfirmOpenLink(parent, textTarget, 31102009, false)
                 {
                     @Override

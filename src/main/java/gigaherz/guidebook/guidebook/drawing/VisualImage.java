@@ -1,9 +1,12 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.elements.LinkContext;
+import gigaherz.guidebook.guidebook.util.LinkHelper;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.util.ResourceLocation;
 
-public class VisualImage extends VisualElement
+public class VisualImage extends VisualElement implements LinkHelper.ILinkable
 {
     public ResourceLocation textureLocation;
     public int tx;
@@ -13,6 +16,8 @@ public class VisualImage extends VisualElement
     public int w;
     public int h;
     public float scale;
+
+    public LinkContext linkContext = null;
 
     public VisualImage(Size size, int positionMode, float baseline, int verticalAlign, ResourceLocation textureLocation,
                        int tx, int ty, int tw, int th, int w, int h, float scale)
@@ -32,5 +37,37 @@ public class VisualImage extends VisualElement
     public void draw(IBookGraphics nav)
     {
         nav.drawImage(textureLocation, position.x, position.y, tx, ty, w, h, tw, th, scale);
+    }
+
+    //public int colorHover = 0xFF77cc66;
+
+    @Override
+    public boolean wantsHover()
+    {
+        return linkContext != null;
+    }
+
+    @Override
+    public void mouseOver(IBookGraphics nav, int x, int y)
+    {
+        linkContext.isHovering = true;
+    }
+
+    @Override
+    public void mouseOut(IBookGraphics nav, int x, int y)
+    {
+        linkContext.isHovering = false;
+    }
+
+    @Override
+    public void click(IBookGraphics nav)
+    {
+        LinkHelper.click(nav, linkContext);
+    }
+
+    @Override
+    public void setLinkContext(LinkContext ctx)
+    {
+        linkContext = ctx;
     }
 }

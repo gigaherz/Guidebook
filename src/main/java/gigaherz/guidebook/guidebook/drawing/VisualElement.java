@@ -1,6 +1,8 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.util.Rect;
+import gigaherz.guidebook.guidebook.util.Size;
 
 public abstract class VisualElement extends Rect
 {

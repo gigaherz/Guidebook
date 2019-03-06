@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -62,7 +63,7 @@ public class TemplateLibrary implements IConditionSource
 
         templates.put(n.getTextContent(), page);
 
-        BookDocument.parseChildElements(this, templateItem, page.elements, templates, true);
+        BookDocument.parseChildElements(this, templateItem, page.elements, templates, true, TextStyle.DEFAULT);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;

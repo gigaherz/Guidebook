@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
@@ -21,6 +22,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
@@ -225,7 +227,7 @@ public class BookRegistry
         return base.toURI().relativize(sub.toURI()).getPath();
     }
 
-    private static Field _defaultResourcePacks = ReflectionHelper.findField(Minecraft.class, "field_110449_ao", "defaultResourcePacks");
+    private static Field _defaultResourcePacks = ObfuscationReflectionHelper.findField(Minecraft.class, "field_110449_ao");
 
     @SuppressWarnings("unchecked")
     public static void injectCustomResourcePack()

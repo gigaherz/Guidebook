@@ -1,27 +1,30 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.drawing.Rect;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.util.Rect;
+import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualImage;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class ElementImage extends Element
+public class ElementImage extends ElementInline
 {
     public ResourceLocation textureLocation;
     public int tx = 0;
     public int ty = 0;
     public int tw = 0;
     public int th = 0;
+
+    public ElementImage(boolean isFirstElement, boolean isLastElement)
+    {
+        super(isFirstElement, isLastElement);
+    }
 
     private Size getVisualSize()
     {
@@ -64,41 +67,17 @@ public class ElementImage extends Element
     {
         super.parse(book, attributes);
 
-        Node attr = attributes.getNamedItem("tx");
-        if (attr != null)
-        {
-            tx = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("ty");
-        if (attr != null)
-        {
-            ty = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("tw");
-        if (attr != null)
-        {
-            tw = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("th");
-        if (attr != null)
-        {
-            th = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("src");
-        if (attr != null)
-        {
-            textureLocation = new ResourceLocation(attr.getTextContent());
-        }
+        tx = getAttribute(attributes, "tx", tx);
+        ty = getAttribute(attributes, "ty", ty);
+        tw = getAttribute(attributes, "tw", tw);
+        th = getAttribute(attributes, "th", th);
+        textureLocation = getAttribute(attributes, "src", textureLocation);
     }
 
     @Override
-    public Element copy()
+    public ElementInline copy()
     {
-        ElementImage img = super.copy(new ElementImage());
+        ElementImage img = super.copy(new ElementImage(isFirstElement, isLastElement));
 
         img.textureLocation = new ResourceLocation(textureLocation.toString());
         img.tx = tx;

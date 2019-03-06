@@ -1,13 +1,12 @@
 package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
-import gigaherz.guidebook.guidebook.drawing.Point;
-import gigaherz.guidebook.guidebook.drawing.Rect;
-import gigaherz.guidebook.guidebook.drawing.Size;
+import gigaherz.guidebook.guidebook.util.Point;
+import gigaherz.guidebook.guidebook.util.Rect;
+import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -26,7 +25,7 @@ public class ElementParagraph extends Element
     public int indentFirstLine = 0; // First line?
     public int space = 2;
 
-    public final List<Element> inlines = Lists.newArrayList();
+    public final List<ElementInline> inlines = Lists.newArrayList();
 
     @Override
     public boolean reevaluateConditions(ConditionContext ctx)
@@ -50,6 +49,7 @@ public class ElementParagraph extends Element
         int currentLineTop = adjustedPosition.y;
         int currentLineLeft = indentFirstLine;
         int currentLineHeight = 0;
+        int currentIndent = indentFirstLine;
 
         int firstInLine = paragraph.size();
 
@@ -72,11 +72,12 @@ public class ElementParagraph extends Element
 
                 if (isLineBreak || (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
                 {
-                    processAlignment(paragraph, bounds.size.width - indent, currentLineLeft, firstInLine);
+                    processAlignment(paragraph, bounds.size.width - currentIndent, currentLineLeft, firstInLine);
 
                     currentLineTop += currentLineHeight;
                     currentLineLeft = 0;
                     currentLineHeight = 0;
+                    currentIndent = indent;
 
                     firstInLine = paragraph.size();
                 }
@@ -105,7 +106,7 @@ public class ElementParagraph extends Element
             }
         }
 
-        processAlignment(paragraph, bounds.size.width, currentLineLeft, firstInLine);
+        processAlignment(paragraph, bounds.size.width-currentIndent, currentLineLeft, firstInLine);
 
         if (position != POS_RELATIVE)
             return bounds.position.y;
@@ -206,17 +207,8 @@ public class ElementParagraph extends Element
             }
         }
 
-        attr = attributes.getNamedItem("indent");
-        if (attr != null)
-        {
-            indent = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("space");
-        if (attr != null)
-        {
-            space = Ints.tryParse(attr.getTextContent());
-        }
+        indent = getAttribute(attributes, "indent", indent);
+        space = getAttribute(attributes, "space", space);
     }
 
     @Override
@@ -226,7 +218,7 @@ public class ElementParagraph extends Element
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
-        for (Element element : inlines)
+        for (ElementInline element : inlines)
         { paragraph.inlines.add(element.copy()); }
         return paragraph;
     }
@@ -242,11 +234,11 @@ public class ElementParagraph extends Element
         paragraph.alignment = alignment;
         paragraph.indent = indent;
         paragraph.space = space;
-        for (Element element : inlines)
+        for (ElementInline element : inlines)
         {
             Element t = element.applyTemplate(book, sourceElements);
-            if (t != null)
-                paragraph.inlines.add(t);
+            if (t instanceof ElementInline)
+                paragraph.inlines.add((ElementInline)t);
         }
 
         if (paragraph.inlines.size() == 0)
@@ -270,7 +262,7 @@ public class ElementParagraph extends Element
     public static ElementParagraph of(String text)
     {
         ElementParagraph p = new ElementParagraph();
-        ElementSpan s = new ElementSpan(text, true, true);
+        ElementSpan s = ElementSpan.of(text, true, true, TextStyle.DEFAULT);
         p.inlines.add(s);
         return p;
     }
