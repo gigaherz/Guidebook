@@ -75,7 +75,9 @@
       <p>In order for this event to run, you need to annotate the class with @Mod.EventBusSubscriber.</p>
     </section>
     <section id="respack">
-      <title>Resource Packs</title>
+      <page_title>
+        <title>Resource Packs</title>
+      </page_title>
       <p space="8">The final way to provide books is to use a resource pack. This is useful for adventure map developers, and users who just want some extra books without unnecessary hassle.</p>
       <p space="8">Books will be placed as resources inside a resourcepack resource domain. That is, in a folder like `assets/gbook/` or similar. Note that it must be lowercase.</p>
       <p>If you don't know what resource domain to use, the preferred fallback should always be 'gbook' and not 'minecraft'. This is to avoid any potential future conflicts if Mojang ever decides to add resource-based custom books to the game.</p>
@@ -93,7 +95,9 @@
       <p>These resources are additive. That means an upper resource pack will not be able to remove books registered by a lower one, unlike normal resources which are replaced by upper packs.</p>
     </section>
     <section id="configuration">
-      <title>Configuration Folder</title>
+      <page_title>
+        <title>Configuration Folder</title>
+      </page_title>
       <p space="8">If you are a modpack author, you may want to add custom books available to everyone using your pack. This can be done by using the `config/books/` folder (it may need to be created). This folder will behave like a resource pack, except the contents inside will be limited to the `gbook` resource domain.</p>
       <p space="8">See the previous section for details on how to declare books in a resource pack.</p>
     </section>
@@ -111,14 +115,18 @@
   </chapter>
   <chapter id="XML">
     <section>
-      <title>Getting Started</title>
+      <page_title>
+        <title>Getting Started</title>
+      </page_title>
       <p space="8">Book files are XML documents. At the root is the 'book' tag. This tag has two optional attributes: 'title', for the name shown in the item tooltip, and 'cover', for the resource location of a cover texture.</p>
       <p indent="8">&lt;book title=&quot;Demo&quot;&gt;</p>
       <p indent="16">...</p>
       <p indent="8">&lt;/book&gt;</p>
     </section>
     <section id="pages">
-      <title>Chapters and Pages</title>
+      <page_title>
+        <title>Chapters and Pages</title>
+      </page_title>
       <p>Books are split into chapters. At least one chapter must be present. Chapters have an optional 'id' attribute for use in links.</p>
       <p>Chapters are split into pages. Pages can also have an 'id' attribute.</p>
       <p indent="8">&lt;chapter id=&quot;ch1&quot;&gt;</p>
@@ -128,7 +136,9 @@
       <p indent="8">&lt;/chapter&gt;</p>
     </section>
     <section id="text">
-      <title>Paragraphs and titles</title>
+      <page_title>
+        <title>Paragraphs and titles</title>
+      </page_title>
       <p space="8">Inside pages there can be text, alongside other section elements. The primary way of adding text is through paragraph elements 'p'.</p>
       <p indent="12" space="8">&lt;p&gt;Text&lt;/p&gt;</p>
       <p space="12">Text</p>
@@ -138,8 +148,7 @@
       <p space="8">You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
       <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
       <p bold="true" italics="true">Formatted text</p>
-    </section>
-    <section>
+      <page-break />
       <p space="8">Sometimes, you need indented text, or you want to change the separation between successive paragraphs, for this, you have 'indent' and 'space', respectively.</p>
       <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
       <p indent="20" space="20">Indented spaced text</p>

@@ -56,7 +56,8 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     @Override
     public void click(IBookGraphics nav)
     {
-        LinkHelper.click(nav, linkContext);
+        if (linkContext != null)
+            LinkHelper.click(nav, linkContext);
     }
 
     @Override

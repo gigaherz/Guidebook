@@ -13,6 +13,7 @@ import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ElementParagraph extends Element
 {
@@ -212,6 +213,13 @@ public class ElementParagraph extends Element
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        // TODO: Complete mode
+        return "<p ...>" + inlines.stream().map(Object::toString).collect(Collectors.joining())  + "</p>";
+    }
+
+    @Override
     public Element copy()
     {
         ElementParagraph paragraph = super.copy(new ElementParagraph());
@@ -261,8 +269,13 @@ public class ElementParagraph extends Element
 
     public static ElementParagraph of(String text)
     {
+        return of(text, TextStyle.DEFAULT);
+    }
+
+    public static ElementParagraph of(String text, TextStyle style)
+    {
         ElementParagraph p = new ElementParagraph();
-        ElementSpan s = ElementSpan.of(text, true, true, TextStyle.DEFAULT);
+        ElementSpan s = ElementSpan.of(text, style);
         p.inlines.add(s);
         return p;
     }

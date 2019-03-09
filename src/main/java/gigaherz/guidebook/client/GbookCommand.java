@@ -1,6 +1,7 @@
 package gigaherz.guidebook.client;
 
 import gigaherz.guidebook.guidebook.client.BookRegistry;
+import gigaherz.guidebook.guidebook.client.BookResourceType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -10,15 +11,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.IClientCommand;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GuideCommand
+public class GbookCommand
     extends CommandBase
     implements IClientCommand
 {
@@ -81,7 +82,7 @@ public class GuideCommand
 
     private void executeReload(MinecraftServer server, ICommandSender sender, String[] args)
     {
-        BookRegistry.parseAllBooks(Minecraft.getMinecraft().getResourceManager());
+        FMLClientHandler.instance().refreshResources(BookResourceType.INSTANCE);
         sender.sendMessage(new TextComponentTranslation("cmd.gbook.guide.done"));
     }
 }

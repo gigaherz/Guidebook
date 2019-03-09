@@ -75,6 +75,13 @@ public class ElementImage extends ElementInline
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        // TODO: Complete mode
+        return String.format("<img src=\"%s\" .../>", textureLocation);
+    }
+
+    @Override
     public ElementInline copy()
     {
         ElementImage img = super.copy(new ElementImage(isFirstElement, isLastElement));

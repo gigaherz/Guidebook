@@ -283,4 +283,12 @@ public abstract class Element
 
         return def;
     }
+
+    @Override
+    public String toString()
+    {
+        return toString(false);
+    }
+
+    public abstract String toString(boolean complete);
 }

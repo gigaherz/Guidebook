@@ -11,7 +11,7 @@ public interface IBookGraphics
 {
     boolean refreshScalingFactor();
 
-    float getScalingFactor();
+    double getScalingFactor();
 
     boolean canGoBack();
 

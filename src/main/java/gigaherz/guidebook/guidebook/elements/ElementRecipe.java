@@ -162,6 +162,13 @@ public class ElementRecipe extends Element
         }
     }
 
+    @Override
+    public String toString(boolean complete)
+    {
+        // TODO
+        return "<recipe .../>";
+    }
+
     @Nullable
     @Override
     public Element applyTemplate(IConditionSource book, List<Element> sourceElements)

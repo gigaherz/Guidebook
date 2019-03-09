@@ -8,6 +8,7 @@ import org.w3c.dom.NamedNodeMap;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ElementSpan extends ElementInline
 {
@@ -38,6 +39,13 @@ public class ElementSpan extends ElementInline
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        // TODO: Complete mode
+        return "<span ...>" + inlines.stream().map(Object::toString).collect(Collectors.joining())  + "</span>";
+    }
+
+    @Override
     public ElementInline copy()
     {
         ElementSpan span = super.copy(new ElementSpan(isFirstElement, isLastElement));
@@ -56,6 +64,6 @@ public class ElementSpan extends ElementInline
 
     public static ElementSpan of(String text, TextStyle style)
     {
-        return of(text, false, false, style);
+        return of(text, true, true, style);
     }
 }

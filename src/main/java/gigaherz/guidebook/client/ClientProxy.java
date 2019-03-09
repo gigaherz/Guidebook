@@ -57,7 +57,7 @@ public class ClientProxy implements IModProxy
             GameStageCondition.register();
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
-        ClientCommandHandler.instance.registerCommand(new GuideCommand());
+        ClientCommandHandler.instance.registerCommand(new GbookCommand());
     }
 
     @Override

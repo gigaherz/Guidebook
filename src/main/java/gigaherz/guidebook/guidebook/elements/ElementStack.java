@@ -180,6 +180,13 @@ public class ElementStack extends ElementInline
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        // TODO
+        return "<stack .../>";
+    }
+
+    @Override
     public ElementInline copy()
     {
         ElementStack newStack = super.copy(new ElementStack(isFirstElement, isLastElement));

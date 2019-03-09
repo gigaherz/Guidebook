@@ -21,7 +21,6 @@ import joptsimple.internal.Strings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.Loader;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -170,8 +169,8 @@ public class BookDocument implements IConditionSource
         PageData pg = new PageData(new SectionRef(0,0));
         ch.sections.add(pg);
 
-        pg.elements.add(ElementParagraph.of("Error loading book:"));
-        pg.elements.add(ElementParagraph.of(TextFormatting.RED + error));
+        pg.elements.add(ElementParagraph.of("Error loading book:", TextStyle.ERROR));
+        pg.elements.add(ElementParagraph.of(error, TextStyle.ERROR));
     }
 
     public boolean parseBook(InputStream stream)
@@ -453,13 +452,16 @@ public class BookDocument implements IConditionSource
             else if (nodeName.equals("p") || nodeName.equals("title"))
             {
                 ElementParagraph p = new ElementParagraph();
+
+                TextStyle tagDefaults = defaultStyle;
                 if (nodeName.equals("title"))
                 {
                     p.alignment = ElementParagraph.ALIGN_CENTER;
                     p.space = 4;
+                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true);
                 }
 
-                TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), defaultStyle);
+                TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
 
                 NodeList childList = elementItem.getChildNodes();
                 int l = childList.getLength();
@@ -548,7 +550,12 @@ public class BookDocument implements IConditionSource
             }
             else if (elementItem.getNodeType() == Node.TEXT_NODE)
             {
-                parsedElement = ElementSpan.of(elementItem.getTextContent(), true, true, defaultStyle);
+                if(generateParagraphs)
+                {
+                    String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
+                    if (!Strings.isNullOrEmpty(textContent) && !textContent.matches("^[ \t\r\n]+$"))
+                        parsedElement = ElementSpan.of(textContent, defaultStyle);
+                }
             }
             else if (elementItem.getNodeType() == Node.COMMENT_NODE)
             {
@@ -670,7 +677,9 @@ public class BookDocument implements IConditionSource
         }
         else if (elementItem.getNodeType() == Node.TEXT_NODE)
         {
-            parsedElement = ElementSpan.of(elementItem.getTextContent(), isFirstElement, isLastElement, defaultStyle);
+            String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
+            if (!Strings.isNullOrEmpty(textContent))
+                parsedElement = ElementSpan.of(textContent, isFirstElement, isLastElement, defaultStyle);
         }
         return parsedElement;
     }
@@ -713,7 +722,9 @@ public class BookDocument implements IConditionSource
             }
             else if (elementItem.getNodeType() == Node.TEXT_NODE)
             {
-                parsedElement = ElementSpan.of(elementItem.getTextContent(), isFirstElement, isLastElement, defaultStyle);
+                String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
+                if (!Strings.isNullOrEmpty(textContent))
+                    parsedElement = ElementSpan.of(textContent, isFirstElement, isLastElement, defaultStyle);
             }
             else if (elementItem.getNodeType() == Node.COMMENT_NODE)
             {

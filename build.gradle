@@ -29,7 +29,7 @@ group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming
 archivesBaseName = "Guidebook-1.12.2"
 
 minecraft {
-    version = "1.12.2-14.23.5.2796"
+    version = "1.12.2-14.23.5.2814"
     runDir = "run"
     mappings = "stable_39"
 

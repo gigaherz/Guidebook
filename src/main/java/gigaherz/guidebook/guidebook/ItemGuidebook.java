@@ -1,11 +1,11 @@
 package gigaherz.guidebook.guidebook;
 
 import com.google.common.base.Strings;
-import gigaherz.common.ItemRegistered;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
@@ -16,11 +16,10 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemGuidebook extends ItemRegistered
+public class ItemGuidebook extends Item
 {
-    public ItemGuidebook(String name)
+    public ItemGuidebook()
     {
-        super(name);
         setMaxStackSize(1);
         setTranslationKey(GuidebookMod.MODID + ".guidebook");
         setCreativeTab(GuidebookMod.tabMagic);

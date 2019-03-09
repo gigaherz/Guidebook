@@ -1,12 +1,14 @@
 package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
-import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.*;
 import gigaherz.guidebook.guidebook.util.Point;
+import gigaherz.guidebook.guidebook.util.PointD;
+import gigaherz.guidebook.guidebook.util.PointF;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -18,6 +20,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -33,19 +37,20 @@ public class BookRendering implements IBookGraphics
     public static final int DEFAULT_OUTER_MARGIN = 10;
     public static final int DEFAULT_BOTTOM_MARGIN = 8;
     public static final int DEFAULT_VERTICAL_MARGIN = 18;
+    public static final int BOOK_SCALE_MARGIN = 20;
 
     private final Minecraft mc = Minecraft.getMinecraft();
-    private final GuiGuidebook gui;
+    private GuiGuidebook gui;
 
     private BookDocument book;
 
     private boolean hasScale;
-    private float scalingFactor;
+    private double scalingFactor;
 
     private double scaledWidthD;
     private double scaledHeightD;
-    private int scaledWidth;
-    private int scaledHeight;
+    private double scaledWidth;
+    private double scaledHeight;
 
     private int bookWidth;
     private int bookHeight;
@@ -62,6 +67,8 @@ public class BookRendering implements IBookGraphics
     private final java.util.Stack<PageRef> history = new java.util.Stack<>();
     private int currentChapter = 0;
     private int currentPair = 0;
+
+    private boolean currentDrawingPage = false;
 
     private VisualElement previousHovering = null;
 
@@ -97,16 +104,17 @@ public class BookRendering implements IBookGraphics
         return book;
     }
 
-    public void computeScaledResolution2(float scaleFactorCoef)
+    public void computeBookScale(double scaleFactorCoef)
     {
         int width = mc.displayWidth;
         int height = mc.displayHeight;
 
+        double w = (DEFAULT_BOOK_WIDTH + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
+        double h = (DEFAULT_BOOK_HEIGHT + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
+
         int scaleFactor = 1;
-        double w = (DEFAULT_BOOK_WIDTH * 1.1) / scaleFactorCoef;
-        double h = (DEFAULT_BOOK_HEIGHT * 1.1) / scaleFactorCoef;
         boolean flag = mc.isUnicode();
-        int i = GuidebookMod.bookGUIScale < 0 ? mc.gameSettings.guiScale : GuidebookMod.bookGUIScale;
+        int i = ConfigValues.bookGUIScale < 0 ? mc.gameSettings.guiScale : ConfigValues.bookGUIScale;
 
         if (i == 0)
         {
@@ -125,18 +133,64 @@ public class BookRendering implements IBookGraphics
 
         this.scaledWidthD = (double) width / (double) scaleFactor;
         this.scaledHeightD = (double) height / (double) scaleFactor;
-        this.scaledWidth = MathHelper.ceil(scaledWidthD);
-        this.scaledHeight = MathHelper.ceil(scaledHeightD);
+        this.scaledWidth = Math.ceil(scaledWidthD);
+        this.scaledHeight = Math.ceil(scaledHeightD);
+    }
+
+    public void computeFlexScale(double scaleFactorCoef)
+    {
+        int width = mc.displayWidth;
+        int height = mc.displayHeight;
+
+        double w = (DEFAULT_BOOK_WIDTH + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
+        double h = (DEFAULT_BOOK_HEIGHT + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
+
+        double scale = Math.min(
+                width / w,
+                height / h
+        );
+
+        this.scaledWidth = this.scaledWidthD = width / scale;
+        this.scaledHeight = this.scaledHeightD = height / scale;
+    }
+
+    public static boolean epsilonEquals(double a, double b)
+    {
+        return Math.abs(b - a) < 1.0E-5F;
     }
 
     @Override
     public boolean refreshScalingFactor()
     {
-        float oldScale = scalingFactor;
+        double oldScale = scalingFactor;
 
-        float fontSize = book.getFontSize();
+        double fontSize = book.getFontSize();
 
-        if (MathHelper.epsilonEquals(fontSize, 1.0f))
+        if (ConfigValues.flexibleScale)
+        {
+            computeFlexScale(fontSize);
+
+            this.hasScale = true;
+        }
+        else if (!epsilonEquals(fontSize, 1.0))
+        {
+            computeBookScale(fontSize);
+
+            this.hasScale = true;
+        }
+
+        if (hasScale)
+        {
+            this.scalingFactor = Math.min(gui.width / scaledWidth, gui.height / scaledHeight);
+
+            this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
+            this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
+            this.innerMargin = (int) (DEFAULT_INNER_MARGIN / fontSize);
+            this.outerMargin = (int) (DEFAULT_OUTER_MARGIN / fontSize);
+            this.verticalMargin = (int) (DEFAULT_VERTICAL_MARGIN / fontSize);
+            this.bottomMargin = (int) (DEFAULT_BOTTOM_MARGIN / fontSize);
+        }
+        else
         {
             this.hasScale = false;
             this.scalingFactor = 1.0f;
@@ -150,29 +204,15 @@ public class BookRendering implements IBookGraphics
             this.verticalMargin = DEFAULT_VERTICAL_MARGIN;
             this.bottomMargin = DEFAULT_BOTTOM_MARGIN;
         }
-        else
-        {
-            computeScaledResolution2(fontSize);
-
-            this.hasScale = true;
-            this.scalingFactor = Math.min(gui.width / (float) scaledWidth, gui.height / (float) scaledHeight);
-
-            this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
-            this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
-            this.innerMargin = (int) (DEFAULT_INNER_MARGIN / fontSize);
-            this.outerMargin = (int) (DEFAULT_OUTER_MARGIN / fontSize);
-            this.verticalMargin = (int) (DEFAULT_VERTICAL_MARGIN / fontSize);
-            this.bottomMargin = (int) (DEFAULT_BOTTOM_MARGIN / fontSize);
-        }
 
         this.pageWidth = this.bookWidth / 2 - this.innerMargin - this.outerMargin;
         this.pageHeight = this.bookHeight - this.verticalMargin - this.bottomMargin;
 
-        return !MathHelper.epsilonEquals(scalingFactor, oldScale);
+        return !epsilonEquals(scalingFactor, oldScale);
     }
 
     @Override
-    public float getScalingFactor()
+    public double getScalingFactor()
     {
         return scalingFactor;
     }
@@ -420,12 +460,21 @@ public class BookRendering implements IBookGraphics
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
+        double left0 = left;
+        double top0 = top;
+        if (hasScale && ConfigValues.flexibleScale)
+        {
+            PointD pt = getPageOffset(currentDrawingPage);
+            left0 = Math.floor((pt.x + left) * scalingFactor) / scalingFactor - pt.x;
+            top0 = Math.floor((pt.y + top) * scalingFactor) / scalingFactor - pt.y;
+        }
+
         // Does scaling need to be performed?
-        if (!(MathHelper.epsilonEquals(scale, 1.0f)))
+        if ((hasScale && ConfigValues.flexibleScale) || !(MathHelper.epsilonEquals(scale, 1.0f)))
         {
             GlStateManager.pushMatrix();
             {
-                GlStateManager.translate(left, top, 0);
+                GlStateManager.translate(left0, top0, 0);
                 GlStateManager.scale(scale, scale, 1f);
                 fontRenderer.drawString(s, 0, 0, color);
             }
@@ -443,10 +492,10 @@ public class BookRendering implements IBookGraphics
     public boolean mouseClicked(int mouseButton)
     {
         Minecraft mc = Minecraft.getMinecraft();
-        int dw = scaledWidth;
-        int dh = scaledHeight;
-        int mouseX = Mouse.getX() * dw / mc.displayWidth;
-        int mouseY = dh - Mouse.getY() * dh / mc.displayHeight;
+        double dw = scaledWidth;
+        double dh = scaledHeight;
+        double mouseX = Mouse.getX() * dw / mc.displayWidth;
+        double mouseY = dh - Mouse.getY() * dh / mc.displayHeight;
 
         if (mouseButton == 0)
         {
@@ -469,9 +518,9 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
-    private boolean mouseClickPage(int mX, int mY, VisualPage pg, boolean isLeftPage)
+    private boolean mouseClickPage(double mX, double mY, VisualPage pg, boolean isLeftPage)
     {
-        Point offset = getPageOffset(isLeftPage);
+        PointD offset = getPageOffset(isLeftPage);
         mX -= offset.x;
         mY -= offset.y;
         for (VisualElement e : pg.children)
@@ -525,11 +574,11 @@ public class BookRendering implements IBookGraphics
     private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage)
     {
         Minecraft mc = Minecraft.getMinecraft();
-        int dw = scaledWidth;
-        int dh = scaledHeight;
-        int mX = Mouse.getX() * dw / mc.displayWidth;
-        int mY = dh - Mouse.getY() * dh / mc.displayHeight;
-        Point offset = getPageOffset(isLeftPage);
+        double dw = scaledWidth;
+        double dh = scaledHeight;
+        double mX = Mouse.getX() * dw / mc.displayWidth;
+        double mY = dh - Mouse.getY() * dh / mc.displayHeight;
+        PointD offset = getPageOffset(isLeftPage);
 
         mX -= offset.x;
         mY -= offset.y;
@@ -565,13 +614,13 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    private Point getPageOffset(boolean leftPage)
+    private PointD getPageOffset(boolean leftPage)
     {
-        int left = scaledWidth / 2 - pageWidth - innerMargin;
-        int right = scaledWidth / 2 + innerMargin;
-        int top = (scaledHeight - pageHeight) / 2 - bottomMargin;
+        double left = scaledWidth / 2 - pageWidth - innerMargin;
+        double right = scaledWidth / 2 + innerMargin;
+        double top = (scaledHeight - pageHeight) / 2 - bottomMargin;
 
-        return new Point(leftPage ? left : right, top);
+        return new PointD(leftPage ? left : right, top);
     }
 
     private void drawPage(int page)
@@ -580,11 +629,16 @@ public class BookRendering implements IBookGraphics
         if (page >= ch.pages.size())
             return;
 
+        currentDrawingPage = (page & 1) == 0;
+
         VisualPage pg = ch.pages.get(page);
 
-        Point offset = getPageOffset((page & 1) == 0);
+        PointD offset = getPageOffset(currentDrawingPage);
         GlStateManager.pushMatrix();
-        GlStateManager.translate(offset.x, offset.y, 0);
+        if (ConfigValues.flexibleScale)
+            GlStateManager.translate(offset.x, offset.y, 0);
+        else
+            GlStateManager.translate((int)offset.x, (int)offset.y, 0);
 
         for (VisualElement e : pg.children)
         {
@@ -750,6 +804,11 @@ public class BookRendering implements IBookGraphics
     public int getActualBookWidth()
     {
         return bookWidth;
+    }
+
+    public void setGui(GuiGuidebook guiGuidebook)
+    {
+        this.gui = guiGuidebook;
     }
 
     private static class TextMetrics

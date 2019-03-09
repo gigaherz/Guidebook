@@ -22,11 +22,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.resource.IResourceType;
+import net.minecraftforge.client.resource.SelectiveReloadStateHandler;
 import net.minecraftforge.common.model.IModelState;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class BookBakedModel implements IBakedModel
 {
@@ -188,7 +191,15 @@ public class BookBakedModel implements IBakedModel
         @Override
         public void onResourceManagerReload(IResourceManager resourceManager)
         {
-            BookRegistry.parseAllBooks(resourceManager);
+            // For compatibility, call the selective version from the non-selective function
+            onResourceManagerReload(resourceManager, SelectiveReloadStateHandler.INSTANCE.get());
+        }
+
+        @Override
+        public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate)
+        {
+            if (resourcePredicate.test(BookResourceType.INSTANCE))
+                BookRegistry.parseAllBooks(resourceManager);
         }
     }
 }

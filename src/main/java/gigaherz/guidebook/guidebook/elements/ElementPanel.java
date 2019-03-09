@@ -16,6 +16,7 @@ import org.w3c.dom.Node;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ElementPanel extends Element
 {
@@ -53,6 +54,13 @@ public class ElementPanel extends Element
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        // TODO: Complete mode
+        return "<panel ...>" + innerElements.stream().map(Object::toString).collect(Collectors.joining())  + "</panel>";
+    }
+
+    @Override
     public boolean reevaluateConditions(ConditionContext ctx)
     {
         boolean oldValue = conditionResult;
@@ -86,7 +94,13 @@ public class ElementPanel extends Element
         }
         if (position != POS_RELATIVE)
             return bounds.position.y;
-        return space != null? (adjustedPosition.y + space) : top;
+
+        if (space != null)
+        {
+            return adjustedPosition.y + (asPercent ? space * bounds.size.height : space);
+        }
+
+        return top;
     }
 
     @Override
@@ -114,19 +128,20 @@ public class ElementPanel extends Element
         if (innerElements.size() == 0)
             return null;
 
-        ElementPanel paragraph = super.copy(new ElementPanel());
-        paragraph.space = space;
+        ElementPanel panel = super.copy(new ElementPanel());
+        panel.space = space;
+        panel.asPercent = asPercent;
         for (Element element : innerElements)
         {
             Element t = element.applyTemplate(book, sourceElements);
             if (t != null)
-                paragraph.innerElements.add(t);
+                panel.innerElements.add(t);
         }
 
-        if (paragraph.innerElements.size() == 0)
+        if (panel.innerElements.size() == 0)
             return null;
 
-        return paragraph;
+        return panel;
     }
 
     @Override

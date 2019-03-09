@@ -9,6 +9,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ElementLink extends ElementSpan
 {
@@ -77,5 +78,12 @@ public class ElementLink extends ElementSpan
         link.ctx = ctx.copy();
 
         return link;
+    }
+
+    @Override
+    public String toString(boolean complete)
+    {
+        // TODO: Complete mode
+        return String.format("<link %s ...>%s</link>", ctx.toString(), inlines.stream().map(Object::toString).collect(Collectors.joining()));
     }
 }

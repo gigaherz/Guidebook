@@ -34,4 +34,10 @@ public class ElementBreak extends Element
     {
         return false;
     }
+
+    @Override
+    public String toString(boolean complete)
+    {
+        return "<br/>";
+    }
 }

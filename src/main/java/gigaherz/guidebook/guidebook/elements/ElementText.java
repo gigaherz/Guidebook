@@ -74,6 +74,12 @@ public class ElementText extends ElementInline
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        return text;
+    }
+
+    @Override
     public ElementInline copy()
     {
         ElementText span = super.copy(new ElementText(text, false, false, new TextStyle(color, bold, italics, underline)));
@@ -87,6 +93,8 @@ public class ElementText extends ElementInline
 
     public static String compactString(String text, boolean trimLeft, boolean trimRight)
     {
+        if (text == null)
+            return null;
         String temp = text.replaceAll("[\n\r]+", "").replaceAll("[ \t]+", " ");
         if (trimLeft) temp = temp.replaceAll("^[ \t]+", "");
         if (trimRight) temp = temp.replaceAll("[ \t]+$", "");

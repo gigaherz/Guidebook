@@ -16,6 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +40,7 @@ public class GuidebookMod
     public static IModProxy proxy;
 
     // Items
+    @GameRegistry.ObjectHolder(MODID + ":guidebook")
     public static ItemGuidebook guidebook;
 
     public static Logger logger;
@@ -53,22 +55,11 @@ public class GuidebookMod
     };
 
     // Config
-    public static int bookGUIScale;
-
-    public static List<String> giveOnFirstJoin;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-
         logger = event.getModLog();
-
-        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        String[] give = config.get("Books", "GiveOnFirstJoin", new String[0]).getStringList();
-        bookGUIScale = config.get("general", "BookGUIScale", -1, "-1 for same as GUI scale, 0 for auto, 1+ for small/medium/large").getInt();
-        config.save();
-
-        giveOnFirstJoin = Lists.newArrayList(give);
 
         proxy.preInit();
     }
@@ -77,7 +68,7 @@ public class GuidebookMod
     public static void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
-                guidebook = new ItemGuidebook("guidebook")
+                new ItemGuidebook().setRegistryName("guidebook")
         );
     }
 
@@ -87,7 +78,7 @@ public class GuidebookMod
         Entity e = event.getEntity();
         if (e instanceof EntityPlayer && !e.getEntityWorld().isRemote)
         {
-            for (String g : giveOnFirstJoin)
+            for (String g : ConfigValues.giveOnFirstJoin)
             {
                 String tag = MODID + ":givenBook:" + g;
                 if (!e.getTags().contains(tag))

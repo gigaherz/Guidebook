@@ -11,6 +11,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -41,7 +42,7 @@ public class GuiGuidebook extends GuiScreen
     private ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
     private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
 
-    private IBookGraphics book;
+    private BookRendering book;
     private AnimatedBookBackground background;
     public static boolean useNaturalArrows = false;
 
@@ -73,16 +74,20 @@ public class GuiGuidebook extends GuiScreen
             conditionContext.setPlayer(player);
 
             BookDocument theBook = BookRegistry.get(bookLocation);
-            book = theBook.getRendering();
+            book = (BookRendering) theBook.getRendering();
             boolean conditions = theBook.reevaluateConditions(conditionContext);
             if (book == null)
             {
                 book = new BookRendering(theBook, this);
                 theBook.setRendering(book);
             }
-            else if(conditions || book.refreshScalingFactor())
+            else
             {
-                book.resetRendering(conditions);
+                book.setGui(this);
+                if (conditions || book.refreshScalingFactor())
+                {
+                    book.resetRendering(conditions);
+                }
             }
 
             int btnId = 0;
@@ -122,13 +127,18 @@ public class GuiGuidebook extends GuiScreen
         updateButtonStates();
 
         repositionButtons();
-
-        setupConditionsAndPosition();
     }
 
     private void setupConditionsAndPosition()
     {
-        book.refreshScalingFactor();
+        ScaledResolution scaledresolution = new ScaledResolution(this.mc);
+        int i = scaledresolution.getScaledWidth();
+        int j = scaledresolution.getScaledHeight();
+        this.setGuiSize(i, j);
+        if(book.refreshScalingFactor())
+        {
+            book.resetRendering(false);
+        }
     }
 
     @Override
@@ -215,11 +225,11 @@ public class GuiGuidebook extends GuiScreen
 
     private void repositionButtons()
     {
-        book.refreshScalingFactor();
+        setupConditionsAndPosition();
 
-        float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
-        float bookWidth = BookRendering.DEFAULT_BOOK_WIDTH * bookScale;
-        float bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * bookScale;
+        double bookScale = book.getScalingFactor() / book.getBook().getFontSize();
+        double bookWidth = BookRendering.DEFAULT_BOOK_WIDTH * bookScale;
+        double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * bookScale;
 
         int left = (int) ((this.width - bookWidth) / 2);
         int right = (int) (left + bookWidth);
@@ -244,10 +254,10 @@ public class GuiGuidebook extends GuiScreen
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
-        float bookScale = book.getScalingFactor() / book.getBook().getFontSize();
-        float bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * bookScale;
+        double backgroundScale = book.getScalingFactor() / book.getBook().getFontSize();
+        double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
 
-        background.draw(partialTicks, (int) bookHeight, bookScale);
+        background.draw(partialTicks, (int) bookHeight, (float)backgroundScale);
 
         if (background.isFullyOpen())
         {
@@ -260,6 +270,16 @@ public class GuiGuidebook extends GuiScreen
         {
             book.mouseHover(mouseX, mouseY);
         }
+
+        /*
+        ScaledResolution sr = new ScaledResolution(mc);
+        float mcScale = sr.getScaleFactor();
+        double bookScale = book.getScalingFactor();
+
+        drawString(fontRenderer, String.format("Gui scale: %f, Book scale: %f, Total: %f, background scale: %f",
+                mcScale, bookScale, bookScale * mcScale,
+                backgroundScale), 5, 5, 0xFFFFFFFF);
+        */
     }
 
     public void drawTooltip(ItemStack stack, int x, int y)

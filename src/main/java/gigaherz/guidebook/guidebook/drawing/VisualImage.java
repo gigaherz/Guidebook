@@ -5,6 +5,8 @@ import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.input.Cursor;
+import org.lwjgl.input.Mouse;
 
 public class VisualImage extends VisualElement implements LinkHelper.ILinkable
 {
@@ -50,19 +52,25 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     @Override
     public void mouseOver(IBookGraphics nav, int x, int y)
     {
-        linkContext.isHovering = true;
+        if (linkContext != null ) {
+            linkContext.isHovering = true;
+            //Mouse.setNativeCursor(Cursor.)
+        }
     }
 
     @Override
     public void mouseOut(IBookGraphics nav, int x, int y)
     {
-        linkContext.isHovering = false;
+        if (linkContext != null ) {
+            linkContext.isHovering = false;
+        }
     }
 
     @Override
     public void click(IBookGraphics nav)
     {
-        LinkHelper.click(nav, linkContext);
+        if (linkContext != null)
+            LinkHelper.click(nav, linkContext);
     }
 
     @Override

@@ -46,6 +46,12 @@ public class TemplateElement extends ElementInline
     }
 
     @Override
+    public String toString(boolean complete)
+    {
+        return "<template .../>";
+    }
+
+    @Override
     public ElementInline copy()
     {
         TemplateElement temp = super.copy(new TemplateElement(isFirstElement, isLastElement));
