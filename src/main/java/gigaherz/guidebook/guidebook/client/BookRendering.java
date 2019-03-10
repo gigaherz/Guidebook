@@ -1,17 +1,17 @@
 package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.*;
-import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.PointD;
-import gigaherz.guidebook.guidebook.util.PointF;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -20,23 +20,22 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class BookRendering implements IBookGraphics
 {
     public static final int DEFAULT_BOOK_WIDTH = 276;
     public static final int DEFAULT_BOOK_HEIGHT = 198;
-    public static final int DEFAULT_INNER_MARGIN = 22;
+    public static final int DEFAULT_INNER_MARGIN = 16;
     public static final int DEFAULT_OUTER_MARGIN = 10;
-    public static final int DEFAULT_BOTTOM_MARGIN = 8;
-    public static final int DEFAULT_VERTICAL_MARGIN = 18;
+    public static final int DEFAULT_TOP_MARGIN = 10;
+    public static final int DEFAULT_BOTTOM_MARGIN = 18;
     public static final int BOOK_SCALE_MARGIN = 20;
 
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -56,10 +55,10 @@ public class BookRendering implements IBookGraphics
     private int bookHeight;
     private int innerMargin;
     private int outerMargin;
-    private int verticalMargin;
+    private int topMargin;
     private int bottomMargin;
-    private int pageWidth = bookWidth / 2 - innerMargin - outerMargin;
-    private int pageHeight = bookHeight - verticalMargin;
+    private int pageWidth;
+    private int pageHeight;
 
     private final List<VisualChapter> chapters = Lists.newArrayList();
     private int lastProcessedChapter = 0;
@@ -71,6 +70,8 @@ public class BookRendering implements IBookGraphics
     private boolean currentDrawingPage = false;
 
     private VisualElement previousHovering = null;
+
+    public static boolean DEBUG_DRAW_BOUNDS = false;
 
     BookRendering(BookDocument book, GuiGuidebook gui)
     {
@@ -187,7 +188,7 @@ public class BookRendering implements IBookGraphics
             this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
             this.innerMargin = (int) (DEFAULT_INNER_MARGIN / fontSize);
             this.outerMargin = (int) (DEFAULT_OUTER_MARGIN / fontSize);
-            this.verticalMargin = (int) (DEFAULT_VERTICAL_MARGIN / fontSize);
+            this.topMargin = (int) (DEFAULT_TOP_MARGIN / fontSize);
             this.bottomMargin = (int) (DEFAULT_BOTTOM_MARGIN / fontSize);
         }
         else
@@ -201,12 +202,12 @@ public class BookRendering implements IBookGraphics
             this.bookHeight = DEFAULT_BOOK_HEIGHT;
             this.innerMargin = DEFAULT_INNER_MARGIN;
             this.outerMargin = DEFAULT_OUTER_MARGIN;
-            this.verticalMargin = DEFAULT_VERTICAL_MARGIN;
+            this.topMargin = DEFAULT_TOP_MARGIN;
             this.bottomMargin = DEFAULT_BOTTOM_MARGIN;
         }
 
         this.pageWidth = this.bookWidth / 2 - this.innerMargin - this.outerMargin;
-        this.pageHeight = this.bookHeight - this.verticalMargin - this.bottomMargin;
+        this.pageHeight = this.bookHeight - this.topMargin - this.bottomMargin;
 
         return !epsilonEquals(scalingFactor, oldScale);
     }
@@ -501,17 +502,20 @@ public class BookRendering implements IBookGraphics
         {
             VisualChapter ch = getVisualChapter(currentChapter);
 
-            final VisualPage pgLeft = ch.pages.get(currentPair * 2);
-
-            if (mouseClickPage(mouseX, mouseY, pgLeft, true))
-                return true;
-
-            if (currentPair * 2 + 1 < ch.pages.size())
+            if (currentPair * 2 < ch.pages.size())
             {
-                final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
+                final VisualPage pgLeft = ch.pages.get(currentPair * 2);
 
-                if (mouseClickPage(mouseX, mouseY, pgRight, false))
+                if (mouseClickPage(mouseX, mouseY, pgLeft, true))
                     return true;
+
+                if (currentPair * 2 + 1 < ch.pages.size())
+                {
+                    final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
+
+                    if (mouseClickPage(mouseX, mouseY, pgRight, false))
+                        return true;
+                }
             }
         }
 
@@ -541,30 +545,33 @@ public class BookRendering implements IBookGraphics
     {
         VisualChapter ch = getVisualChapter(currentChapter);
 
-        final VisualPage pgLeft = ch.pages.get(currentPair * 2);
-
-        VisualElement hovering = mouseHoverPage(pgLeft, true);
-
-        if (hovering == null)
+        if (currentPair * 2 < ch.pages.size())
         {
-            if (currentPair * 2 + 1 < ch.pages.size())
+            final VisualPage pgLeft = ch.pages.get(currentPair * 2);
+
+            VisualElement hovering = mouseHoverPage(pgLeft, true);
+
+            if (hovering == null)
             {
-                final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
+                if (currentPair * 2 + 1 < ch.pages.size())
+                {
+                    final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
 
-                hovering = mouseHoverPage(pgRight, false);
+                    hovering = mouseHoverPage(pgRight, false);
+                }
             }
-        }
 
-        if (hovering != previousHovering && previousHovering != null)
-        {
-            previousHovering.mouseOut(this, mouseX, mouseY);
-        }
-        previousHovering = hovering;
+            if (hovering != previousHovering && previousHovering != null)
+            {
+                previousHovering.mouseOut(this, mouseX, mouseY);
+            }
+            previousHovering = hovering;
 
-        if (hovering != null)
-        {
-            hovering.mouseOver(this, mouseX, mouseY);
-            return true;
+            if (hovering != null)
+            {
+                hovering.mouseOver(this, mouseX, mouseY);
+                return true;
+            }
         }
 
         return false;
@@ -605,6 +612,13 @@ public class BookRendering implements IBookGraphics
             GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
         }
 
+        if (DEBUG_DRAW_BOUNDS)
+        {
+            int l = (int) ((scaledWidth - bookWidth) / 2);
+            int t = (int) ((scaledHeight - bookHeight) / 2);
+            Gui.drawRect(l, t, l + bookWidth, t + bookHeight, 0x2f000000);
+        }
+
         drawPage(currentPair * 2);
         drawPage(currentPair * 2 + 1);
 
@@ -616,9 +630,9 @@ public class BookRendering implements IBookGraphics
 
     private PointD getPageOffset(boolean leftPage)
     {
-        double left = scaledWidth / 2 - pageWidth - innerMargin;
-        double right = scaledWidth / 2 + innerMargin;
-        double top = (scaledHeight - pageHeight) / 2 - bottomMargin;
+        double left = (scaledWidth - bookWidth) / 2 + outerMargin;
+        double right = left + pageWidth + innerMargin * 2;
+        double top = (scaledHeight - bookHeight) / 2 + topMargin;
 
         return new PointD(leftPage ? left : right, top);
     }
@@ -640,6 +654,11 @@ public class BookRendering implements IBookGraphics
         else
             GlStateManager.translate((int)offset.x, (int)offset.y, 0);
 
+        if(DEBUG_DRAW_BOUNDS)
+        {
+            Gui.drawRect(0, 0, pageWidth, pageHeight, 0x3f000000);
+        }
+
         for (VisualElement e : pg.children)
         {
             e.draw(this);
@@ -648,7 +667,7 @@ public class BookRendering implements IBookGraphics
         String cnt = String.valueOf(ch.startPair * 2 + page + 1);
         Size sz = measure(cnt);
 
-        addString((pageWidth - sz.width) / 2, pageHeight + 2, cnt, 0xFF000000, 1.0f);
+        addString((pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
 
         GlStateManager.popMatrix();
     }
@@ -809,6 +828,16 @@ public class BookRendering implements IBookGraphics
     public void setGui(GuiGuidebook guiGuidebook)
     {
         this.gui = guiGuidebook;
+    }
+
+    public static final IAnimatedBookBackgroundFactory DEFAULT_BACKGROUND = AnimatedBookBackground::new;
+    public static final Map<ResourceLocation, IAnimatedBookBackgroundFactory> BACKGROUND_FACTORY_MAP = Maps.newHashMap();
+    public IAnimatedBookBackground createBackground(GuiGuidebook guiGuidebook)
+    {
+        ResourceLocation loc = book.getBackground();
+        IAnimatedBookBackgroundFactory factory = null;
+        if (loc != null) factory = BACKGROUND_FACTORY_MAP.get(loc);
+        return ((factory != null) ? factory : DEFAULT_BACKGROUND).create(guiGuidebook);
     }
 
     private static class TextMetrics

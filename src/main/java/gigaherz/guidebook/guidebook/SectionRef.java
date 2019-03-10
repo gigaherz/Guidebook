@@ -87,7 +87,7 @@ public class SectionRef
                         String.format(
                                 "Invalid section reference: \"%s\" in book \"%s\" caused by: %s",
                                 ref_string,
-                                bookDocument.getBookName(),
+                                bookDocument.getName(),
                                 e.toString()
                         )
                 );

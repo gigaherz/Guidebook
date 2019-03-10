@@ -21,6 +21,8 @@ public class ElementImage extends ElementInline
     public int tw = 0;
     public int th = 0;
 
+    public float scale = 1.0f;
+
     public ElementImage(boolean isFirstElement, boolean isLastElement)
     {
         super(isFirstElement, isLastElement);
@@ -72,6 +74,7 @@ public class ElementImage extends ElementInline
         tw = getAttribute(attributes, "tw", tw);
         th = getAttribute(attributes, "th", th);
         textureLocation = getAttribute(attributes, "src", textureLocation);
+        scale = getAttribute(attributes, "scale", scale);
     }
 
     @Override
@@ -91,6 +94,7 @@ public class ElementImage extends ElementInline
         img.ty = ty;
         img.tw = tw;
         img.th = th;
+        img.scale = scale;
         return img;
     }
 

@@ -33,6 +33,7 @@ public class VisualStack extends VisualElement
     @Override
     public void draw(IBookGraphics nav)
     {
+        super.draw(nav);
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {

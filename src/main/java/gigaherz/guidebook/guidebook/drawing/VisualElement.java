@@ -1,8 +1,10 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
+import gigaherz.guidebook.guidebook.client.BookRendering;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.Gui;
 
 public abstract class VisualElement extends Rect
 {
@@ -21,7 +23,13 @@ public abstract class VisualElement extends Rect
         this.verticalAlign = verticalAlign;
     }
 
-    public abstract void draw(IBookGraphics nav);
+    public void draw(IBookGraphics nav)
+    {
+        if(BookRendering.DEBUG_DRAW_BOUNDS)
+        {
+            Gui.drawRect(this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
+        }
+    }
 
     public void mouseOver(IBookGraphics nav, int x, int y)
     {

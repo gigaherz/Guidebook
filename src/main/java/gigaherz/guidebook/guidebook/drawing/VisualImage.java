@@ -38,6 +38,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     @Override
     public void draw(IBookGraphics nav)
     {
+        super.draw(nav);
         nav.drawImage(textureLocation, position.x, position.y, tx, ty, w, h, tw, th, scale);
     }
 

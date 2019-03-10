@@ -18,6 +18,7 @@ import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
 import joptsimple.internal.Strings;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -51,6 +52,7 @@ public class BookDocument implements IConditionSource
     private final ResourceLocation bookLocation;
     private String bookName;
     private ResourceLocation bookCover;
+    private ModelResourceLocation bookModel;
 
     final List<ChapterData> chapters = Lists.newArrayList();
     private Table<Item, Integer, SectionRef> stackLinks = HashBasedTable.create();
@@ -64,6 +66,7 @@ public class BookDocument implements IConditionSource
     private IBookGraphics renderingManager;
 
     private static final Map<ResourceLocation, ElementFactory> customElements = Maps.newHashMap();
+    private ResourceLocation background;
 
     public static void registerCustomElement(ResourceLocation location, ElementFactory factory)
     {
@@ -83,21 +86,33 @@ public class BookDocument implements IConditionSource
         this.bookLocation = bookLocation;
     }
 
-    public ResourceLocation getBookLocation()
+    public ResourceLocation getLocation()
     {
         return bookLocation;
     }
 
     @Nullable
-    public String getBookName()
+    public String getName()
     {
         return bookName;
     }
 
     @Nullable
-    public ResourceLocation getBookCover()
+    public ResourceLocation getCover()
     {
         return bookCover;
+    }
+
+    @Nullable
+    public ModelResourceLocation getModel()
+    {
+        return bookModel;
+    }
+
+    @Nullable
+    public ResourceLocation getBackground()
+    {
+        return background;
     }
 
     @Nullable
@@ -148,7 +163,6 @@ public class BookDocument implements IConditionSource
         if (bookCover != null)
             textures.add(bookCover);
 
-        // TODO: Add <image> texture locations when implemented
         for (ChapterData chapter : chapters)
         {
             for (PageData page : chapter.sections)
@@ -173,7 +187,7 @@ public class BookDocument implements IConditionSource
         pg.elements.add(ElementParagraph.of(error, TextStyle.ERROR));
     }
 
-    public boolean parseBook(InputStream stream)
+    public boolean parseBook(InputStream stream, boolean loadedFromConfigFolder)
     {
         try
         {
@@ -203,6 +217,16 @@ public class BookDocument implements IConditionSource
                 if (n != null)
                 {
                     bookCover = new ResourceLocation(n.getTextContent());
+                }
+                n = attributes.getNamedItem("model");
+                if (n != null)
+                {
+                    bookModel = new ModelResourceLocation(n.getTextContent());
+                }
+                n = attributes.getNamedItem("background");
+                if (n != null)
+                {
+                    background = new ResourceLocation(n.getTextContent());
                 }
                 n = attributes.getNamedItem("fontSize");
                 if (n != null)
@@ -245,7 +269,7 @@ public class BookDocument implements IConditionSource
                 {
                     NamedNodeMap attributes = firstLevelNode.getAttributes();
                     Node n = attributes.getNamedItem("ref");
-                    TemplateLibrary tpl = TemplateLibrary.get(n.getTextContent());
+                    TemplateLibrary tpl = TemplateLibrary.get(n.getTextContent(), loadedFromConfigFolder);
                     templates.putAll(tpl.templates);
                 }
                 else if (nodeName.equals("chapter"))
@@ -458,7 +482,7 @@ public class BookDocument implements IConditionSource
                 {
                     p.alignment = ElementParagraph.ALIGN_CENTER;
                     p.space = 4;
-                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true);
+                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true, 1.0f);
                 }
 
                 TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
@@ -833,12 +857,12 @@ public class BookDocument implements IConditionSource
 
         public void reflow(IBookGraphics rendering, VisualChapter ch, Size pageSize)
         {
-            for (BookDocument.PageData section : sections)
+            for (PageData section : sections)
             {
                 if (!section.conditionResult || section.isEmpty())
                     continue;
 
-                if (!com.google.common.base.Strings.isNullOrEmpty(section.id))
+                if (!Strings.isNullOrEmpty(section.id))
                     ch.pagesByName.put(section.id, ch.pages.size());
 
                 ch.pages.addAll(section.reflow(rendering, pageSize));

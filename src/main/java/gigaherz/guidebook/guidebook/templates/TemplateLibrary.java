@@ -3,6 +3,7 @@ package gigaherz.guidebook.guidebook.templates;
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IConditionSource;
+import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;
@@ -17,8 +18,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -76,7 +76,7 @@ public class TemplateLibrary implements IConditionSource
         LIBRARIES.clear();
     }
 
-    public static TemplateLibrary get(String path)
+    public static TemplateLibrary get(String path, boolean useConfigFolder)
     {
         TemplateLibrary lib = LIBRARIES.get(path);
         if (lib == null)
@@ -85,13 +85,35 @@ public class TemplateLibrary implements IConditionSource
             {
                 lib = new TemplateLibrary();
 
-                IResource res = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(path));
+                ResourceLocation loc = new ResourceLocation(path);
+
+                // Prevents loading libraries from config folder if the book was found in resource packs.
+                if (useConfigFolder && loc.getNamespace().equals("gbook"))
+                {
+                    File booksFolder = BookRegistry.getBooksFolder();
+                    File file = new File(booksFolder, loc.getPath());
+                    if (file.exists() && file.isFile())
+                    {
+                        try (InputStream stream = new FileInputStream(file))
+                        {
+                            lib.parseLibrary(stream);
+                            LIBRARIES.put(path, lib);
+                            return lib;
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                            // WUT? continue and try to load from resource pack
+                        }
+                    }
+                }
+
+                IResource res = Minecraft.getMinecraft().getResourceManager().getResource(loc);
                 try (InputStream stream = res.getInputStream())
                 {
                     lib.parseLibrary(stream);
+                    LIBRARIES.put(path, lib);
                 }
 
-                LIBRARIES.put(path, lib);
             }
             catch (IOException | ParserConfigurationException | SAXException e)
             {

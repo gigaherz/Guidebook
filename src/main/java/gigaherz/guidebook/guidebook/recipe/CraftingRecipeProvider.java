@@ -80,10 +80,6 @@ class CraftingRecipeProvider extends RecipeProvider
         ArrayList<ElementStack> stackComponents = new ArrayList<>();
         VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
         {
-            @Override
-            public void draw(IBookGraphics nav)
-            {
-            }
         };
         int gridWidth = constantIndex == 0 ? 3 : 2;
 

@@ -53,10 +53,6 @@ public class FurnaceRecipeProvider extends RecipeProvider
         {
             VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
             {
-                @Override
-                public void draw(IBookGraphics nav)
-                {
-                }
             };
             ElementStack[] recipeComponents = new ElementStack[2];
 

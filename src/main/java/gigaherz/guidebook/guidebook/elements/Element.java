@@ -40,7 +40,6 @@ public abstract class Element
     public int h = 0;
 
     public int z = 0;
-    public float scale = 1.0f;
 
     // in proportion to the element's calculated height
     public float baseline = 7 / 9f; // vanilla font has a baseline 7 pixels from the bottom, with 9px total height
@@ -116,7 +115,6 @@ public abstract class Element
         other.z = z;
         other.w = w;
         other.h = h;
-        other.scale = scale;
         return other;
     }
 
@@ -127,7 +125,6 @@ public abstract class Element
         z = getAttribute(attributes, "z", z);
         w = getAttribute(attributes, "w", w);
         h = getAttribute(attributes, "h", h);
-        scale = getAttribute(attributes, "scale", scale);
 
         baseline = getAttribute(attributes, "baseline", baseline);
 

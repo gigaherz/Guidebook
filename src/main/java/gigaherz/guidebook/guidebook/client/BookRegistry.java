@@ -10,11 +10,10 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.*;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
@@ -22,7 +21,6 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
@@ -54,6 +52,13 @@ public class BookRegistry
     public static BookDocument get(ResourceLocation loc)
     {
         return getLoadedBooks().get(loc);
+    }
+
+    @Nullable
+    public static BookDocument get(ItemStack stack)
+    {
+        String loc = GuidebookMod.guidebook.getBookLocation(stack);
+        return loc == null ? null : get(new ResourceLocation(loc));
     }
 
     private static boolean initialized = false;
@@ -125,7 +130,7 @@ public class BookRegistry
         BookDocument bookDocument = new BookDocument(location);
         try
         {
-            ResourceLocation bookLocation = bookDocument.getBookLocation();
+            ResourceLocation bookLocation = bookDocument.getLocation();
             String domain = bookLocation.getNamespace();
             String path = bookLocation.getPath();
             String pathWithoutExtension = path;
@@ -156,7 +161,7 @@ public class BookRegistry
             }
             try (InputStream stream = bookResource.getInputStream())
             {
-                if (!bookDocument.parseBook(stream))
+                if (!bookDocument.parseBook(stream, false))
                     return null;
             }
         }
@@ -174,7 +179,7 @@ public class BookRegistry
         try
         {
             InputStream stream = new FileInputStream(file);
-            if (!bookDocument.parseBook(stream))
+            if (!bookDocument.parseBook(stream, true))
                 return null;
         }
         catch (IOException e)
@@ -186,23 +191,9 @@ public class BookRegistry
 
     private static void loadRawBookFiles()
     {
-        File booksFolder = new File(Loader.instance().getConfigDir(), "books");
-
-        if (!booksFolder.exists())
-        {
-            GuidebookMod.logger.info("The books folder does not exist, creating...");
-            if (!booksFolder.mkdirs())
-            {
-                GuidebookMod.logger.info("The books folder could not be created. Books can't be loaded from it.");
-                return;
-            }
-        }
-
-        if (!booksFolder.exists() || !booksFolder.isDirectory())
-        {
-            GuidebookMod.logger.info("There's a file called books, but it's not a directory. Books can't be loaded from it.");
+        File booksFolder = getBooksFolder();
+        if (booksFolder == null)
             return;
-        }
 
         Collection<File> xmlFiles = FileUtils.listFiles(booksFolder, new String[]{"xml"}, true);
 
@@ -220,6 +211,30 @@ public class BookRegistry
                 }
             }
         }
+    }
+
+    @Nullable
+    public static File getBooksFolder()
+    {
+        File booksFolder = new File(Loader.instance().getConfigDir(), "books");
+
+        if (!booksFolder.exists())
+        {
+            GuidebookMod.logger.info("The books folder does not exist, creating...");
+            if (!booksFolder.mkdirs())
+            {
+                GuidebookMod.logger.info("The books folder could not be created. Books can't be loaded from it.");
+                return null;
+            }
+        }
+
+        if (!booksFolder.exists() || !booksFolder.isDirectory())
+        {
+            GuidebookMod.logger.info("There's a file called books, but it's not a directory. Books can't be loaded from it.");
+            return null;
+        }
+
+        return booksFolder;
     }
 
     private static String relativePath(File base, File sub)
@@ -291,5 +306,10 @@ public class BookRegistry
         {
             // Ignore
         }
+    }
+
+    public static ResourceLocation[] gatherBookModels()
+    {
+        return LOADED_BOOKS.values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 }

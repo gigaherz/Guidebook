@@ -13,10 +13,12 @@ import java.util.List;
 public class ElementText extends ElementInline
 {
     public final String text;
-    public int color = 0xFF000000;
+    public int color;
     public boolean bold;
     public boolean italics;
     public boolean underline;
+
+    public float scale = 1.0f;
 
     public ElementText(String text, boolean isFirstElement, boolean isLastElement, TextStyle style)
     {
@@ -26,6 +28,7 @@ public class ElementText extends ElementInline
         bold = style.bold;
         italics = style.italics;
         underline = style.underline;
+        scale = style.scale;
     }
 
     private String getStringWithFormat()
@@ -71,6 +74,7 @@ public class ElementText extends ElementInline
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         super.parse(book, attributes);
+        scale = getAttribute(attributes, "scale", scale);
     }
 
     @Override
@@ -82,11 +86,12 @@ public class ElementText extends ElementInline
     @Override
     public ElementInline copy()
     {
-        ElementText span = super.copy(new ElementText(text, false, false, new TextStyle(color, bold, italics, underline)));
+        ElementText span = super.copy(new ElementText(text, false, false, new TextStyle(color, bold, italics, underline, scale)));
         span.color = color;
         span.bold = bold;
         span.italics = italics;
         span.underline = underline;
+        span.scale = scale;
         return span;
     }
 

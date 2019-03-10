@@ -18,7 +18,7 @@ import java.util.List;
 
 import static net.minecraft.client.renderer.RenderHelper.setColorBuffer;
 
-public class AnimatedBookBackground
+public class AnimatedBookBackground implements IAnimatedBookBackground
 {
     private static float angleSpeed = (1 / 0.35f) / 20;
     private float angleT = 1;
@@ -37,16 +37,19 @@ public class AnimatedBookBackground
         this.gui = gui;
     }
 
+    @Override
     public void startClosing()
     {
         closing = true;
     }
 
+    @Override
     public boolean isFullyOpen()
     {
         return angleT == 0;
     }
 
+    @Override
     public boolean update()
     {
         if (closing)
@@ -83,6 +86,7 @@ public class AnimatedBookBackground
         GlStateManager.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
     }
 
+    @Override
     public void draw(float partialTicks, int bookHeight, float scalingFactor)
     {
         IBakedModel modelBookA, modelBookB;
@@ -137,7 +141,7 @@ public class AnimatedBookBackground
         GlStateManager.enableRescaleNormal();
         enableStandardItemLighting();
 
-        GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight / 2 - 4, 50);
+        GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, 50);
         GlStateManager.rotate(180, 0, 1, 0);
         GlStateManager.rotate(-130, 1, 0, 0);
         GlStateManager.scale(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);

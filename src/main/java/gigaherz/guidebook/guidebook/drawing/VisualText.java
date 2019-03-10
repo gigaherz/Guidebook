@@ -23,6 +23,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     @Override
     public void draw(IBookGraphics nav)
     {
+        super.draw(nav);
         if (linkContext != null)
             nav.addString(position.x, position.y, text, linkContext.isHovering ? linkContext.colorHover : color, scale);
         else

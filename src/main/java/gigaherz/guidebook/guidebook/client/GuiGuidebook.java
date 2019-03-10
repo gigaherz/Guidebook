@@ -43,7 +43,7 @@ public class GuiGuidebook extends GuiScreen
     private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
 
     private BookRendering book;
-    private AnimatedBookBackground background;
+    private IAnimatedBookBackground background;
     public static boolean useNaturalArrows = false;
 
     public GuiGuidebook(ResourceLocation book)
@@ -67,14 +67,13 @@ public class GuiGuidebook extends GuiScreen
         {
             initialized = true;
 
-            background = new AnimatedBookBackground(this);
-
             EntityPlayerSP player = Minecraft.getMinecraft().player;
             ConditionContext conditionContext = new ConditionContext();
             conditionContext.setPlayer(player);
 
             BookDocument theBook = BookRegistry.get(bookLocation);
             book = (BookRendering) theBook.getRendering();
+
             boolean conditions = theBook.reevaluateConditions(conditionContext);
             if (book == null)
             {
@@ -89,6 +88,8 @@ public class GuiGuidebook extends GuiScreen
                     book.resetRendering(conditions);
                 }
             }
+
+            background = book.createBackground(this);
 
             int btnId = 0;
 
@@ -228,27 +229,36 @@ public class GuiGuidebook extends GuiScreen
         setupConditionsAndPosition();
 
         double bookScale = book.getScalingFactor() / book.getBook().getFontSize();
-        double bookWidth = BookRendering.DEFAULT_BOOK_WIDTH * bookScale;
-        double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * bookScale;
+        double bookWidth = (BookRendering.DEFAULT_BOOK_WIDTH) * bookScale;
+        double bookHeight = (BookRendering.DEFAULT_BOOK_HEIGHT) * bookScale;
 
         int left = (int) ((this.width - bookWidth) / 2);
         int right = (int) (left + bookWidth);
-        int top = (int) ((this.height - bookHeight) / 2 - 9);
+        int top = (int) ((this.height - bookHeight) / 2);
         int bottom = (int) (top + bookHeight);
-        buttonHome.x = left - 10;
-        buttonHome.y = top - 8;
-        buttonBack.x = left + 8;
-        buttonBack.y = top - 5;
-        buttonClose.x = right - 6;
-        buttonClose.y = top - 6;
-        buttonPreviousPage.x = left + 24;
-        buttonPreviousPage.y = bottom - 13;
-        buttonNextPage.x = right - 42;
-        buttonNextPage.y = bottom - 13;
-        buttonPreviousChapter.x = left + 2;
-        buttonPreviousChapter.y = bottom - 13;
-        buttonNextChapter.x = right - 23;
-        buttonNextChapter.y = bottom - 13;
+
+        int leftLeft = left;
+        int rightRight = right;
+        int topTop = top - 16 + (int)(8*bookScale);
+        int bottomBottom = bottom + 2;
+
+        buttonHome.x = leftLeft;
+        buttonHome.y = topTop;
+        buttonBack.x = leftLeft + 18;
+        buttonBack.y = topTop + 3;
+
+        buttonClose.x = rightRight - 12;
+        buttonClose.y = topTop;
+
+        buttonPreviousPage.x = leftLeft + 22;
+        buttonPreviousPage.y = bottomBottom;
+        buttonPreviousChapter.x = leftLeft;
+        buttonPreviousChapter.y = bottomBottom;
+
+        buttonNextPage.x = rightRight - 16 - 18;
+        buttonNextPage.y = bottomBottom;
+        buttonNextChapter.x = rightRight - 16;
+        buttonNextChapter.y = bottomBottom;
     }
 
     @Override

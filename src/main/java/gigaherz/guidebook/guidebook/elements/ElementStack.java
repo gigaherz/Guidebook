@@ -29,6 +29,8 @@ public class ElementStack extends ElementInline
 
     public final NonNullList<ItemStack> stacks = NonNullList.create();
 
+    public float scale = 1.0f;
+
     public ElementStack(boolean isFirstElement, boolean isLastElement)
     {
         super(isFirstElement, isLastElement);
@@ -74,6 +76,8 @@ public class ElementStack extends ElementInline
         NBTTagCompound tag = new NBTTagCompound();
 
         super.parse(book, attributes);
+
+        scale = getAttribute(attributes, "scale", scale);
 
         Node attr = attributes.getNamedItem("meta");
         if (attr != null)
@@ -190,6 +194,7 @@ public class ElementStack extends ElementInline
     public ElementInline copy()
     {
         ElementStack newStack = super.copy(new ElementStack(isFirstElement, isLastElement));
+        newStack.scale = scale;
         for(ItemStack stack : stacks)
         {
             newStack.stacks.add(stack.copy());
