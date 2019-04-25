@@ -12,6 +12,7 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.Optional;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -20,10 +21,6 @@ public class ItemGuidebook extends Item
 {
     public ItemGuidebook()
     {
-        setMaxStackSize(1);
-        setTranslationKey(GuidebookMod.MODID + ".guidebook");
-        setCreativeTab(GuidebookMod.tabMagic);
-        setHasSubtypes(true);
     }
 
     @Override

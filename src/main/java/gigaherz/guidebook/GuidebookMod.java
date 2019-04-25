@@ -1,6 +1,5 @@
 package gigaherz.guidebook;
 
-import com.google.common.collect.Lists;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
 import net.minecraft.creativetab.CreativeTabs;
@@ -9,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -19,8 +17,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.logging.log4j.Logger;
-
-import java.util.List;
 
 @Mod.EventBusSubscriber
 @Mod(modid = GuidebookMod.MODID, version = GuidebookMod.VERSION,
@@ -45,7 +41,7 @@ public class GuidebookMod
 
     public static Logger logger;
 
-    public static CreativeTabs tabMagic = new CreativeTabs(MODID)
+    public static CreativeTabs tabGuidebooks = new CreativeTabs(MODID)
     {
         @Override
         public ItemStack createIcon()
@@ -53,8 +49,6 @@ public class GuidebookMod
             return new ItemStack(guidebook);
         }
     };
-
-    // Config
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
@@ -69,6 +63,10 @@ public class GuidebookMod
     {
         event.getRegistry().registerAll(
                 new ItemGuidebook().setRegistryName("guidebook")
+                        .setTranslationKey(GuidebookMod.MODID + ".guidebook")
+                        .setHasSubtypes(true)
+                        .setMaxStackSize(1)
+                        .setCreativeTab(GuidebookMod.tabGuidebooks)
         );
     }
 

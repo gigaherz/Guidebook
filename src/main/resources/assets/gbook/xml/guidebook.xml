@@ -1,4 +1,4 @@
-<book title="Guidebook Manual" cover="gbook:covers/default" fontSize="0.6">
+<book title="Guidebook Manual" cover="gbook:covers/default" fontSize="0.4">
 
   <include ref="gbook:xml/standard.xml" />
 
@@ -12,8 +12,9 @@
       <p color="#606060" space="8">This book is a work in progress.</p>
 
       <p color="#606060">A web-based version of the documentation is available in the wiki on the github project.</p>
-    </section>
-    <section>
+
+      <section-break />
+
       <!--
       'space' tags increment the vertical offset without drawing text.
       The 'height' attribute specifies how much.

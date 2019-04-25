@@ -5,6 +5,7 @@ import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
@@ -23,6 +24,13 @@ public class ElementPanel extends Element
     public final List<Element> innerElements;
     public boolean asPercent;
     public Integer space;
+    public PanelMode mode;
+
+    enum PanelMode
+    {
+        DEFAULT,
+        FLOW;
+    }
 
     public ElementPanel()
     {
@@ -51,6 +59,20 @@ public class ElementPanel extends Element
 
             space = Ints.tryParse(t);
         }
+
+        attr = attributes.getNamedItem("mode");
+        if(attr != null)
+        {
+            String t = attr.getTextContent();
+            try
+            {
+                mode = PanelMode.valueOf(t.toUpperCase());
+            }
+            catch(IllegalArgumentException e)
+            {
+                mode = PanelMode.DEFAULT;
+            }
+        }
     }
 
     @Override
@@ -78,8 +100,11 @@ public class ElementPanel extends Element
     @Override
     public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect pageBounds)
     {
+        List<VisualElement> visuals = Lists.newArrayList();
+
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
+
         int top = adjustedPosition.y;
         for (Element element : innerElements)
         {
@@ -89,15 +114,30 @@ public class ElementPanel extends Element
                 Size tempSize = new Size(adjustedBounds.size.width, adjustedBounds.size.height - (top - adjustedPosition.y));
                 Rect tempBounds = new Rect(tempPos, tempSize);
 
-                top = element.reflow(list, nav, tempBounds, pageBounds);
+                top = element.reflow(visuals, nav, tempBounds, pageBounds);
             }
         }
-        if (position != POS_RELATIVE)
-            return bounds.position.y;
 
-        if (space != null)
+        if (position != POS_RELATIVE)
         {
-            return adjustedPosition.y + (asPercent ? space * bounds.size.height : space);
+            top = bounds.position.y;
+        }
+        else if (space != null)
+        {
+            top = adjustedPosition.y + (asPercent ? (space * bounds.size.height / 100) : space);
+        }
+
+        if (visuals.size() > 0)
+        {
+            Size size = new Size(bounds.size.width,top-adjustedPosition.y);
+
+            VisualPanel p = new VisualPanel(size, position, baseline, verticalAlignment);
+
+            p.position = adjustedPosition;
+
+            p.children.addAll(visuals);
+
+            list.add(p);
         }
 
         return top;
