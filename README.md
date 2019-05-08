@@ -9,7 +9,7 @@ repositories {
     maven {
         url 'http://dogforce-games.com/maven'
     }
-}\c
+}
 ```
 
 ```gradle
