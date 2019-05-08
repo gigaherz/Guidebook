@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
@@ -43,13 +44,13 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, int x, int y)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
     {
         linkContext.isHovering = true;
     }
 
     @Override
-    public void mouseOut(IBookGraphics nav, int x, int y)
+    public void mouseOut(IBookGraphics nav, HoverContext hoverContext)
     {
         linkContext.isHovering = false;
     }

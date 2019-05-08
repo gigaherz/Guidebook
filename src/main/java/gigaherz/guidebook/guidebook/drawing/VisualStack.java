@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.util.Size;
@@ -48,12 +49,12 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, int x, int y)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
     {
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
-            nav.drawTooltip(stack, x, y);
+            nav.drawTooltip(stack, hoverContext.mouseX, hoverContext.mouseY);
         }
     }
 

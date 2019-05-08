@@ -1,12 +1,11 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.input.Cursor;
-import org.lwjgl.input.Mouse;
 
 public class VisualImage extends VisualElement implements LinkHelper.ILinkable
 {
@@ -51,7 +50,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, int x, int y)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
     {
         if (linkContext != null ) {
             linkContext.isHovering = true;
@@ -60,7 +59,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOut(IBookGraphics nav, int x, int y)
+    public void mouseOut(IBookGraphics nav, HoverContext hoverContext)
     {
         if (linkContext != null ) {
             linkContext.isHovering = false;

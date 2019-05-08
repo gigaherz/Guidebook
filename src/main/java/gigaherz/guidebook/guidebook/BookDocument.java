@@ -512,7 +512,9 @@ public class BookDocument implements IConditionSource
                 parsedElement = p;
             }
             else if (nodeName.equals("space")
-                    || nodeName.equals("group"))
+                    || nodeName.equals("group")
+                    || nodeName.equals("panel")
+                    || nodeName.equals("div"))
             {
                 ElementPanel s = new ElementPanel();
 

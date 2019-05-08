@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.drawing.*;
@@ -539,7 +540,6 @@ public class BookRendering implements IBookGraphics
         return false;
     }
 
-
     @Override
     public boolean mouseHover(int mouseX, int mouseY)
     {
@@ -549,7 +549,8 @@ public class BookRendering implements IBookGraphics
         {
             final VisualPage pgLeft = ch.pages.get(currentPair * 2);
 
-            VisualElement hovering = mouseHoverPage(pgLeft, true);
+            final HoverContext hoverContext = new HoverContext(mouseX, mouseY);
+            VisualElement hovering = mouseHoverPage(pgLeft, true, hoverContext);
 
             if (hovering == null)
             {
@@ -557,19 +558,19 @@ public class BookRendering implements IBookGraphics
                 {
                     final VisualPage pgRight = ch.pages.get(currentPair * 2 + 1);
 
-                    hovering = mouseHoverPage(pgRight, false);
+                    hovering = mouseHoverPage(pgRight, false, hoverContext);
                 }
             }
 
             if (hovering != previousHovering && previousHovering != null)
             {
-                previousHovering.mouseOut(this, mouseX, mouseY);
+                previousHovering.mouseOut(this, hoverContext);
             }
             previousHovering = hovering;
 
             if (hovering != null)
             {
-                hovering.mouseOver(this, mouseX, mouseY);
+                hovering.mouseOver(this, hoverContext);
                 return true;
             }
         }
@@ -578,7 +579,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Nullable
-    private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage)
+    private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage, HoverContext mouseCoords)
     {
         Minecraft mc = Minecraft.getMinecraft();
         double dw = scaledWidth;
@@ -589,6 +590,9 @@ public class BookRendering implements IBookGraphics
 
         mX -= offset.x;
         mY -= offset.y;
+
+        mouseCoords.mouseScaledX = mX;
+        mouseCoords.mouseScaledY = mY;
 
         for (VisualElement e : pg.children)
         {

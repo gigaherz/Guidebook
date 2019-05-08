@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import com.google.common.collect.Lists;
+import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.util.Size;
 
@@ -25,8 +26,10 @@ public class VisualPanel extends VisualElement
     private VisualElement lastMouseOver = null;
 
     @Override
-    public void mouseOver(IBookGraphics nav, int x, int y)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
     {
+        double x = hoverContext.mouseScaledX;
+        double y = hoverContext.mouseScaledY;
         VisualElement newOver = null;
         for(VisualElement child : children)
         {
@@ -43,23 +46,23 @@ public class VisualPanel extends VisualElement
 
         if (lastMouseOver != null && lastMouseOver != newOver)
         {
-            lastMouseOver.mouseOut(nav,x,y);
+            lastMouseOver.mouseOut(nav, hoverContext);
         }
 
         if (newOver != null)
         {
-            newOver.mouseOver(nav, x, y);
+            newOver.mouseOver(nav, hoverContext);
         }
 
         lastMouseOver = newOver;
     }
 
     @Override
-    public void mouseOut(IBookGraphics nav, int x, int y)
+    public void mouseOut(IBookGraphics nav, HoverContext hoverContext)
     {
         if (lastMouseOver != null)
         {
-            lastMouseOver.mouseOut(nav,x,y);
+            lastMouseOver.mouseOut(nav, hoverContext);
             lastMouseOver = null;
         }
     }

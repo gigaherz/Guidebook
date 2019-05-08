@@ -24,7 +24,7 @@ public class ElementPanel extends Element
     public final List<Element> innerElements;
     public boolean asPercent;
     public Integer space;
-    public PanelMode mode;
+    public PanelMode mode = PanelMode.DEFAULT;
 
     enum PanelMode
     {
@@ -106,15 +106,29 @@ public class ElementPanel extends Element
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
         int top = adjustedPosition.y;
-        for (Element element : innerElements)
+        if (mode == PanelMode.DEFAULT)
         {
-            if (element.conditionResult)
+            for (Element element : innerElements)
             {
-                Point tempPos = new Point(adjustedPosition.x, top);
-                Size tempSize = new Size(adjustedBounds.size.width, adjustedBounds.size.height - (top - adjustedPosition.y));
-                Rect tempBounds = new Rect(tempPos, tempSize);
+                if (element.conditionResult)
+                {
+                     element.reflow(visuals, nav, adjustedBounds, pageBounds);
+                }
+            }
+            top += adjustedBounds.size.height;
+        }
+        else
+        {
+            for (Element element : innerElements)
+            {
+                if (element.conditionResult)
+                {
+                    Point tempPos = new Point(adjustedPosition.x, top);
+                    Size tempSize = new Size(adjustedBounds.size.width, adjustedBounds.size.height - (top - adjustedPosition.y));
+                    Rect tempBounds = new Rect(tempPos, tempSize);
 
-                top = element.reflow(visuals, nav, tempBounds, pageBounds);
+                    top = element.reflow(visuals, nav, tempBounds, pageBounds);
+                }
             }
         }
 

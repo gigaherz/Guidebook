@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.client.BookRendering;
 import gigaherz.guidebook.guidebook.util.Rect;
@@ -31,11 +32,11 @@ public abstract class VisualElement extends Rect
         }
     }
 
-    public void mouseOver(IBookGraphics nav, int x, int y)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
     {
     }
 
-    public void mouseOut(IBookGraphics nav, int x, int y)
+    public void mouseOut(IBookGraphics nav, HoverContext hoverContext)
     {
     }
 
