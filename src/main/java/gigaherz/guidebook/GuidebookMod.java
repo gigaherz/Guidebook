@@ -20,7 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 @Mod.EventBusSubscriber
 @Mod(modid = GuidebookMod.MODID, version = GuidebookMod.VERSION,
-        acceptedMinecraftVersions = "[1.12.0,1.13.0)",
+        acceptedMinecraftVersions = "[1.12.2,1.13.0)",
+        dependencies = "required-after:forge@[14.23.5.2779,)",
         updateJSON = "https://raw.githubusercontent.com/gigaherz/guidebook/master/update.json")
 public class GuidebookMod
 {
