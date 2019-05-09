@@ -2,27 +2,18 @@ package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
-import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
-import jdk.nashorn.internal.ir.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 
@@ -40,8 +31,8 @@ public class GuiGuidebook extends GuiScreen
     private GuiButton buttonBack;
     private GuiButton buttonHome;
 
-    private ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
-    private TextureManager renderEngine = Minecraft.getMinecraft().renderEngine;
+    private ItemModelMesher mesher = Minecraft.getInstance().getItemRenderer().getItemModelMesher();
+    private TextureManager renderEngine = Minecraft.getInstance().textureManager;
 
     private BookRendering book;
     private IAnimatedBookBackground background;
@@ -68,7 +59,7 @@ public class GuiGuidebook extends GuiScreen
         {
             initialized = true;
 
-            EntityPlayerSP player = Minecraft.getMinecraft().player;
+            EntityPlayerSP player = Minecraft.getInstance().player;
             ConditionContext conditionContext = new ConditionContext();
             conditionContext.setPlayer(player);
 
@@ -98,33 +89,124 @@ public class GuiGuidebook extends GuiScreen
             int right = left + BookRendering.DEFAULT_BOOK_WIDTH;
             int top = (this.height - BookRendering.DEFAULT_BOOK_HEIGHT) / 2 - 9;
             int bottom = top + BookRendering.DEFAULT_BOOK_HEIGHT;
-            this.buttonHome = new SpriteButton(btnId++, left - 10, top - 8, 6);
-            this.buttonBack = new SpriteButton(btnId++, left + 8, top - 5, 2);
-            this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3);
+            this.addButton(this.buttonHome = new SpriteButton(btnId++, left - 10, top - 8, 6)
+            {
+                @Override
+                public void onClick(double mouseX, double mouseY)
+                {
+                    super.onClick(mouseX, mouseY);
+                    book.navigateHome();
+                    updateButtonStates();
+                }
+            });
+            this.addButton(this.buttonBack = new SpriteButton(btnId++, left + 8, top - 5, 2)
+            {
+                @Override
+                public void onClick(double mouseX, double mouseY)
+                {
+                    super.onClick(mouseX, mouseY);
+                    book.navigateBack();
+                    updateButtonStates();
+                }
+            });
+            this.addButton(this.buttonClose = new SpriteButton(btnId++, right - 6, top - 6, 3)
+            {
+                @Override
+                public void onClick(double mouseX, double mouseY)
+                {
+                    super.onClick(mouseX, mouseY);
+                    background.startClosing();
+                    updateButtonStates();
+                }
+            });
             if (useNaturalArrows)
             {
-                this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1);
-                this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 0);
-                this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5);
-                this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4);
+                this.addButton(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 1)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.prevPage();
+                        updateButtonStates();
+                    }
+                });
+                this.addButton(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 0)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.nextPage();
+                        updateButtonStates();
+                    }
+                });
+                this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 5)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.prevChapter();
+                        updateButtonStates();
+                    }
+                };
+                this.addButton(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 4)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.nextChapter();
+                        updateButtonStates();
+                    }
+                });
             }
             else
             {
-                this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 0);
-                this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 1);
-                this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 4);
-                this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 5);
+                this.addButton(this.buttonPreviousPage = new SpriteButton(btnId++, left + 24, bottom - 13, 0)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.prevPage();
+                        updateButtonStates();
+                    }
+                });
+                this.addButton(this.buttonNextPage = new SpriteButton(btnId++, right - 42, bottom - 13, 1)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.nextPage();
+                        updateButtonStates();
+                    }
+                });
+                this.addButton(this.buttonPreviousChapter = new SpriteButton(btnId++, left + 2, bottom - 13, 4)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.prevChapter();
+                        updateButtonStates();
+                    }
+                });
+                this.addButton(this.buttonNextChapter = new SpriteButton(btnId++, right - 23, bottom - 13, 5)
+                {
+                    @Override
+                    public void onClick(double mouseX, double mouseY)
+                    {
+                        super.onClick(mouseX, mouseY);
+                        book.nextChapter();
+                        updateButtonStates();
+                    }
+                });
             }
             GuidebookMod.logger.info("Showing gui with " + btnId + " buttons.");
         }
-
-        this.buttonList.add(this.buttonHome);
-        this.buttonList.add(this.buttonBack);
-        this.buttonList.add(this.buttonClose);
-        this.buttonList.add(this.buttonPreviousPage);
-        this.buttonList.add(this.buttonNextPage);
-        this.buttonList.add(this.buttonPreviousChapter);
-        this.buttonList.add(this.buttonNextChapter);
 
         updateButtonStates();
 
@@ -133,51 +215,11 @@ public class GuiGuidebook extends GuiScreen
 
     private void setupConditionsAndPosition()
     {
-        ScaledResolution scaledresolution = new ScaledResolution(this.mc);
-        int i = scaledresolution.getScaledWidth();
-        int j = scaledresolution.getScaledHeight();
-        this.setGuiSize(i, j);
+        this.width = this.mc.mainWindow.getScaledWidth();
+        this.height = this.mc.mainWindow.getScaledHeight();
         if(book.refreshScalingFactor())
         {
             book.resetRendering(false);
-        }
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button)
-    {
-        if (button.enabled)
-        {
-            if (button.id == buttonClose.id)
-            {
-                background.startClosing();
-            }
-            else if (button.id == buttonHome.id)
-            {
-                book.navigateHome();
-            }
-            else if (button.id == buttonBack.id)
-            {
-                book.navigateBack();
-            }
-            else if (button.id == buttonNextPage.id)
-            {
-                book.nextPage();
-            }
-            else if (button.id == buttonPreviousPage.id)
-            {
-                book.prevPage();
-            }
-            else if (button.id == buttonNextChapter.id)
-            {
-                book.nextChapter();
-            }
-            else if (button.id == buttonPreviousChapter.id)
-            {
-                book.prevChapter();
-            }
-
-            updateButtonStates();
         }
     }
 
@@ -201,8 +243,10 @@ public class GuiGuidebook extends GuiScreen
     }
 
     @Override
-    public void updateScreen()
+    public void tick()
     {
+        super.tick();
+
         if (background.update())
             mc.displayGuiScreen(null);
 
@@ -210,19 +254,20 @@ public class GuiGuidebook extends GuiScreen
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) throws IOException
+    public boolean keyPressed(int keyCode, int p_keyPressed_2_, int p_keyPressed_3_)
     {
-        if (keyCode == Keyboard.KEY_ESCAPE)
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE)
         {
             background.startClosing();
-            return;
+            return true;
         }
-        else if (keyCode == Keyboard.KEY_BACK)
+        else if (keyCode == GLFW.GLFW_KEY_BACKSPACE)
         {
             book.navigateBack();
-            return;
+            return true;
         }
-        super.keyTyped(typedChar, keyCode);
+
+        return super.keyPressed(keyCode, p_keyPressed_2_, p_keyPressed_3_);
     }
 
     private void repositionButtons()
@@ -263,7 +308,7 @@ public class GuiGuidebook extends GuiScreen
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+    public void render(int mouseX, int mouseY, float partialTicks)
     {
         double backgroundScale = book.getScalingFactor() / book.getBook().getFontSize();
         double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
@@ -275,7 +320,7 @@ public class GuiGuidebook extends GuiScreen
             book.drawCurrentPages();
         }
 
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        super.render(mouseX, mouseY, partialTicks);
 
         if (background.isFullyOpen())
         {
@@ -299,18 +344,18 @@ public class GuiGuidebook extends GuiScreen
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
+    public boolean mouseClicked(double x, double y, int mouseButton)
     {
         if (book.mouseClicked(mouseButton))
-            return;
+            return true;
 
         if (mouseButton == 3)
         {
             book.navigateBack();
-            return;
+            return true;
         }
 
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(x, y, mouseButton);
     }
 
     public FontRenderer getFontRenderer()
@@ -328,15 +373,14 @@ public class GuiGuidebook extends GuiScreen
         return renderEngine;
     }
 
-    @SideOnly(Side.CLIENT)
-    static class SpriteButton extends GuiButton
+    private static final int[] xPixel = {5, 5, 4, 4, 4, 4, 4, 29};
+    private static final int[] yPixel = {2, 16, 30, 64, 79, 93, 107, 107};
+    private static final int[] xSize = {17, 17, 18, 13, 21, 21, 15, 15};
+    private static final int[] ySize = {11, 11, 11, 13, 11, 11, 15, 15};
+
+    class SpriteButton extends GuiButton
     {
         private final int whichIcon;
-
-        private static final int[] xPixel = {5, 5, 4, 4, 4, 4, 4, 29};
-        private static final int[] yPixel = {2, 16, 30, 64, 79, 93, 107, 107};
-        private static final int[] xSize = {17, 17, 18, 13, 21, 21, 15, 15};
-        private static final int[] ySize = {11, 11, 11, 13, 11, 11, 15, 15};
 
         public SpriteButton(int buttonId, int x, int y, int iconIndex)
         {
@@ -345,7 +389,7 @@ public class GuiGuidebook extends GuiScreen
         }
 
         @Override
-        public void drawButton(Minecraft mc, int mouseX, int mouseY, float p_191745_4_)
+        public void render(int mouseX, int mouseY, float partialTicks)
         {
             if (this.visible)
             {
@@ -355,7 +399,7 @@ public class GuiGuidebook extends GuiScreen
                                 mouseX < this.x + this.width &&
                                 mouseY < this.y + this.height;
 
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
                 mc.getTextureManager().bindTexture(BOOK_GUI_TEXTURES);
                 int x = xPixel[whichIcon];
                 int y = yPixel[whichIcon];

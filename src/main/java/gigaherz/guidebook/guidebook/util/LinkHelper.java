@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,11 +51,11 @@ public class LinkHelper
     public static void clickCopyToClipboard(IBookGraphics nav, String textTarget)
     {
         GuiScreen parent = (GuiScreen) nav.owner();
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         mc.displayGuiScreen(new GuiYesNo((result, id) -> {
             if (result)
             {
-                GuiScreen.setClipboardString(textTarget);
+                GLFW.glfwSetClipboardString(mc.mainWindow.getHandle(), textTarget);
                 mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("text.copyToClipboard.success"));
             }
             mc.displayGuiScreen(parent);
@@ -64,10 +65,10 @@ public class LinkHelper
                 0)
         {
             @Override
-            public void drawScreen(int mouseX, int mouseY, float partialTicks)
+            public void render(int mouseX, int mouseY, float partialTicks)
             {
-                parent.drawScreen(-1, -1, partialTicks);
-                super.drawScreen(mouseX, mouseY, partialTicks);
+                parent.render(-1, -1, partialTicks);
+                super.render(mouseX, mouseY, partialTicks);
             }
         });
     }
@@ -75,7 +76,7 @@ public class LinkHelper
     public static void clickWeb(IBookGraphics nav, String textTarget)
     {
         GuiScreen parent = (GuiScreen) nav.owner();
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
 
         if (!mc.gameSettings.chatLinks)
         {
@@ -103,10 +104,10 @@ public class LinkHelper
                 mc.displayGuiScreen(new GuiConfirmOpenLink(parent, textTarget, 31102009, false)
                 {
                     @Override
-                    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+                    public void render(int mouseX, int mouseY, float partialTicks)
                     {
-                        parent.drawScreen(-1, -1, partialTicks);
-                        super.drawScreen(mouseX, mouseY, partialTicks);
+                        parent.render(-1, -1, partialTicks);
+                        super.render(mouseX, mouseY, partialTicks);
                     }
                 });
             }

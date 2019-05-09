@@ -19,28 +19,15 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
 {
     public final ResourceLocation advancement;
 
-    private static Field f_advancementToProgress;
-
-    static
-    {
-        f_advancementToProgress = ObfuscationReflectionHelper.findField(ClientAdvancementManager.class, "field_192803_d");
-    }
-
     @SuppressWarnings("unchecked")
     @Nullable
     static AdvancementProgress getAdvancementProgress(ResourceLocation advancement)
     {
-        ClientAdvancementManager mgr = Minecraft.getMinecraft().player.connection.getAdvancementManager();
+        ClientAdvancementManager mgr = Minecraft.getInstance().player.connection.getAdvancementManager();
         Advancement adv = mgr.getAdvancementList().getAdvancement(advancement);
-        try
-        {
-            Map<Advancement, AdvancementProgress> advancementToProgress = (Map<Advancement, AdvancementProgress>) f_advancementToProgress.get(mgr);
-            return advancementToProgress.get(adv);
-        }
-        catch (IllegalAccessException e)
-        {
-            return null;
-        }
+        Map<Advancement, AdvancementProgress> advancementToProgress =
+                ObfuscationReflectionHelper.getPrivateValue(ClientAdvancementManager.class, mgr,"field_192803_d");
+        return advancementToProgress.get(adv);
     }
 
     protected AdvancementCondition(ResourceLocation advancement)

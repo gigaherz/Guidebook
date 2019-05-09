@@ -21,7 +21,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.input.Mouse;
+import net.minecraft.util.text.TextFormatting;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
@@ -39,7 +40,7 @@ public class BookRendering implements IBookGraphics
     public static final int DEFAULT_BOTTOM_MARGIN = 18;
     public static final int BOOK_SCALE_MARGIN = 20;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+    private final Minecraft mc = Minecraft.getInstance();
     private GuiGuidebook gui;
 
     private BookDocument book;
@@ -108,14 +109,14 @@ public class BookRendering implements IBookGraphics
 
     public void computeBookScale(double scaleFactorCoef)
     {
-        int width = mc.displayWidth;
-        int height = mc.displayHeight;
+        int width = mc.mainWindow.getFramebufferWidth();
+        int height = mc.mainWindow.getFramebufferHeight();
 
         double w = (DEFAULT_BOOK_WIDTH + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
         double h = (DEFAULT_BOOK_HEIGHT + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
 
         int scaleFactor = 1;
-        boolean flag = mc.isUnicode();
+        boolean flag = mc.getForceUnicodeFont(); // FIXME
         int i = ConfigValues.bookGUIScale < 0 ? mc.gameSettings.guiScale : ConfigValues.bookGUIScale;
 
         if (i == 0)
@@ -141,8 +142,8 @@ public class BookRendering implements IBookGraphics
 
     public void computeFlexScale(double scaleFactorCoef)
     {
-        int width = mc.displayWidth;
-        int height = mc.displayHeight;
+        int width = mc.mainWindow.getFramebufferWidth();
+        int height = mc.mainWindow.getFramebufferHeight();
 
         double w = (DEFAULT_BOOK_WIDTH + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
         double h = (DEFAULT_BOOK_HEIGHT + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
@@ -476,8 +477,8 @@ public class BookRendering implements IBookGraphics
         {
             GlStateManager.pushMatrix();
             {
-                GlStateManager.translate(left0, top0, 0);
-                GlStateManager.scale(scale, scale, 1f);
+                GlStateManager.translated(left0, top0, 0);
+                GlStateManager.scaled(scale, scale, 1f);
                 fontRenderer.drawString(s, 0, 0, color);
             }
             GlStateManager.popMatrix();
@@ -493,11 +494,15 @@ public class BookRendering implements IBookGraphics
     @Override
     public boolean mouseClicked(int mouseButton)
     {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
+        int width = mc.mainWindow.getFramebufferWidth();
+        int height = mc.mainWindow.getFramebufferHeight();
         double dw = scaledWidth;
         double dh = scaledHeight;
-        double mouseX = Mouse.getX() * dw / mc.displayWidth;
-        double mouseY = dh - Mouse.getY() * dh / mc.displayHeight;
+        double[] xPos = new double[1], yPos = new double[1];
+        GLFW.glfwGetCursorPos(mc.mainWindow.getHandle(), xPos, yPos);
+        double mouseX = xPos[0] * dw / width;
+        double mouseY = dh - yPos[0] * dh / height;
 
         if (mouseButton == 0)
         {
@@ -581,11 +586,15 @@ public class BookRendering implements IBookGraphics
     @Nullable
     private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage, HoverContext mouseCoords)
     {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
+        int width = mc.mainWindow.getFramebufferWidth();
+        int height = mc.mainWindow.getFramebufferHeight();
         double dw = scaledWidth;
         double dh = scaledHeight;
-        double mX = Mouse.getX() * dw / mc.displayWidth;
-        double mY = dh - Mouse.getY() * dh / mc.displayHeight;
+        double[] xPos = new double[1], yPos = new double[1];
+        GLFW.glfwGetCursorPos(mc.mainWindow.getHandle(), xPos, yPos);
+        double mX = xPos[0] * dw / width;
+        double mY = dh - yPos[0] * dh / height;
         PointD offset = getPageOffset(isLeftPage);
 
         mX -= offset.x;
@@ -613,7 +622,7 @@ public class BookRendering implements IBookGraphics
         if (hasScale)
         {
             GlStateManager.pushMatrix();
-            GlStateManager.scale(scalingFactor, scalingFactor, scalingFactor);
+            GlStateManager.scaled(scalingFactor, scalingFactor, scalingFactor);
         }
 
         if (DEBUG_DRAW_BOUNDS)
@@ -654,9 +663,9 @@ public class BookRendering implements IBookGraphics
         PointD offset = getPageOffset(currentDrawingPage);
         GlStateManager.pushMatrix();
         if (ConfigValues.flexibleScale)
-            GlStateManager.translate(offset.x, offset.y, 0);
+            GlStateManager.translated(offset.x, offset.y, 0);
         else
-            GlStateManager.translate((int)offset.x, (int)offset.y, 0);
+            GlStateManager.translated((int)offset.x, (int)offset.y, 0);
 
         if(DEBUG_DRAW_BOUNDS)
         {
@@ -679,23 +688,23 @@ public class BookRendering implements IBookGraphics
     @Override
     public void drawItemStack(int left, int top, int z, ItemStack stack, int color, float scale)
     {
-        GlStateManager.enableDepth();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableDepthTest();
+        GlStateManager.enableAlphaTest();
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(left, top, z);
-        GlStateManager.scale(scale, scale, scale);
+        GlStateManager.translated(left, top, z);
+        GlStateManager.scaled(scale, scale, scale);
 
         RenderHelper.enableGUIStandardItemLighting();
-        gui.mc.getRenderItem().renderItemAndEffectIntoGUI(stack, 0, 0);
+        gui.mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
         RenderHelper.disableStandardItemLighting();
 
-        gui.mc.getRenderItem().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
+        gui.mc.getItemRenderer().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
 
         GlStateManager.popMatrix();
 
         GlStateManager.disableLighting();
-        GlStateManager.disableDepth();
+        GlStateManager.disableDepthTest();
     }
 
     @Override
@@ -711,11 +720,11 @@ public class BookRendering implements IBookGraphics
         gui.getRenderEngine().bindTexture(locExpanded);
 
         GlStateManager.enableRescaleNormal();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         drawFlexible(x, y, tx, ty, w, h, sw, sh, scale);
     }
@@ -754,11 +763,11 @@ public class BookRendering implements IBookGraphics
         gui.getRenderEngine().bindTexture(locExpanded);
 
         GlStateManager.enableRescaleNormal();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         drawCustomQuad(dx, dy, dw, dh, sx, sy, sw, sh, tw, th);
     }
@@ -870,7 +879,7 @@ public class BookRendering implements IBookGraphics
                     case ' ':
                         l = k;
                     default:
-                        j += font.getCharWidth(c0);
+                        j += font.getStringWidth("" + c0);
 
                         if (flag)
                         {
@@ -930,7 +939,7 @@ public class BookRendering implements IBookGraphics
                 dest.accept("\n"); // line break
                 char c0 = str.charAt(i);
                 boolean flag = c0 == ' ' || c0 == '\n';
-                String s1 = FontRenderer.getFormatFromString(s) + str.substring(i + (flag ? 1 : 0));
+                String s1 = TextFormatting.getFormatString(s) + str.substring(i + (flag ? 1 : 0));
                 wrapFormattedStringToWidth(font, dest, s1, wrapWidth, wrapWidthFirstLine, false);
             }
         }

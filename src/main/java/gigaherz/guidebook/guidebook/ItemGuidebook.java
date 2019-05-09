@@ -3,30 +3,32 @@ package gigaherz.guidebook.guidebook;
 import com.google.common.base.Strings;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.Optional;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class ItemGuidebook extends Item
 {
-    public ItemGuidebook()
+    public ItemGuidebook(Properties properties)
     {
+        super(properties);
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    public EnumActionResult onItemUse(ItemUseContext context)
     {
-        return showBook(worldIn, playerIn.getHeldItem(hand));
+        return showBook(context.getWorld(), context.getItem());
     }
 
     @Override
@@ -42,8 +44,8 @@ public class ItemGuidebook extends Item
         if (!worldIn.isRemote)
             return EnumActionResult.FAIL;
 
-        NBTTagCompound nbt = stack.getTagCompound();
-        if (nbt == null || !nbt.hasKey("Book", Constants.NBT.TAG_STRING))
+        NBTTagCompound nbt = stack.getTag();
+        if (nbt == null || !nbt.contains("Book", Constants.NBT.TAG_STRING))
             return EnumActionResult.FAIL;
 
         GuidebookMod.proxy.displayBook(nbt.getString("Book"));
@@ -55,27 +57,15 @@ public class ItemGuidebook extends Item
     {
         ItemStack stack = new ItemStack(this);
         NBTTagCompound tag = new NBTTagCompound();
-        tag.setString("Book", book.toString());
-        stack.setTagCompound(tag);
+        tag.putString("Book", book.toString());
+        stack.setTag(tag);
         return stack;
-    }
-
-    @Override
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems)
-    {
-        if (this.isInCreativeTab(tab))
-        {
-            for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
-            {
-                subItems.add(of(resourceLocation));
-            }
-        }
     }
 
     @Nullable
     public String getBookLocation(ItemStack stack)
     {
-        NBTTagCompound tag = stack.getTagCompound();
+        NBTTagCompound tag = stack.getTag();
         if (tag != null)
         {
             return tag.getString("Book");
@@ -84,7 +74,7 @@ public class ItemGuidebook extends Item
     }
 
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn)
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
     {
         super.addInformation(stack, worldIn, tooltip, flagIn);
 
@@ -93,20 +83,20 @@ public class ItemGuidebook extends Item
             String book = getBookLocation(stack);
             if (!Strings.isNullOrEmpty(book))
             {
-                tooltip.add(String.format("Book: " + book));
+                tooltip.add(new TextComponentTranslation("text.guidebook.tooltip.book", new TextComponentString(book)));
             }
         }
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack)
+    public ITextComponent getDisplayName(ItemStack stack)
     {
         String book = getBookLocation(stack);
         if (!Strings.isNullOrEmpty(book))
         {
-            return GuidebookMod.proxy.getBookName(book);
+            return new TextComponentString(GuidebookMod.proxy.getBookName(book));
         }
 
-        return super.getItemStackDisplayName(stack);
+        return super.getDisplayName(stack);
     }
 }

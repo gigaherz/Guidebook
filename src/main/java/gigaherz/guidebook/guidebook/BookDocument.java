@@ -1,11 +1,8 @@
 package gigaherz.guidebook.guidebook;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Table;
 import com.google.common.primitives.Floats;
-import com.google.common.primitives.Ints;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.conditions.ConditionManager;
@@ -18,11 +15,11 @@ import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
 import joptsimple.internal.Strings;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -55,7 +52,7 @@ public class BookDocument implements IConditionSource
     private ModelResourceLocation bookModel;
 
     final List<ChapterData> chapters = Lists.newArrayList();
-    private Table<Item, Integer, SectionRef> stackLinks = HashBasedTable.create();
+    private Map<Item, SectionRef> stackLinks = Maps.newHashMap();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, SectionRef> sectionsByName = Maps.newHashMap();
@@ -135,17 +132,7 @@ public class BookDocument implements IConditionSource
     public SectionRef getStackLink(ItemStack stack)
     {
         Item item = stack.getItem();
-        int damage = stack.getItemDamage();
-
-        if (stackLinks.contains(item, damage))
-        {
-            return stackLinks.get(item, damage);
-        }
-        else if (stackLinks.contains(item, -1))
-        {
-            return stackLinks.get(item, -1);
-        }
-        return null;
+        return stackLinks.get(item);
     }
 
     public float getFontSize()
@@ -245,11 +232,12 @@ public class BookDocument implements IConditionSource
                 {
                     for (String s : n.getTextContent().split(","))
                     {
-                        if (!Loader.isModLoaded(s))
+                        // TODO
+                        /*if (!Loader.isModLoaded(s))
                         {
                             initializeWithLoadError("Dependency not loaded: " + s);
                             return false;
-                        }
+                        }*/
                     }
                 }
             }
@@ -467,7 +455,9 @@ public class BookDocument implements IConditionSource
             Element parsedElement = null;
 
             String nodeName = elementItem.getNodeName();
-            ResourceLocation nodeLoc = new ResourceLocation(nodeName);
+            ResourceLocation nodeLoc =
+                    elementItem.getNodeType() == Node.ELEMENT_NODE ?
+                    new ResourceLocation(nodeName) : new ResourceLocation("_");
 
             if (nodeName.equals("section-break"))
             {
@@ -723,7 +713,9 @@ public class BookDocument implements IConditionSource
             ElementInline parsedElement = null;
 
             String nodeName = elementItem.getNodeName();
-            ResourceLocation nodeLoc = new ResourceLocation(nodeName);
+            ResourceLocation nodeLoc =
+                    elementItem.getNodeType() == Node.ELEMENT_NODE ?
+                            new ResourceLocation(nodeName) : new ResourceLocation("_");
 
             if (customElements.containsKey(nodeLoc))
             {
@@ -788,23 +780,11 @@ public class BookDocument implements IConditionSource
                     Node item_node = refItem.getAttributes().getNamedItem("item"); //get item
                     if (item_node != null)
                     {
-                        Item item = Item.REGISTRY.getObject(new ResourceLocation(item_node.getTextContent()));
+                        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(item_node.getTextContent()));
                         if (item != null)
                         {
-
-                            int damage_value = 0;
-                            Node meta = refItem.getAttributes().getNamedItem("meta");
-                            if (meta != null)
-                            {
-                                // meta="*" -> wildcard
-                                if (meta.getTextContent().equals("*"))
-                                    damage_value = -1;
-                                else
-                                    damage_value = Ints.tryParse(meta.getTextContent());
-                            }
-
                             String ref = refItem.getTextContent();
-                            stackLinks.put(item, damage_value, SectionRef.fromString(ref));
+                            stackLinks.put(item, SectionRef.fromString(ref));
                         }
                     }
                 }

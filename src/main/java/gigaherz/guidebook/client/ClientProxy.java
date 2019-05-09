@@ -1,39 +1,29 @@
 package gigaherz.guidebook.client;
 
-import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
+import gigaherz.guidebook.guidebook.client.ModelHandle;
 import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
-import gigaherz.guidebook.guidebook.conditions.GameStageCondition;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemMeshDefinition;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Collection;
 
-import static gigaherz.common.client.ModelHelpers.registerItemModel;
-
-@Mod.EventBusSubscriber(value = Side.CLIENT, modid = GuidebookMod.MODID)
+@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus= Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientProxy implements IModProxy
 {
     public ClientProxy()
@@ -49,26 +39,7 @@ public class ClientProxy implements IModProxy
 
         //registerItemModel(GuidebookMod.guidebook);
 
-        ModelLoader.setCustomMeshDefinition(GuidebookMod.guidebook, new ItemMeshDefinition()
-        {
-            final ModelResourceLocation defaultModel = new ModelResourceLocation(GuidebookMod.guidebook.getRegistryName(), "inventory");
-
-            {
-                ModelLoader.registerItemVariants(GuidebookMod.guidebook, defaultModel);
-            }
-
-            @Override
-            public ModelResourceLocation getModelLocation(ItemStack stack)
-            {
-                BookDocument book = BookRegistry.get(stack);
-
-                ModelResourceLocation mrl = book == null ? null : book.getModel();
-
-                return mrl != null ? mrl : defaultModel;
-            }
-        });
-
-        ModelLoader.registerItemVariants(GuidebookMod.guidebook, BookRegistry.gatherBookModels());
+        //ModelLoader.registerItemVariants(GuidebookMod.guidebook, BookRegistry.gatherBookModels());
     }
 
     /*@SubscribeEvent
@@ -85,11 +56,11 @@ public class ClientProxy implements IModProxy
         CompositeCondition.register();
         AdvancementCondition.register();
 
-        if (Loader.isModLoaded("gamestages"))
-            GameStageCondition.register();
+        // TODO: if (ModList.get.isLoaded("gamestages"))
+            //GameStageCondition.register();
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
-        ClientCommandHandler.instance.registerCommand(new GbookCommand());
+        // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
     }
 
     @Override
@@ -110,7 +81,7 @@ public class ClientProxy implements IModProxy
         ResourceLocation loc = new ResourceLocation(book);
         BookDocument br = BookRegistry.get(loc);
         if (br != null && br.chapterCount() > 0)
-            Minecraft.getMinecraft().displayGuiScreen(new GuiGuidebook(loc));
+            Minecraft.getInstance().displayGuiScreen(new GuiGuidebook(loc));
     }
 
     @Override

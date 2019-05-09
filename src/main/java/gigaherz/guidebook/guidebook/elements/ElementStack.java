@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
@@ -8,15 +9,13 @@ import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualStack;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -71,7 +70,6 @@ public class ElementStack extends ElementInline
     @Override
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
-        int meta = 0;
         int stackSize = 1;
         NBTTagCompound tag = new NBTTagCompound();
 
@@ -79,16 +77,7 @@ public class ElementStack extends ElementInline
 
         scale = getAttribute(attributes, "scale", scale);
 
-        Node attr = attributes.getNamedItem("meta");
-        if (attr != null)
-        {
-            if (attr.getTextContent().equals(WILDCARD))
-                meta = -1;
-            else
-                meta = Ints.tryParse(attr.getTextContent());
-        }
-
-        attr = attributes.getNamedItem("count");
+        Node attr = attributes.getNamedItem("count");
         if (attr != null)
         {
             stackSize = Ints.tryParse(attr.getTextContent());
@@ -101,7 +90,7 @@ public class ElementStack extends ElementInline
             {
                 tag = JsonToNBT.getTagFromJson(attr.getTextContent());
             }
-            catch (NBTException e)
+            catch (CommandSyntaxException e)
             {
                 GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
             }
@@ -112,35 +101,18 @@ public class ElementStack extends ElementInline
         {
             String itemName = attr.getTextContent();
 
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(itemName));
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
 
             if (item != null)
             {
-                if (((meta == OreDictionary.WILDCARD_VALUE) || meta == -1) && item.getHasSubtypes())
-                {
-                    item.getSubItems(CreativeTabs.SEARCH, stacks);
-
-                    for (int i = 0; i < stacks.size(); i++)
-                    {
-                        ItemStack subitem = stacks.get(i);
-
-                        subitem = subitem.copy();
-
-                        subitem.setCount(stackSize);
-                        subitem.setTagCompound(tag);
-
-                        stacks.set(i, subitem);
-                    }
-                }
-                else
-                {
-                    ItemStack stack = new ItemStack(item, stackSize, meta);
-                    stack.setTagCompound(tag);
-                    stacks.add(stack);
-                }
+                ItemStack stack = new ItemStack(item, stackSize);
+                stack.setTag(tag);
+                stacks.add(stack);
             }
         }
 
+        // TODO: Tags
+        /*
         //get stacks from ore dictionary
         attr = attributes.getNamedItem("ore");
         if (attr != null)
@@ -181,6 +153,7 @@ public class ElementStack extends ElementInline
                 }
             }
         }
+        */
     }
 
     @Override

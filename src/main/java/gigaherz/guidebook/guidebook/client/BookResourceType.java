@@ -1,6 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
-import net.minecraftforge.client.resource.IResourceType;
+import net.minecraftforge.resource.IResourceType;
 
 public class BookResourceType implements IResourceType
 {

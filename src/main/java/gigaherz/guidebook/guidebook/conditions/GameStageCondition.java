@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.conditions;
 
+/*
 import com.google.common.base.Strings;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import net.darkhax.gamestages.GameStageHelper;
@@ -64,3 +65,4 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         return stageName;
     }
 }
+*/

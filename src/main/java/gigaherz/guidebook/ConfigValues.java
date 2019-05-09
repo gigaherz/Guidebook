@@ -1,37 +1,75 @@
 package gigaherz.guidebook;
 
 import com.google.common.collect.Lists;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
-@Config(modid=GuidebookMod.MODID)
 public class ConfigValues
 {
-    @Config.Comment("Use -1 for same as GUI scale, 0 for auto, 1+ for small/medium/large")
-    @Config.RangeInt(min=-1, max=10)
+    public static final ServerConfig SERVER;
+    public static final ForgeConfigSpec SERVER_SPEC;
+    static {
+        final Pair<ServerConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ServerConfig::new);
+        SERVER_SPEC = specPair.getRight();
+        SERVER = specPair.getLeft();
+    }
+
+    public static final ClientConfig CLIENT;
+    public static final ForgeConfigSpec CLIENT_SPEC;
+    static {
+        final Pair<ClientConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+        CLIENT_SPEC = specPair.getRight();
+        CLIENT = specPair.getLeft();
+    }
+
     public static int bookGUIScale = -1;
-
-    @Config.Comment("Keep at false to use integral scaling, which makes the font pixels evently scaled. If set to true, the books will fill the screen space, even if the font becomes wonky.")
     public static boolean flexibleScale = false;
-
-    @Config.Comment("List of books to give to the player when they join. Applied retroactively to existing players if a new book is added to the list.")
     public static String[] giveOnFirstJoin = new String[0];
 
-    @Mod.EventBusSubscriber(modid = GuidebookMod.MODID)
-    private static class EventHandler
+    public static class ServerConfig
     {
-        @SubscribeEvent
-        public static void onConfigChanged(final ConfigChangedEvent.OnConfigChangedEvent event)
-        {
-            if (event.getModID().equals(GuidebookMod.MODID))
-            {
-                ConfigManager.sync(GuidebookMod.MODID, Config.Type.INSTANCE);
-            }
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> giveOnFirstJoin;
+
+        ServerConfig(ForgeConfigSpec.Builder builder) {
+            builder.push("general");
+            giveOnFirstJoin = builder
+                    .comment("List of books to give to the player when they join. Applied retroactively to existing players if a new book is added to the list.")
+                    .translation("text.guidebook.config.give_on_first_join")
+                    .defineList("give_on_first_join", Lists.newArrayList(), o -> o instanceof String);
+            builder.pop();
         }
+    }
+
+    public static class ClientConfig
+    {
+        public final ForgeConfigSpec.IntValue bookGUIScale;
+        public final ForgeConfigSpec.BooleanValue flexibleScale;
+
+        ClientConfig(ForgeConfigSpec.Builder builder) {
+            builder.comment("Options for customizing the display of tools on the player")
+                    .push("display");
+            bookGUIScale = builder
+                    .comment("Use -1 for same as GUI scale, 0 for auto, 1+ for small/medium/large.")
+                    .translation("text.guidebook.config.book_gui_scale")
+                    .defineInRange("book_gui_scale", -1, -1, Integer.MAX_VALUE);
+            flexibleScale = builder
+                    .comment("Keep at false to use integral scaling, which makes the font pixels evently scaled. If set to true, the books will fill the screen space, even if the font becomes wonky.")
+                    .translation("text.guidebook.config.flexible_scale")
+                    .define("flexible_scale", false);
+            builder.pop();
+        }
+    }
+
+    public static void refreshClient()
+    {
+        bookGUIScale = CLIENT.bookGUIScale.get();
+        flexibleScale = CLIENT.flexibleScale.get();
+    }
+
+    public static void refreshServer()
+    {
+        giveOnFirstJoin = SERVER.giveOnFirstJoin.get().toArray(new String[0]);
     }
 }

@@ -1,5 +1,6 @@
 package gigaherz.guidebook.client;
 
+/*
 import gigaherz.guidebook.guidebook.client.BookRegistry;
 import gigaherz.guidebook.guidebook.client.BookResourceType;
 import net.minecraft.client.Minecraft;
@@ -86,3 +87,4 @@ public class GbookCommand
         sender.sendMessage(new TextComponentTranslation("cmd.gbook.guide.done"));
     }
 }
+*/

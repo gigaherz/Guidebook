@@ -1,78 +1,111 @@
 package gigaherz.guidebook;
 
+import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
-import net.minecraft.creativetab.CreativeTabs;
+import gigaherz.guidebook.server.ServerProxy;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.registries.ObjectHolder;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod.EventBusSubscriber
-@Mod(modid = GuidebookMod.MODID, version = GuidebookMod.VERSION,
-        acceptedMinecraftVersions = "[1.12.2,1.13.0)",
-        dependencies = "required-after:forge@[14.23.5.2779,)",
-        updateJSON = "https://raw.githubusercontent.com/gigaherz/guidebook/master/update.json")
+@Mod(GuidebookMod.MODID)
 public class GuidebookMod
 {
     public static final String MODID = "gbook";
-    public static final String VERSION = "@VERSION@";
 
-    // The instance of your mod that Forge uses.
-    @Mod.Instance(GuidebookMod.MODID)
     public static GuidebookMod instance;
 
-    // Says where the client and server 'proxy' code is loaded.
-    @SidedProxy(clientSide = "gigaherz.guidebook.client.ClientProxy", serverSide = "gigaherz.guidebook.server.ServerProxy")
-    public static IModProxy proxy;
+    public static final IModProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new ServerProxy());
 
     // Items
-    @GameRegistry.ObjectHolder(MODID + ":guidebook")
+    @ObjectHolder("gbook:guidebook")
     public static ItemGuidebook guidebook;
 
-    public static Logger logger;
+    public static final Logger logger = LogManager.getLogger(MODID);
 
-    public static CreativeTabs tabGuidebooks = new CreativeTabs(MODID)
+    public static final ItemGroup tabGuidebooks = new ItemGroup(MODID)
     {
         @Override
         public ItemStack createIcon()
         {
             return new ItemStack(guidebook);
         }
+
+        @Override
+        public void fill(NonNullList<ItemStack> items)
+        {
+            //super.fill(items);
+
+            for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
+            {
+                items.add(guidebook.of(resourceLocation));
+            }
+        }
     };
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event)
+    public GuidebookMod()
     {
-        logger = event.getModLog();
+        instance = this;
 
+
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addGenericListener(Item.class, this::registerItems);
+        modEventBus.addListener(this::preInit);
+        modEventBus.addListener(this::modConfig);
+
+        MinecraftForge.EVENT_BUS.addListener(this::entityJoinWorld);
+
+
+        ModLoadingContext modLoadingContext = ModLoadingContext.get();
+        modLoadingContext.registerConfig(ModConfig.Type.SERVER, ConfigValues.SERVER_SPEC);
+        modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
+    }
+
+    public void modConfig(ModConfig.ModConfigEvent event)
+    {
+        ModConfig config = event.getConfig();
+        if (config.getSpec() == ConfigValues.CLIENT_SPEC)
+            ConfigValues.refreshClient();
+        else if (config.getSpec() == ConfigValues.SERVER_SPEC)
+            ConfigValues.refreshServer();
+    }
+
+
+    private void preInit(FMLCommonSetupEvent event)
+    {
         proxy.preInit();
     }
 
-    @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> event)
+    private void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
-                new ItemGuidebook().setRegistryName("guidebook")
-                        .setTranslationKey(GuidebookMod.MODID + ".guidebook")
-                        .setHasSubtypes(true)
-                        .setMaxStackSize(1)
-                        .setCreativeTab(GuidebookMod.tabGuidebooks)
+                new ItemGuidebook(new Item.Properties()
+                        .maxStackSize(1)
+                        .group(GuidebookMod.tabGuidebooks))
+                    .setRegistryName("guidebook")
         );
     }
 
-    @SubscribeEvent
-    public static void entityJoinWorld(EntityJoinWorldEvent event)
+    private void entityJoinWorld(EntityJoinWorldEvent event)
     {
         Entity e = event.getEntity();
         if (e instanceof EntityPlayer && !e.getEntityWorld().isRemote)

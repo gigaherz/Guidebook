@@ -3,8 +3,7 @@ package gigaherz.guidebook.guidebook.conditions;
 import com.google.common.base.Strings;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Node;
 
 import java.util.function.Predicate;
@@ -15,7 +14,7 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
     {
         ConditionManager.register("true", (doc, node) -> new True());
         ConditionManager.register("false", (doc, node) -> new False());
-        ConditionManager.register("mod-loaded", (doc, node) -> new ModLoaded(parseModId(node)));
+        //ConditionManager.register("mod-loaded", (doc, node) -> new ModLoaded(parseModId(node)));
         ConditionManager.register("item-exists", (doc, node) -> new ItemExists(parseItemName(node)));
     }
 
@@ -49,7 +48,8 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return Loader.isModLoaded(modId);
+            // TODO
+            return true; //Loader.isModLoaded(modId);
         }
     }
 

@@ -2,29 +2,25 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ICustomModelLoader;
-import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.resource.IResourceType;
-import net.minecraftforge.client.resource.SelectiveReloadStateHandler;
 import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.resource.IResourceType;
+import net.minecraftforge.resource.SelectiveReloadStateHandler;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -37,16 +33,72 @@ public class BookBakedModel implements IBakedModel
     private static final ResourceLocation BASE_MODEL = GuidebookMod.location("block/book.obj");
 
     private final TextureAtlasSprite particle;
-    private final IModelState state;
+    private final ItemOverrideList overrideList;
 
-    public BookBakedModel(IModelState state, @Nullable TextureAtlasSprite particle)
+    public BookBakedModel(IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
+                          Function<ResourceLocation, TextureAtlasSprite> spriteGetter,
+                          IModelState state,
+                          VertexFormat format,
+                          @Nullable TextureAtlasSprite particle)
     {
-        this.state = state;
         this.particle = particle;
+
+        /*int number = 0;
+        Map<ResourceLocation, Float> propertyMap = Maps.newHashMap();
+        Map<ResourceLocation, ModelResourceLocation> modelMap = Maps.newHashMap();
+        List<ItemOverride>
+        for(Map.Entry<ResourceLocation, BookDocument> entry : BookRegistry.getLoadedBooks().entrySet())
+        {
+            BookDocument book = entry.getValue();
+            ModelResourceLocation mrl = book == null ? null : book.getModel();
+            if (mrl != null)
+            {
+                modelMap.put(entry.getKey(), mrl);
+            }
+
+            ItemOverride io = new ItemOverride()
+        }*/
+
+        this.overrideList = new ItemOverrideList(unbakedModel, modelGetter, spriteGetter, Collections.emptyList());
+        // TODO: Custom cover images without fully custom model
+        /*{
+            @Nullable
+            @Override
+            public IBakedModel getModelWithOverrides(IBakedModel model, ItemStack stack, @Nullable World worldIn, @Nullable EntityLivingBase entityIn)
+            {
+                return super.getModelWithOverrides(model, stack, worldIn, entityIn);
+            }
+
+            //TODO: @Override
+            public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity)
+            {
+                ModelHandle mh = ModelHandle.of(BASE_MODEL);
+
+                if (state != null)
+                {
+                    mh = mh.state(state);
+                }
+
+                NBTTagCompound tag = stack.getTag();
+                if (tag != null)
+                {
+                    String book = tag.getString("Book");
+                    BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
+                    if (bookDocument != null)
+                    {
+                        ResourceLocation cover = bookDocument.getCover();
+                        if (cover != null)
+                            mh = mh.replace("#CoverGraphics", cover.toString());
+                    }
+                }
+
+                return mh.get();
+            }
+        };*/
     }
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand)
+    public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, Random rand)
     {
         return Collections.emptyList();
     }
@@ -85,37 +137,10 @@ public class BookBakedModel implements IBakedModel
     @Override
     public ItemOverrideList getOverrides()
     {
-        return new ItemOverrideList(Collections.emptyList())
-        {
-            @Override
-            public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity)
-            {
-                ModelHandle mh = ModelHandle.of(BASE_MODEL);
-
-                if (state != null)
-                {
-                    mh = mh.state(state);
-                }
-
-                NBTTagCompound tag = stack.getTagCompound();
-                if (tag != null)
-                {
-                    String book = tag.getString("Book");
-                    BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
-                    if (bookDocument != null)
-                    {
-                        ResourceLocation cover = bookDocument.getCover();
-                        if (cover != null)
-                            mh = mh.replace("#CoverGraphics", cover.toString());
-                    }
-                }
-
-                return mh.get();
-            }
-        };
+        return overrideList;
     }
 
-    private static class Model implements IModel
+    private static class Model implements IUnbakedModel
     {
         @Nullable
         private final ResourceLocation particle;
@@ -139,7 +164,7 @@ public class BookBakedModel implements IBakedModel
         }
 
         @Override
-        public Collection<ResourceLocation> getTextures()
+        public Collection<ResourceLocation> getTextures(Function<ResourceLocation, IUnbakedModel> modelGetter, Set<String> missingTextureErrors)
         {
             Set<ResourceLocation> textures = Sets.newHashSet();
             if (particle != null)
@@ -153,12 +178,13 @@ public class BookBakedModel implements IBakedModel
             return textures;
         }
 
+        @Nullable
         @Override
-        public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter)
+        public IBakedModel bake(Function<ResourceLocation, IUnbakedModel> modelGetter, Function<ResourceLocation, TextureAtlasSprite> spriteGetter, IModelState state, boolean uvlock, VertexFormat format)
         {
             TextureAtlasSprite part = null;
-            if (particle != null) part = bakedTextureGetter.apply(particle);
-            return new BookBakedModel(state, part);
+            if (particle != null) part = spriteGetter.apply(particle);
+            return new BookBakedModel(this, modelGetter, spriteGetter, state, format, part);
         }
 
         @Override
@@ -168,7 +194,7 @@ public class BookBakedModel implements IBakedModel
         }
 
         @Override
-        public IModel retexture(ImmutableMap<String, String> textures)
+        public IUnbakedModel retexture(ImmutableMap<String, String> textures)
         {
             return new Model(textures.get("particle"));
         }
@@ -183,7 +209,7 @@ public class BookBakedModel implements IBakedModel
         }
 
         @Override
-        public IModel loadModel(ResourceLocation modelLocation) throws Exception
+        public IUnbakedModel loadModel(ResourceLocation modelLocation) throws Exception
         {
             return new Model();
         }

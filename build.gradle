@@ -1,90 +1,77 @@
 buildscript {
     repositories {
+        mavenLocal()
+        maven { url = 'http://files.minecraftforge.net/maven' }
         jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'maven-publish'
 
 repositories {
-    maven {
-        url 'http://dogforce-games.com/maven'
-    }
-
-    maven {
-        url 'https://maven.mcmoddev.com'
-    }
+    mavenLocal()
 }
-
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'maven-publish'
 
 version = "2.9.0"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Guidebook-1.12.2"
+archivesBaseName = "Guidebook-1.13.2"
 
-minecraft {
-    version = "1.12.2-14.23.5.2814"
-    runDir = "run"
-    mappings = "stable_39"
-
-    replace "@VERSION@", project.version
-    replaceIn "GuidebookMod.java"
+sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
 }
 
-configurations {
-    // configuration that holds jars to embed inside the jar
-    embed
-    embed.transitive = false
+minecraft {
+    mappings channel: 'snapshot', version: '20190430-1.13.2'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.noansi', "false"
+
+            ideaModule "${project.name}_main"
+
+            environment 'MOD_CLASSES', "${project.file("out/production/resources").canonicalPath};${project.file("out/production/classes").canonicalPath}"
+        }
+
+        server {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.noansi', "false"
+
+            ideaModule "${project.name}_main"
+
+            environment 'MOD_CLASSES', "${project.file("build/resources/main").canonicalPath};${project.file("build/classes/java/main").canonicalPath}"
+        }
+    }
 }
 
 dependencies {
-    deobfCompile "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
-    embed "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
-
-    deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
-    deobfCompile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.552"
-
-    //compile fileTree(dir: 'libs', include: '*.jar')
+    minecraft 'net.minecraftforge:forge:1.13.2-25.0.192'
 }
 
 jar {
-    into('/META-INF/libraries') {
-        from configurations.embed
-    }
-
     manifest {
         attributes([
-            "ContainedDeps": configurations.embed.collect { it.getName() }.join(' '),
-            "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
-            'Timestamp': System.currentTimeMillis()
+                "Specification-Title": "guidebook",
+                "Specification-Vendor": "gigaherz",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"gigaherz",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}"
         ])
-    }
-}
-
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    options.encoding = 'UTF-8'
-}
-
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-        
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
     }
 }
 
@@ -95,7 +82,7 @@ publishing {
             artifactId project.archivesBaseName
             from components.java
 
-            artifact sourceJar
+            //artifact sourceJar
         }
     }
 

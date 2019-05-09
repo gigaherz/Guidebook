@@ -5,13 +5,9 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,7 +33,7 @@ public abstract class RecipeProvider
         registry.put(GuidebookMod.location("crafting"), crafting);
         registry.put(GuidebookMod.location("shaped"), crafting); // legacy
         registry.put(GuidebookMod.location("shapeless"), crafting); // legacy
-        registry.put(GuidebookMod.location("smelting"), new FurnaceRecipeProvider());
+        //registry.put(GuidebookMod.location("smelting"), new FurnaceRecipeProvider());
     }
 
     /**
@@ -82,26 +78,8 @@ public abstract class RecipeProvider
         ItemStack base = stack.copy();
         stacks.add(base);
 
-        if (base.isItemStackDamageable()) base.setItemDamage(0);
-        if (base.getMetadata() == OreDictionary.WILDCARD_VALUE && !base.getHasSubtypes()) base.setItemDamage(0);
-        else if (base.getMetadata() == OreDictionary.WILDCARD_VALUE && base.getHasSubtypes())
-        {
-            Item item = base.getItem();
-            int stackSize = base.getCount();
-            NBTTagCompound tag = (base.hasTagCompound() && base.getTagCompound() != null) ? base.getTagCompound().copy() : null;
-            NonNullList<ItemStack> processed_items = NonNullList.create();
-            NonNullList<ItemStack> subItems = NonNullList.create();
-            item.getSubItems(CreativeTabs.SEARCH, subItems);
-
-            for (ItemStack subItem : subItems)
-            {
-                subItem = subItem.copy();
-                subItem.setCount(stackSize);
-                subItem.setTagCompound(tag);
-                processed_items.add(subItem);
-            }
-            stacks = subItems;
-        }
+        if (base.isDamageable())
+            base.setDamage(0);
         return stacks;
     }
 

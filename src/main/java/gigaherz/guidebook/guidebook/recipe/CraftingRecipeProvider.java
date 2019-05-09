@@ -1,17 +1,16 @@
 package gigaherz.guidebook.guidebook.recipe;
 
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,13 +55,13 @@ class CraftingRecipeProvider extends RecipeProvider
     @Nullable
     private IRecipe getRecipeByName(ResourceLocation name)
     {
-        return ForgeRegistries.RECIPES.getValue(name);
+        return Minecraft.getInstance().player.world.getRecipeManager().getRecipe(name);
     }
 
     @Nullable
     private IRecipe getRecipesByOutput(@Nonnull ItemStack targetOutput, int recipeIndex)
     {
-        return ForgeRegistries.RECIPES.getValuesCollection().stream()
+        return Minecraft.getInstance().player.world.getRecipeManager().getRecipes().stream()
                 .filter(r -> !r.isDynamic()
                                 && ItemStack.areItemsEqualIgnoreDurability(targetOutput, r.getRecipeOutput())
                         /*&& ItemStack.areItemStackTagsEqual(targetOutput, r.getRecipeOutput())*/

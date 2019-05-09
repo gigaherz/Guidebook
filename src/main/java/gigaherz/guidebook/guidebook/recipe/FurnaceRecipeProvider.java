@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.recipe;
 
+/*
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.util.Size;
@@ -13,11 +14,12 @@ import net.minecraft.util.ResourceLocation;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-
+*/
 /**
  * @author joazlazer
  * A class designed to provide furnace recipes for display in Guidebooks
  */
+/*
 public class FurnaceRecipeProvider extends RecipeProvider
 {
     private static final int INPUT_SLOT_X = 19;
@@ -100,3 +102,4 @@ public class FurnaceRecipeProvider extends RecipeProvider
         return null;
     }
 }
+*/

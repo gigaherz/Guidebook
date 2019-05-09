@@ -1,13 +1,12 @@
 package gigaherz.guidebook.guidebook.client;
 
-import gigaherz.common.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -74,16 +73,16 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         GlStateManager.enableLight(1);
         GlStateManager.colorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
         GlStateManager.enableColorMaterial();
-        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION, setColorBuffer(-5.0f, -5f, 1.0f, 0.0f));
-        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
-        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_POSITION, setColorBuffer(5.0f, -6f, 5.0f, 0.0f));
-        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
-        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.glLight(GL11.GL_LIGHT1, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_POSITION, setColorBuffer(-5.0f, -5f, 1.0f, 0.0f));
+        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_POSITION, setColorBuffer(5.0f, -6f, 5.0f, 0.0f));
+        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
+        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        GlStateManager.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+        GlStateManager.lightModelfv(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
     }
 
     @Override
@@ -132,23 +131,23 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
             blend = 0;
         }
 
-        GlStateManager.enableDepth();
+        GlStateManager.enableDepthTest();
         GlStateManager.disableBlend();
         GlStateManager.disableCull();
-        GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
 
         GlStateManager.pushMatrix();
         GlStateManager.enableRescaleNormal();
         enableStandardItemLighting();
 
-        GlStateManager.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, 50);
-        GlStateManager.rotate(180, 0, 1, 0);
-        GlStateManager.rotate(-130, 1, 0, 0);
-        GlStateManager.scale(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
+        GlStateManager.translated(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, 50);
+        GlStateManager.rotated(180, 0, 1, 0);
+        GlStateManager.rotated(-130, 1, 0, 0);
+        GlStateManager.scaled(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
 
-        GlStateManager.rotate(angleX * 1.1f, 0, 0, 1);
+        GlStateManager.rotated(angleX * 1.1f, 0, 0, 1);
 
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         gui.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
@@ -167,7 +166,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
         GlStateManager.enableCull();
         GlStateManager.enableBlend();
-        GlStateManager.disableDepth();
+        GlStateManager.disableDepthTest();
     }
 
     private static void renderModel(IBakedModel model)
@@ -175,7 +174,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        for (BakedQuad quad : model.getQuads(null, null, 0))
+        for (BakedQuad quad : model.getQuads(null, null, ModelHandle.RANDOM))
         {
             worldrenderer.addVertexData(quad.getVertexData());
         }
@@ -188,8 +187,8 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(GL11.GL_QUADS, fmt);
-        List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, 0);
-        List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, 0);
+        List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, ModelHandle.RANDOM);
+        List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, ModelHandle.RANDOM);
 
         int length = fmt.getSize();
 

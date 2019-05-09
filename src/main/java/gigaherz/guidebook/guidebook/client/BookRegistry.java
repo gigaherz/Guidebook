@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -11,19 +10,16 @@ import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.*;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resources.*;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static net.minecraftforge.fml.common.LoaderState.INITIALIZATION;
 
 public class BookRegistry
 {
@@ -36,15 +32,16 @@ public class BookRegistry
     {
         if (!booksLoaded)
         {
-            parseAllBooks(Minecraft.getMinecraft().getResourceManager());
+            parseAllBooks(Minecraft.getInstance().getResourceManager());
         }
         return Collections.unmodifiableMap(LOADED_BOOKS);
     }
 
     public static void registerBook(ResourceLocation loc)
     {
-        if (Loader.instance().hasReachedState(INITIALIZATION))
-            throw new IllegalStateException("Books must be registered before init, preferably in the BookRegistryEvent.");
+        // TODO
+        //if (Loader.instance().hasReachedState(INITIALIZATION))
+        //    throw new IllegalStateException("Books must be registered before init, preferably in the BookRegistryEvent.");
         REGISTRY.add(loc);
     }
 
@@ -73,7 +70,7 @@ public class BookRegistry
 
         Set<ResourceLocation> toLoad = Sets.newHashSet(REGISTRY);
 
-        for (String domain : manager.getResourceDomains())
+        for (String domain : manager.getResourceNamespaces())
         {
             try
             {
@@ -96,7 +93,7 @@ public class BookRegistry
 
         loadRawBookFiles();
 
-        LanguageManager lm = Minecraft.getMinecraft().getLanguageManager();
+        LanguageManager lm = Minecraft.getInstance().getLanguageManager();
 
         String lang = ObfuscationReflectionHelper.getPrivateValue(LanguageManager.class, lm, "field_135048_c");
         if (lang == null) lang = "en_us";
@@ -216,7 +213,7 @@ public class BookRegistry
     @Nullable
     public static File getBooksFolder()
     {
-        File booksFolder = new File(Loader.instance().getConfigDir(), "books");
+        File booksFolder = new File(new File(Minecraft.getInstance().gameDir, "config"), "books");
 
         if (!booksFolder.exists())
         {
@@ -242,15 +239,15 @@ public class BookRegistry
         return base.toURI().relativize(sub.toURI()).getPath();
     }
 
-    private static Field _defaultResourcePacks = ObfuscationReflectionHelper.findField(Minecraft.class, "field_110449_ao");
+    //private static Field _defaultResourcePacks = ObfuscationReflectionHelper.findField(Minecraft.class, "field_110449_ao");
 
     @SuppressWarnings("unchecked")
     public static void injectCustomResourcePack()
     {
         if (initialized) return;
         initialized = true;
-
-        File resourcesFolder = new File(new File(Loader.instance().getConfigDir(), "books"), "resources");
+/*
+        File resourcesFolder = new File(new File(new File(Minecraft.getInstance().gameDir, "config"), "books"), "resources");
 
         if (!resourcesFolder.exists())
         {
@@ -267,36 +264,45 @@ public class BookRegistry
 
         try
         {
-            List<IResourcePack> rp = (List<IResourcePack>) _defaultResourcePacks.get(Minecraft.getMinecraft());
+            List<IResourcePack> rp = (List<IResourcePack>) _defaultResourcePacks.get(Minecraft.getInstance());
 
-            rp.add(new FolderResourcePack(resourcesFolder)
+            Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
+            {
+                @Override
+                public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> nameToPackMap, ResourcePackInfo.IFactory<T> packInfoFactory)
+                {
+
+                }
+            });
+
+            rp.add(new FolderPack(resourcesFolder)
             {
                 String prefix = "assets/" + GuidebookMod.MODID + "/";
 
                 @Override
-                protected InputStream getInputStreamByName(String name) throws IOException
+                protected InputStream getInputStream(String name) throws IOException
                 {
                     if ("pack.mcmeta".equals(name))
                     {
-                        return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 3}}").getBytes(Charsets.UTF_8));
+                        return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 4}}").getBytes(Charsets.UTF_8));
                     }
                     if (!name.startsWith(prefix))
                         throw new FileNotFoundException(name);
-                    return super.getInputStreamByName(name.substring(prefix.length()));
+                    return super.getInputStream(name.substring(prefix.length()));
                 }
 
                 @Override
-                protected boolean hasResourceName(String name)
+                protected boolean resourceExists(String name)
                 {
                     if ("pack.mcmeta".equals(name))
                         return true;
                     if (!name.startsWith(prefix))
                         return false;
-                    return super.hasResourceName(name.substring(prefix.length()));
+                    return super.resourceExists(name.substring(prefix.length()));
                 }
 
                 @Override
-                public Set<String> getResourceDomains()
+                public Set<String> getResourceNamespaces(ResourcePackType type)
                 {
                     return Collections.singleton(GuidebookMod.MODID);
                 }
@@ -306,6 +312,7 @@ public class BookRegistry
         {
             // Ignore
         }
+        */
     }
 
     public static ResourceLocation[] gatherBookModels()
