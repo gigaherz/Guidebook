@@ -2,8 +2,8 @@ package gigaherz.guidebook;
 
 import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
+import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
-import gigaherz.guidebook.server.ServerProxy;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -14,18 +14,28 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ObjectHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Mod(GuidebookMod.MODID)
 public class GuidebookMod
@@ -34,7 +44,7 @@ public class GuidebookMod
 
     public static GuidebookMod instance;
 
-    public static final IModProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new ServerProxy());
+    public static final IModProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new IModProxy(){});
 
     // Items
     @ObjectHolder("gbook:guidebook")
@@ -69,8 +79,9 @@ public class GuidebookMod
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addGenericListener(Item.class, this::registerItems);
-        modEventBus.addListener(this::preInit);
+        modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::modConfig);
+        modEventBus.addListener(this::serverStarting);
 
         MinecraftForge.EVENT_BUS.addListener(this::entityJoinWorld);
 
@@ -80,7 +91,12 @@ public class GuidebookMod
         modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
     }
 
-    public void modConfig(ModConfig.ModConfigEvent event)
+    private void serverStarting(FMLServerStartingEvent event)
+    {
+        BookRegistry.initServerResourceListener(event.getServer());
+    }
+
+    private void modConfig(ModConfig.ModConfigEvent event)
     {
         ModConfig config = event.getConfig();
         if (config.getSpec() == ConfigValues.CLIENT_SPEC)
@@ -90,9 +106,9 @@ public class GuidebookMod
     }
 
 
-    private void preInit(FMLCommonSetupEvent event)
+    private void clientSetup(FMLClientSetupEvent event)
     {
-        proxy.preInit();
+        ClientProxy.initialize();
     }
 
     private void registerItems(RegistryEvent.Register<Item> event)
@@ -103,19 +119,19 @@ public class GuidebookMod
                         .group(GuidebookMod.tabGuidebooks))
                     .setRegistryName("guidebook")
         );
-    }
+}
 
-    private void entityJoinWorld(EntityJoinWorldEvent event)
+    private void entityJoinWorld(PlayerEvent.PlayerLoggedInEvent event)
     {
-        Entity e = event.getEntity();
-        if (e instanceof EntityPlayer && !e.getEntityWorld().isRemote)
+        EntityPlayer e = event.getPlayer();
+        if (!e.world.isRemote)
         {
             for (String g : ConfigValues.giveOnFirstJoin)
             {
                 String tag = MODID + ":givenBook:" + g;
                 if (!e.getTags().contains(tag))
                 {
-                    ItemHandlerHelper.giveItemToPlayer((EntityPlayer) e, guidebook.of(new ResourceLocation(g)));
+                    ItemHandlerHelper.giveItemToPlayer(e, guidebook.of(new ResourceLocation(g)));
                     e.addTag(tag);
                 }
             }

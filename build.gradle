@@ -12,6 +12,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
+apply plugin: 'eclipse'
 
 repositories {
     mavenLocal()
@@ -37,7 +38,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
             property 'forge.logging.noansi', "false"
 
-            ideaModule "${project.name}_main"
+            ideaModule "${project.name}.main"
 
             environment 'MOD_CLASSES', "${project.file("out/production/resources").canonicalPath};${project.file("out/production/classes").canonicalPath}"
         }
@@ -49,7 +50,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
             property 'forge.logging.noansi', "false"
 
-            ideaModule "${project.name}_main"
+            ideaModule "${project.name}.main"
 
             environment 'MOD_CLASSES', "${project.file("build/resources/main").canonicalPath};${project.file("build/classes/java/main").canonicalPath}"
         }
@@ -57,7 +58,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.13.2-25.0.192'
+    minecraft 'net.minecraftforge:forge:1.13.2-25.0.205'
 }
 
 jar {

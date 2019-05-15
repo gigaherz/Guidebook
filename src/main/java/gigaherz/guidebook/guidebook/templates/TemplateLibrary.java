@@ -3,7 +3,7 @@ package gigaherz.guidebook.guidebook.templates;
 import com.google.common.collect.Maps;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.client.BookRegistry;
+import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;

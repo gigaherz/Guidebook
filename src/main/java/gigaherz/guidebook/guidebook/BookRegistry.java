@@ -1,24 +1,32 @@
-package gigaherz.guidebook.guidebook.client;
+package gigaherz.guidebook.guidebook;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.client.BookResourceType;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.client.resources.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.resource.IResourceType;
+import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BookRegistry
@@ -239,14 +247,13 @@ public class BookRegistry
         return base.toURI().relativize(sub.toURI()).getPath();
     }
 
-    //private static Field _defaultResourcePacks = ObfuscationReflectionHelper.findField(Minecraft.class, "field_110449_ao");
-
+    /*
     @SuppressWarnings("unchecked")
     public static void injectCustomResourcePack()
     {
         if (initialized) return;
         initialized = true;
-/*
+
         File resourcesFolder = new File(new File(new File(Minecraft.getInstance().gameDir, "config"), "books"), "resources");
 
         if (!resourcesFolder.exists())
@@ -262,61 +269,77 @@ public class BookRegistry
             return;
         }
 
-        try
+        final String id = "guidebook_config_folder_resources";
+        final ITextComponent name = new TextComponentString("Guidebook Config Folder Virtual Resource Pack");
+        final ITextComponent description = new TextComponentString("Provides book resources placed in the config/books/resources folder");
+        final IResourcePack pack = new FolderPack(resourcesFolder)
         {
-            List<IResourcePack> rp = (List<IResourcePack>) _defaultResourcePacks.get(Minecraft.getInstance());
+            String prefix = "assets/" + GuidebookMod.MODID + "/";
 
-            Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
+            @Override
+            protected InputStream getInputStream(String name) throws IOException
             {
-                @Override
-                public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> nameToPackMap, ResourcePackInfo.IFactory<T> packInfoFactory)
+                if ("pack.mcmeta".equals(name))
                 {
-
+                    return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 4}}").getBytes(Charsets.UTF_8));
                 }
-            });
+                if (!name.startsWith(prefix))
+                    throw new FileNotFoundException(name);
+                return super.getInputStream(name.substring(prefix.length()));
+            }
 
-            rp.add(new FolderPack(resourcesFolder)
+            @Override
+            protected boolean resourceExists(String name)
             {
-                String prefix = "assets/" + GuidebookMod.MODID + "/";
+                if ("pack.mcmeta".equals(name))
+                    return true;
+                if (!name.startsWith(prefix))
+                    return false;
+                return super.resourceExists(name.substring(prefix.length()));
+            }
 
-                @Override
-                protected InputStream getInputStream(String name) throws IOException
-                {
-                    if ("pack.mcmeta".equals(name))
-                    {
-                        return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 4}}").getBytes(Charsets.UTF_8));
-                    }
-                    if (!name.startsWith(prefix))
-                        throw new FileNotFoundException(name);
-                    return super.getInputStream(name.substring(prefix.length()));
-                }
+            @Override
+            public Set<String> getResourceNamespaces(ResourcePackType type)
+            {
+                return Collections.singleton(GuidebookMod.MODID);
+            }
+        };
 
-                @Override
-                protected boolean resourceExists(String name)
-                {
-                    if ("pack.mcmeta".equals(name))
-                        return true;
-                    if (!name.startsWith(prefix))
-                        return false;
-                    return super.resourceExists(name.substring(prefix.length()));
-                }
-
-                @Override
-                public Set<String> getResourceNamespaces(ResourcePackType type)
-                {
-                    return Collections.singleton(GuidebookMod.MODID);
-                }
-            });
-        }
-        catch (IllegalAccessException e)
+        Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
         {
-            // Ignore
-        }
-        */
+            @Override
+            public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> nameToPackMap, ResourcePackInfo.IFactory<T> packInfoFactory)
+            {
+                nameToPackMap.put(
+                        id,
+                        (T)new ResourcePackInfoClient(
+                                id, true,
+                                () -> pack, name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.TOP, true, null, true)
+                        );
+            }
+        });
     }
+    */
 
-    public static ResourceLocation[] gatherBookModels()
+    public static ModelResourceLocation[] gatherBookModels()
     {
-        return LOADED_BOOKS.values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+        return LOADED_BOOKS.values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ModelResourceLocation[]::new);
     }
+
+    public static void initServerResourceListener(MinecraftServer server)
+    {
+        server.getResourceManager().addReloadListener(new ISelectiveResourceReloadListener()
+        {
+            @Override
+            public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate)
+            {
+                if (resourcePredicate.test(BookResourceType.INSTANCE))
+                {
+                    Collection<ResourceLocation> resources = resourceManager.getAllResourceLocations("gbooks", (filename) -> filename.endsWith(".xml"));
+
+                }
+            }
+        });
+    }
+
 }

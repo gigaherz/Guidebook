@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
+import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -14,8 +15,6 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
-
-import java.io.IOException;
 
 public class GuiGuidebook extends GuiScreen
 {

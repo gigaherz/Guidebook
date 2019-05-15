@@ -1,7 +1,7 @@
 package gigaherz.guidebook.client;
 
 /*
-import gigaherz.guidebook.guidebook.client.BookRegistry;
+import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.client.BookResourceType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;

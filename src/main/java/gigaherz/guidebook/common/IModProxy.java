@@ -7,13 +7,7 @@ import java.util.Collections;
 
 public interface IModProxy
 {
-
     default void displayBook(String book)
-    {
-
-    }
-
-    default void preInit()
     {
 
     }

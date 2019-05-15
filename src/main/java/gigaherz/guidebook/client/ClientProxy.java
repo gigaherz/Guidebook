@@ -1,10 +1,8 @@
 package gigaherz.guidebook.client;
 
-import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookDocument;
-import gigaherz.guidebook.guidebook.client.BookBakedModel;
-import gigaherz.guidebook.guidebook.client.BookRegistry;
+import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
 import gigaherz.guidebook.guidebook.client.ModelHandle;
 import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
@@ -12,43 +10,18 @@ import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.Collection;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus= Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientProxy implements IModProxy
 {
     public ClientProxy()
     {
-        BookRegistry.injectCustomResourcePack();
+        //BookRegistry.injectCustomResourcePack();
     }
 
-    @SubscribeEvent
-    public static void registerModels(ModelRegistryEvent event)
-    {
-        OBJLoader.INSTANCE.addDomain(GuidebookMod.MODID);
-        ModelLoaderRegistry.registerLoader(new BookBakedModel.ModelLoader());
-
-        //registerItemModel(GuidebookMod.guidebook);
-
-        //ModelLoader.registerItemVariants(GuidebookMod.guidebook, BookRegistry.gatherBookModels());
-    }
-
-    /*@SubscribeEvent
-    public static void colors(ColorHandlerEvent.Item event)
-    {
-    }*/
-
-    @Override
-    public void preInit()
+    public static void initialize()
     {
         ModelHandle.init();
 
