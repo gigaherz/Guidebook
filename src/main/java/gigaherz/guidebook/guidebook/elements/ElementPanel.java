@@ -10,6 +10,7 @@ import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.renderer.model.Material;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -158,7 +159,7 @@ public class ElementPanel extends Element
     }
 
     @Override
-    public void findTextures(Set<ResourceLocation> textures)
+    public void findTextures(Set<Material> textures)
     {
         for (Element child : innerElements)
         {

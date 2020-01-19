@@ -56,7 +56,7 @@ public class LinkHelper
         mc.displayGuiScreen(new ConfirmScreen((result) -> {
             if (result)
             {
-                GLFW.glfwSetClipboardString(mc.mainWindow.getHandle(), textTarget);
+                GLFW.glfwSetClipboardString(mc.getWindow().getHandle(), textTarget);
                 mc.ingameGUI.getChatGUI().printChatMessage(new TranslationTextComponent("text.copyToClipboard.success"));
             }
             mc.displayGuiScreen(parent);

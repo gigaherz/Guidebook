@@ -114,8 +114,8 @@ public class GuiGuidebook extends Screen
 
     private void setupConditionsAndPosition()
     {
-        this.width = minecraft.mainWindow.getScaledWidth();
-        this.height = minecraft.mainWindow.getScaledHeight();
+        this.width = minecraft.getWindow().getScaledWidth();
+        this.height = minecraft.getWindow().getScaledHeight();
         if(book.refreshScalingFactor())
         {
             book.resetRendering(false);

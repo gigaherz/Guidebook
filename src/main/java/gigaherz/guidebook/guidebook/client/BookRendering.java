@@ -109,8 +109,8 @@ public class BookRendering implements IBookGraphics
 
     public void computeBookScale(double scaleFactorCoef)
     {
-        int width = mc.mainWindow.getFramebufferWidth();
-        int height = mc.mainWindow.getFramebufferHeight();
+        int width = mc.getWindow().getFramebufferWidth();
+        int height = mc.getWindow().getFramebufferHeight();
 
         double w = (DEFAULT_BOOK_WIDTH + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
         double h = (DEFAULT_BOOK_HEIGHT + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
@@ -142,8 +142,8 @@ public class BookRendering implements IBookGraphics
 
     public void computeFlexScale(double scaleFactorCoef)
     {
-        int width = mc.mainWindow.getFramebufferWidth();
-        int height = mc.mainWindow.getFramebufferHeight();
+        int width = mc.getWindow().getFramebufferWidth();
+        int height = mc.getWindow().getFramebufferHeight();
 
         double w = (DEFAULT_BOOK_WIDTH + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
         double h = (DEFAULT_BOOK_HEIGHT + 2 * BOOK_SCALE_MARGIN) / scaleFactorCoef;
@@ -495,12 +495,12 @@ public class BookRendering implements IBookGraphics
     public boolean mouseClicked(int mouseButton)
     {
         Minecraft mc = Minecraft.getInstance();
-        int width = mc.mainWindow.getFramebufferWidth();
-        int height = mc.mainWindow.getFramebufferHeight();
+        int width = mc.getWindow().getFramebufferWidth();
+        int height = mc.getWindow().getFramebufferHeight();
         double dw = scaledWidth;
         double dh = scaledHeight;
         double[] xPos = new double[1], yPos = new double[1];
-        GLFW.glfwGetCursorPos(mc.mainWindow.getHandle(), xPos, yPos);
+        GLFW.glfwGetCursorPos(mc.getWindow().getHandle(), xPos, yPos);
         double mouseX = xPos[0] * dw / width;
         double mouseY = dh - yPos[0] * dh / height;
 
@@ -587,12 +587,12 @@ public class BookRendering implements IBookGraphics
     private VisualElement mouseHoverPage(VisualPage pg, boolean isLeftPage, HoverContext mouseCoords)
     {
         Minecraft mc = Minecraft.getInstance();
-        int width = mc.mainWindow.getFramebufferWidth();
-        int height = mc.mainWindow.getFramebufferHeight();
+        int width = mc.getWindow().getFramebufferWidth();
+        int height = mc.getWindow().getFramebufferHeight();
         double dw = scaledWidth;
         double dh = scaledHeight;
         double[] xPos = new double[1], yPos = new double[1];
-        GLFW.glfwGetCursorPos(mc.mainWindow.getHandle(), xPos, yPos);
+        GLFW.glfwGetCursorPos(mc.getWindow().getHandle(), xPos, yPos);
         double mX = xPos[0] * dw / width;
         double mY = dh - yPos[0] * dh / height;
         PointD offset = getPageOffset(isLeftPage);
@@ -695,7 +695,7 @@ public class BookRendering implements IBookGraphics
         GlStateManager.translated(left, top, z);
         GlStateManager.scaled(scale, scale, scale);
 
-        RenderHelper.enableGUIStandardItemLighting();
+        RenderHelper.enableGuiDepthLighting();
         gui.getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
         RenderHelper.disableStandardItemLighting();
 
@@ -739,20 +739,20 @@ public class BookRendering implements IBookGraphics
         float tsw = 1.0f / tw;
         float tsh = 1.0f / th;
         bufferbuilder
-                .pos(x, y + hs, 0.0D)
-                .tex(tx * tsw, (ty + h) * tsh)
+                .vertex(x, y + hs, 0.0D)
+                .texture(tx * tsw, (ty + h) * tsh)
                 .endVertex();
         bufferbuilder
-                .pos(x + ws, y + hs, 0.0D)
-                .tex((tx + w) * tsw, (ty + h) * tsh)
+                .vertex(x + ws, y + hs, 0.0D)
+                .texture((tx + w) * tsw, (ty + h) * tsh)
                 .endVertex();
         bufferbuilder
-                .pos(x + ws, y, 0.0D)
-                .tex((tx + w) * tsw, ty * tsh)
+                .vertex(x + ws, y, 0.0D)
+                .texture((tx + w) * tsw, ty * tsh)
                 .endVertex();
         bufferbuilder
-                .pos(x, y, 0.0D)
-                .tex(tx * tsw, ty * tsh)
+                .vertex(x, y, 0.0D)
+                .texture(tx * tsw, ty * tsh)
                 .endVertex();
         tessellator.draw();
     }
@@ -782,20 +782,20 @@ public class BookRendering implements IBookGraphics
         float tsw = sw / (float)tw;
         float tsh = sh / (float)th;
         bufferbuilder
-                .pos(dx, dy + dh, 0.0D)
-                .tex(tsx, tsy + tsh)
+                .vertex(dx, dy + dh, 0.0D)
+                .texture(tsx, tsy + tsh)
                 .endVertex();
         bufferbuilder
-                .pos(dx + dw, dy + dh, 0.0D)
-                .tex(tsx + tsw, tsy + tsh)
+                .vertex(dx + dw, dy + dh, 0.0D)
+                .texture(tsx + tsw, tsy + tsh)
                 .endVertex();
         bufferbuilder
-                .pos(dx + dw, dy, 0.0D)
-                .tex(tsx + tsw, tsy)
+                .vertex(dx + dw, dy, 0.0D)
+                .texture(tsx + tsw, tsy)
                 .endVertex();
         bufferbuilder
-                .pos(dx, dy, 0.0D)
-                .tex(tsx, tsy)
+                .vertex(dx, dy, 0.0D)
+                .texture(tsx, tsy)
                 .endVertex();
         tessellator.draw();
     }

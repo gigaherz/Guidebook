@@ -16,6 +16,9 @@ apply plugin: 'eclipse'
 
 repositories {
     maven {
+        url "https://maven.tterrag.com/"
+    }
+    maven {
         // location of the maven that hosts JEI files
         name = "Progwml6 maven"
         url = "https://dvs1.progwml6.com/files/maven/"
@@ -30,7 +33,7 @@ repositories {
 
 version = "2.9.0"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Guidebook-1.14.4"
+archivesBaseName = "Guidebook-1.15.1"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -38,7 +41,7 @@ compileJava {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20190928-1.14.3'
+    mappings channel: 'snapshot', version: '20200111-mixed-1.15.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -70,7 +73,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.14.4-28.1.141-model-system-backup-with-dynamic-models'
+    minecraft 'net.minecraftforge:forge:1.15.1-30.0.41'
 
     //compileOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25:api")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25")

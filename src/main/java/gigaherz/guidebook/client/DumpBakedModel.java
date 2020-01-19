@@ -3,6 +3,7 @@ package gigaherz.guidebook.client;
 import com.google.common.collect.Lists;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
@@ -38,7 +39,7 @@ public class DumpBakedModel
                 List<String> faces = Lists.newArrayList();
                 for(BakedQuad quad : model.getQuads(null, dir, rand, EmptyModelData.INSTANCE))
                 {
-                    VertexFormat fmt = quad.getFormat();
+                    VertexFormat fmt = DefaultVertexFormats.BLOCK;
                     int[] data = quad.getVertexData();
                     int byteStart = 0;
                     int byteLen = fmt.getSize();

@@ -320,9 +320,14 @@ public class BookRegistry
     }
     */
 
-    public static ModelResourceLocation[] gatherBookModels()
+    public static ResourceLocation[] gatherBookModels()
     {
-        return LOADED_BOOKS.values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ModelResourceLocation[]::new);
+        return LOADED_BOOKS.values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+    }
+
+    public static ResourceLocation[] gatherBookCovers()
+    {
+        return LOADED_BOOKS.values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 
     public static void initServerResourceListener(MinecraftServer server)

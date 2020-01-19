@@ -4,7 +4,6 @@ import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
-import gigaherz.guidebook.guidebook.client.ModelHandle;
 import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
@@ -23,8 +22,6 @@ public class ClientProxy implements IModProxy
 
     public static void initialize()
     {
-        ModelHandle.init();
-
         BasicConditions.register();
         CompositeCondition.register();
         AdvancementCondition.register();

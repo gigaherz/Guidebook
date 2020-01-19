@@ -28,29 +28,28 @@ public class ItemGuidebook extends Item
     @Override
     public ActionResultType onItemUse(ItemUseContext context)
     {
-        return showBook(context.getWorld(), context.getItem());
+        return showBook(context.getWorld(), context.getItem()).getType();
     }
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand hand)
     {
         ItemStack stack = playerIn.getHeldItem(hand);
-        ActionResultType result = showBook(worldIn, stack);
-        return ActionResult.newResult(result, stack);
+        return showBook(worldIn, stack);
     }
 
-    private ActionResultType showBook(World worldIn, ItemStack stack)
+    private ActionResult<ItemStack> showBook(World worldIn, ItemStack stack)
     {
         if (!worldIn.isRemote)
-            return ActionResultType.FAIL;
+            return ActionResult.fail(stack);
 
         CompoundNBT nbt = stack.getTag();
         if (nbt == null || !nbt.contains("Book", Constants.NBT.TAG_STRING))
-            return ActionResultType.FAIL;
+            return ActionResult.fail(stack);
 
         GuidebookMod.proxy.displayBook(nbt.getString("Book"));
 
-        return ActionResultType.SUCCESS;
+        return ActionResult.success(stack);
     }
 
     public ItemStack of(ResourceLocation book)

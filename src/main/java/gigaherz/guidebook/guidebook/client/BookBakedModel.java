@@ -1,16 +1,18 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import gigaherz.guidebook.GuidebookMod;
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.*;
-import net.minecraft.client.renderer.texture.ISprite;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -20,7 +22,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.*;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
-import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.SelectiveReloadStateHandler;
 
@@ -31,31 +32,24 @@ import java.util.function.Predicate;
 
 public class BookBakedModel implements IBakedModel
 {
-    public static final ResourceLocation BASE_MODEL = GuidebookMod.location("block/book.obj");
-
+    private final Map<ResourceLocation, IBakedModel> bookModels;
+    private final Map<ResourceLocation, IBakedModel> coverModels;
     private final TextureAtlasSprite particle;
     private final ItemOverrideList overrideList;
 
     public BookBakedModel(ModelBakery bakery, IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
-                          Function<ResourceLocation, TextureAtlasSprite> spriteGetter,
-                          @Nullable IModelState state,
-                          VertexFormat format,
-                          @Nullable TextureAtlasSprite particle)
+                          Function<Material, TextureAtlasSprite> spriteGetter,
+                          Map<ResourceLocation, IBakedModel> bookModels, Map<ResourceLocation, IBakedModel> coverModels, @Nullable TextureAtlasSprite particle)
     {
+        this.bookModels = bookModels;
+        this.coverModels = coverModels;
         this.particle = particle;
-        this.overrideList = new ItemOverrideList(bakery, unbakedModel, modelGetter, spriteGetter, Collections.emptyList(), format)
+        this.overrideList = new ItemOverrideList(bakery, unbakedModel, modelGetter, spriteGetter, Collections.emptyList())
         {
             @Nullable
             @Override
             public IBakedModel getModelWithOverrides(IBakedModel model, ItemStack stack, @Nullable World worldIn, @Nullable LivingEntity entityIn)
             {
-                ModelHandle mh = ModelHandle.of(BASE_MODEL);
-
-                if (state != null)
-                {
-                    mh = mh.state(state);
-                }
-
                 CompoundNBT tag = stack.getTag();
                 if (tag != null)
                 {
@@ -63,25 +57,22 @@ public class BookBakedModel implements IBakedModel
                     BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
                     if (bookDocument != null)
                     {
-                        ModelResourceLocation _model = bookDocument.getModel();
-                        if (_model != null)
+                        ResourceLocation modelLocation = bookDocument.getModel();
+                        if (modelLocation != null)
                         {
-                            mh = ModelHandle.of(_model);
-                            if (state != null)
-                            {
-                                mh = mh.state(state);
-                            }
+                            return bookModels.get(modelLocation);
                         }
                         else
                         {
                             ResourceLocation cover = bookDocument.getCover();
+
                             if (cover != null)
-                                mh = mh.replace("#CoverGraphics", cover.toString());
+                                return coverModels.get(cover);
                         }
                     }
                 }
 
-                return mh.get();
+                return model;
             }
         };
     }
@@ -131,31 +122,47 @@ public class BookBakedModel implements IBakedModel
 
     public static class Model implements IModelGeometry<Model>
     {
-        public Collection<ResourceLocation> getDependencies()
+        private final Map<ResourceLocation, IUnbakedModel> bookModels = Maps.newHashMap();
+        private final Map<ResourceLocation, IUnbakedModel> coverModels = Maps.newHashMap();
+
+        @Override
+        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
         {
-            Set<ResourceLocation> dependencies = Sets.newHashSet();
-            dependencies.add(BASE_MODEL);
-            Collections.addAll(dependencies, BookRegistry.gatherBookModels());
-            return dependencies;
+            Material particleLocation = owner.resolveTexture("particle");
+            TextureAtlasSprite part = spriteGetter.apply(particleLocation);
+
+            Map<ResourceLocation, IBakedModel> bakedBookModels = Maps.transformEntries(bookModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k));
+            Map<ResourceLocation, IBakedModel> bakedCoverModels = Maps.transformEntries(coverModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k));
+
+            return new BookBakedModel(bakery, (IUnbakedModel)owner, bakery::getUnbakedModel, spriteGetter, bakedBookModels, bakedCoverModels, part);
         }
 
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<ResourceLocation, TextureAtlasSprite> spriteGetter, ISprite sprite, VertexFormat format, ItemOverrideList overrides)
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
         {
-            String particleLocation = owner.resolveTexture("particle");
-            TextureAtlasSprite part = spriteGetter.apply(new ResourceLocation(particleLocation));
-            return new BookBakedModel(bakery, (IUnbakedModel)owner, bakery::getUnbakedModel, spriteGetter, sprite.getState(), format, part);
-        }
+            Set<Material> textures = Sets.newHashSet();
 
-        @Override
-        public Collection<ResourceLocation> getTextureDependencies(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<String> missingTextureErrors)
-        {
-            Set<ResourceLocation> textures = Sets.newHashSet();
-
-            for (ResourceLocation loc : getDependencies())
+            for(ResourceLocation bookModel : BookRegistry.gatherBookModels())
             {
-                IUnbakedModel mdl = ModelLoaderRegistry.getModelOrMissing(loc);
-                textures.addAll(mdl.getTextures(modelGetter, missingTextureErrors));
+                bookModels.computeIfAbsent(bookModel, (loc) -> {
+                    IUnbakedModel mdl = modelGetter.apply(loc);
+                    textures.addAll(mdl.getTextureDependencies(modelGetter, missingTextureErrors));
+                    return mdl;
+                });
+            }
+
+            for(ResourceLocation bookCover : BookRegistry.gatherBookCovers())
+            {
+                bookModels.computeIfAbsent(bookCover, (loc) -> {
+                    BlockModel mdl = new BlockModel(
+                            new ResourceLocation(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
+                            Collections.emptyList(),
+                            ImmutableMap.of("cover", Either.<Material,String>left(new Material(AtlasTexture.LOCATION_BLOCKS_TEXTURE, bookCover))),
+                            true, true, ItemCameraTransforms.DEFAULT, Collections.emptyList());
+                    mdl.parent = owner.getOwnerModel() instanceof BlockModel ? (BlockModel)owner.getOwnerModel() : null;
+                    textures.addAll(mdl.getTextureDependencies(modelGetter, missingTextureErrors));
+                    return mdl;
+                });
             }
 
             for (BookDocument renderer : BookRegistry.getLoadedBooks().values())
