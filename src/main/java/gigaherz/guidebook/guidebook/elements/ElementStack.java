@@ -12,7 +12,7 @@ import gigaherz.guidebook.guidebook.drawing.VisualStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -71,7 +71,7 @@ public class ElementStack extends ElementInline
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         int stackSize = 1;
-        NBTTagCompound tag = new NBTTagCompound();
+        CompoundNBT tag = new CompoundNBT();
 
         super.parse(book, attributes);
 

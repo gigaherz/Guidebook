@@ -4,22 +4,17 @@ import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.*;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
@@ -28,14 +23,6 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ObjectHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Mod(GuidebookMod.MODID)
 public class GuidebookMod
@@ -116,14 +103,14 @@ public class GuidebookMod
         event.getRegistry().registerAll(
                 new ItemGuidebook(new Item.Properties()
                         .maxStackSize(1)
-                        .group(GuidebookMod.tabGuidebooks))
-                    .setRegistryName("guidebook")
+                        .group(GuidebookMod.tabGuidebooks)
+                ).setRegistryName("guidebook")
         );
-}
+    }
 
     private void entityJoinWorld(PlayerEvent.PlayerLoggedInEvent event)
     {
-        EntityPlayer e = event.getPlayer();
+        PlayerEntity e = event.getPlayer();
         if (!e.world.isRemote)
         {
             for (String g : ConfigValues.giveOnFirstJoin)
@@ -143,3 +130,4 @@ public class GuidebookMod
         return new ResourceLocation(MODID, location);
     }
 }
+

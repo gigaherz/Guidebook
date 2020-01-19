@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Floats;
@@ -14,7 +15,6 @@ import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import joptsimple.internal.Strings;
 import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

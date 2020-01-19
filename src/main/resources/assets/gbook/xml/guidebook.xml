@@ -193,15 +193,14 @@
       <p space="8">Recipe tags let you display the recipe(s) for a specified item or block inside the guidebook.</p>
       <p space="8" color="505050">They have three attributes: type, which specifies the type of recipe to use; indent, (same as paragraph); index, (See Recipe Indices). </p>
       <p space="12">Finally, to specify the desired output item, simply include a Stack tag inside of a &lt;recipe.result&gt; sub-tag as follows:</p>
-      <p indent="0" color="505050">&lt;recipe type="shaped"&gt;</p>
+      <p indent="0" color="505050">&lt;recipe type="crafting"&gt;</p>
       <p indent="6" color="505050">&lt;recipe.result&gt;</p>
       <p indent="12" color="505050">&lt;stack item="minecraft:comparator"/&gt;</p>
       <p indent="6" color="505050">&lt;/recipe.result&gt;</p>
       <p indent="0" color="505050">&lt;/recipe&gt;</p>
-    </section>
-    <section>
+      <page-break/>
       <p space="6">Which produces the following RecipePanel:</p>
-      <recipe type="shaped">
+      <recipe type="crafting">
         <recipe.result>
           <stack item="minecraft:comparator"/>
         </recipe.result>
@@ -211,7 +210,7 @@
       <p indent="8" color="505050">type="shapeless"</p>
       <p indent="8" color="505050">item="minecraft:ender_eye"</p>
       <space height="4"/>
-      <recipe type="shapeless">
+      <recipe type="crafting">
         <recipe.result>
           <stack item="minecraft:ender_eye"/>
         </recipe.result>
@@ -221,7 +220,7 @@
       <p indent="8" color="505050">type="furnace"</p>
       <p indent="8" color="505050">item="minecraft:iron_nugget"</p>
       <space height="4"/>
-      <recipe type="furnace">
+      <recipe type="smelting">
         <recipe.result>
           <stack item="minecraft:iron_nugget"/>
         </recipe.result>
@@ -232,13 +231,13 @@
         <p>Recipe Keys</p>
       </page_title>
       <p space="12">Another way to declare a recipe is to use its registry name. Simply use the key attribute and specify the domain ("minecraft" by default) as well as the path for the json file that the recipe was contained in. For example, the following XML:</p>
-      <p space="12" indent="8" color="505050">&lt;recipe type="shapeless" key="minecraft:fire_charge"/&gt;</p>
-      <recipe type="shapeless" key="minecraft:fire_charge"/>
+      <p space="12" indent="8" color="505050">&lt;recipe type="crafting" key="minecraft:fire_charge"/&gt;</p>
+      <recipe type="crafting" key="minecraft:fire_charge"/>
     </section>
     <section>
       <p indent="8" color="505050">type="shaped"</p>
       <p space="12" indent="8" color="1E50A0">key="minecraft:red_stained_hardened_clay"</p>
-      <recipe type="shaped" key="minecraft:red_stained_hardened_clay"/>
+      <recipe type="crafting" key="minecraft:red_stained_hardened_clay"/>
       <space height="12"/>
       <divider/>
       <space height="6"/>
@@ -257,7 +256,7 @@
       <p indent="8" color="1E50A0">index="0"</p>
       <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
       <space height="8"/>
-      <recipe type="shaped" index="0">
+      <recipe type="crafting" index="0">
         <recipe.result>
           <stack item="minecraft:gold_ingot"/>
         </recipe.result>
@@ -269,7 +268,7 @@
       <p indent="8" color="1E50A0">index="1"</p>
       <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
       <space height="8"/>
-      <recipe type="shaped" index="1">
+      <recipe type="crafting" index="1">
         <recipe.result>
           <stack item="minecraft:gold_ingot"/>
         </recipe.result>

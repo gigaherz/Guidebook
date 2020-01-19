@@ -11,10 +11,10 @@ import gigaherz.guidebook.guidebook.drawing.*;
 import gigaherz.guidebook.guidebook.util.PointD;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -629,7 +629,7 @@ public class BookRendering implements IBookGraphics
         {
             int l = (int) ((scaledWidth - bookWidth) / 2);
             int t = (int) ((scaledHeight - bookHeight) / 2);
-            Gui.drawRect(l, t, l + bookWidth, t + bookHeight, 0x2f000000);
+            AbstractGui.fill(l, t, l + bookWidth, t + bookHeight, 0x2f000000);
         }
 
         drawPage(currentPair * 2);
@@ -669,7 +669,7 @@ public class BookRendering implements IBookGraphics
 
         if(DEBUG_DRAW_BOUNDS)
         {
-            Gui.drawRect(0, 0, pageWidth, pageHeight, 0x3f000000);
+            AbstractGui.fill(0, 0, pageWidth, pageHeight, 0x3f000000);
         }
 
         for (VisualElement e : pg.children)
@@ -696,10 +696,10 @@ public class BookRendering implements IBookGraphics
         GlStateManager.scaled(scale, scale, scale);
 
         RenderHelper.enableGUIStandardItemLighting();
-        gui.mc.getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
+        gui.getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
         RenderHelper.disableStandardItemLighting();
 
-        gui.mc.getItemRenderer().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
+        gui.getMinecraft().getItemRenderer().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
 
         GlStateManager.popMatrix();
 

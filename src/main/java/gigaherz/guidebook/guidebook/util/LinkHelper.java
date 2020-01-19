@@ -5,11 +5,12 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiConfirmOpenLink;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiYesNo;
+import net.minecraft.client.gui.screen.ConfirmScreen;
+import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -50,19 +51,18 @@ public class LinkHelper
 
     public static void clickCopyToClipboard(IBookGraphics nav, String textTarget)
     {
-        GuiScreen parent = (GuiScreen) nav.owner();
+        Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
-        mc.displayGuiScreen(new GuiYesNo((result, id) -> {
+        mc.displayGuiScreen(new ConfirmScreen((result) -> {
             if (result)
             {
                 GLFW.glfwSetClipboardString(mc.mainWindow.getHandle(), textTarget);
-                mc.ingameGUI.getChatGUI().printChatMessage(new TextComponentTranslation("text.copyToClipboard.success"));
+                mc.ingameGUI.getChatGUI().printChatMessage(new TranslationTextComponent("text.copyToClipboard.success"));
             }
             mc.displayGuiScreen(parent);
         },
-                I18n.format("text.copyToClipboard.line1"),
-                I18n.format("text.copyToClipboard.line2"),
-                0)
+                new TranslationTextComponent("text.copyToClipboard.line1"),
+                new TranslationTextComponent("text.copyToClipboard.line2"))
         {
             @Override
             public void render(int mouseX, int mouseY, float partialTicks)
@@ -75,7 +75,7 @@ public class LinkHelper
 
     public static void clickWeb(IBookGraphics nav, String textTarget)
     {
-        GuiScreen parent = (GuiScreen) nav.owner();
+        Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
 
         if (!mc.gameSettings.chatLinks)
@@ -100,8 +100,14 @@ public class LinkHelper
 
             if (mc.gameSettings.chatLinksPrompt)
             {
-                ObfuscationReflectionHelper.setPrivateValue(GuiScreen.class, parent, uri, "field_175286_t");
-                mc.displayGuiScreen(new GuiConfirmOpenLink(parent, textTarget, 31102009, false)
+                ObfuscationReflectionHelper.setPrivateValue(Screen.class, parent, uri, "field_175286_t");
+                mc.displayGuiScreen(new ConfirmOpenLinkScreen((result) -> {
+                    if (result) {
+                        openWebLink(uri);
+                    }
+
+                    mc.displayGuiScreen(parent);
+                }, textTarget, true)
                 {
                     @Override
                     public void render(int mouseX, int mouseY, float partialTicks)
@@ -124,15 +130,6 @@ public class LinkHelper
 
     private static void openWebLink(URI url)
     {
-        try
-        {
-            Class<?> oclass = Class.forName("java.awt.Desktop");
-            Object object = oclass.getMethod("getDesktop", new Class[0]).invoke(null);
-            oclass.getMethod("browse", new Class[]{URI.class}).invoke(object, url);
-        }
-        catch (Throwable throwable1)
-        {
-            GuidebookMod.logger.error("Can't open url {}", url, throwable1);
-        }
+        Util.getOSType().openURI(url);
     }
 }

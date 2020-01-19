@@ -5,10 +5,14 @@ import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.client.BookRendering;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.AbstractGui;
 
 public abstract class VisualElement extends Rect
 {
+    public static final VisualElement EMPTY = new VisualElement(new Size(), 0, 0, 0)
+    {
+    };;
+
     // Only position modes 1 and 2 are valid here, mode 0 will have been handled by reflow
     public int positionMode = 1;
 
@@ -28,7 +32,7 @@ public abstract class VisualElement extends Rect
     {
         if(BookRendering.DEBUG_DRAW_BOUNDS)
         {
-            Gui.drawRect(this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
+            AbstractGui.fill(this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
         }
     }
 

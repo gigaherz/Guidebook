@@ -7,6 +7,8 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.crash.CrashReport;
@@ -14,9 +16,11 @@ import net.minecraft.crash.ReportedException;
 import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.BasicState;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
@@ -32,7 +36,8 @@ public class ModelHandle
 {
     public static final Random RANDOM = new Random();
 
-    static Map<String, IBakedModel> loadedModels = Maps.newHashMap();
+    static Map<String, IUnbakedModel> loadedModelsU = Maps.newHashMap();
+    static Map<String, IBakedModel> loadedModelsB = Maps.newHashMap();
 
     private final Map<String, String> textureReplacements = Maps.newHashMap();
     private final ResourceLocation model;
@@ -117,7 +122,7 @@ public class ModelHandle
 
     /**
      * @param texChannel : the texture channel, a.k.a the texture identifier name (example for blocks : "all", or "side")
-     * @param resloc : the new texture location 
+     * @param resloc : the new texture location
      */
     public ModelHandle replace(String texChannel, String resloc)
     {
@@ -185,6 +190,11 @@ public class ModelHandle
         return (cacheCopy = loadModel(this));
     }
 
+    public IUnbakedModel getUnbaked()
+    {
+        return getUnbaked(this);
+    }
+
     public void render()
     {
         renderModel(get(), getVertexFormat());
@@ -199,6 +209,8 @@ public class ModelHandle
 
     private static boolean initialized = false;
 
+    private static ModelLoader MODEL_BAKERY;
+
     public static void init()
     {
         if (initialized)
@@ -210,14 +222,20 @@ public class ModelHandle
         if (rm instanceof IReloadableResourceManager)
         {
             ((IReloadableResourceManager) rm).addReloadListener(
-                            (ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
-                if (resourcePredicate.test(VanillaResourceType.MODELS))
-                {
-                    loadedModels.clear();
-                    reloadCount++;
-                }
-            });
+                    (ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
+                        if (resourcePredicate.test(VanillaResourceType.MODELS))
+                        {
+                            loadedModelsU.clear();
+                            loadedModelsB.clear();
+                            reloadCount++;
+                        }
+                    });
         }
+    }
+
+    public static void initLoader(ModelLoader ldr)
+    {
+        MODEL_BAKERY = ldr;
     }
 
     @Nonnull
@@ -237,7 +255,7 @@ public class ModelHandle
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(GL11.GL_QUADS, fmt);
-        for (BakedQuad bakedquad : model.getQuads(null, null, RANDOM))
+        for (BakedQuad bakedquad : model.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE))
         {
             worldrenderer.addVertexData(bakedquad.getVertexData());
         }
@@ -249,7 +267,7 @@ public class ModelHandle
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
         worldrenderer.begin(GL11.GL_QUADS, fmt);
-        for (BakedQuad bakedquad : model.getQuads(null, null, RANDOM))
+        for (BakedQuad bakedquad : model.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE))
         {
             LightUtil.renderQuadColor(worldrenderer, bakedquad, color);
         }
@@ -258,21 +276,39 @@ public class ModelHandle
 
     private static IBakedModel loadModel(ModelHandle handle)
     {
-        IBakedModel model = loadedModels.get(handle.getKey());
+        IBakedModel model = loadedModelsB.get(handle.getKey());
         if (model != null)
             return model;
 
         try
         {
-            IModel mod = ModelLoaderRegistry.getModel(handle.getModel());
-            if (handle.getTextureReplacements().size() > 0)
-            {
-                mod = mod.retexture(ImmutableMap.copyOf(handle.getTextureReplacements()));
-            }
+            IUnbakedModel mod = getUnbaked(handle);
             IModelState state = handle.getState();
             if (state == null) state = mod.getDefaultState();
-            model = mod.bake(ModelLoader.defaultModelGetter(), ModelLoader.defaultTextureGetter(), state, handle.uvLocked(), handle.getVertexFormat());
-            loadedModels.put(handle.getKey(), model);
+            model = mod.bake(MODEL_BAKERY, ModelLoader.defaultTextureGetter(), new BasicState(state, handle.uvLocked()), handle.getVertexFormat());
+            loadedModelsB.put(handle.getKey(), model);
+            return model;
+        }
+        catch (Exception e)
+        {
+            throw new ReportedException(new CrashReport("Error loading custom model " + handle.getModel(), e));
+        }
+    }
+
+    private static IUnbakedModel getUnbaked(ModelHandle handle)
+    {
+        IUnbakedModel model = loadedModelsU.get(handle.getKey());
+        if (model != null)
+            return model;
+
+        try
+        {
+            model = ModelLoaderRegistry.getModel(handle.getModel());
+            if (handle.getTextureReplacements().size() > 0)
+            {
+                model = model.retexture(ImmutableMap.copyOf(handle.getTextureReplacements()));
+            }
+            loadedModelsU.put(handle.getKey(), model);
             return model;
         }
         catch (Exception e)

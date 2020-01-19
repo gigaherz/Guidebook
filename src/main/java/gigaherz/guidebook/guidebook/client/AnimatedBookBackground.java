@@ -1,33 +1,38 @@
 package gigaherz.guidebook.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.client.DumpBakedModel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.composite.CompositeModel;
+import net.minecraftforge.client.model.data.EmptyModelData;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.File;
+import java.util.*;
 
 import static net.minecraft.client.renderer.RenderHelper.setColorBuffer;
 
 public class AnimatedBookBackground implements IAnimatedBookBackground
 {
-    private static float angleSpeed = (1 / 0.35f) / 20;
-    private float angleT = 1;
+    public static final ResourceLocation BOOK_BACKGROUND = GuidebookMod.location("gui/animated_book");
+
+    public static final Random RANDOM = new Random();
+
+    private static final int ANIMATE_TICKS = 8;
+    private static final float ANIMATE_ANGLE = 90;
+    private static final float ANGLE_PER_TICK = ANIMATE_ANGLE / ANIMATE_TICKS;
+    private float progress = ANIMATE_TICKS;
 
     private boolean closing = false;
-
-    private final ModelHandle book00 = ModelHandle.of(GuidebookMod.location("gui/book.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-    private final ModelHandle book30 = ModelHandle.of(GuidebookMod.location("gui/book30.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-    private final ModelHandle book60 = ModelHandle.of(GuidebookMod.location("gui/book60.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-    private final ModelHandle book90 = ModelHandle.of(GuidebookMod.location("gui/book90.obj")).vertexFormat(DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
     private final GuiGuidebook gui;
 
@@ -45,7 +50,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
     @Override
     public boolean isFullyOpen()
     {
-        return angleT == 0;
+        return progress <= 0;
     }
 
     @Override
@@ -53,15 +58,14 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
     {
         if (closing)
         {
-            angleT += angleSpeed;
-            if (angleT >= 1)
+            if (progress >= ANIMATE_TICKS)
             {
                 return true;
             }
         }
-        else if (angleT > 0)
+        else if (progress < 0)
         {
-            angleT = Math.max(0, angleT - angleSpeed);
+            progress = 0;
         }
         return false;
     }
@@ -73,63 +77,87 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         GlStateManager.enableLight(1);
         GlStateManager.colorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
         GlStateManager.enableColorMaterial();
-        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_POSITION, setColorBuffer(-5.0f, -5f, 1.0f, 0.0f));
-        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
-        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.lightfv(GL11.GL_LIGHT0, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_POSITION, setColorBuffer(5.0f, -6f, 5.0f, 0.0f));
-        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
-        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.lightfv(GL11.GL_LIGHT1, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_POSITION, setColorBuffer(-5.0f, -5f, 1.0f, 0.0f));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_POSITION, setColorBuffer(5.0f, -6f, 5.0f, 0.0f));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
-        GlStateManager.lightModelfv(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+        GlStateManager.lightModel(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
     }
+
+    boolean debug = true;
 
     @Override
     public void draw(float partialTicks, int bookHeight, float scalingFactor)
     {
         IBakedModel modelBookA, modelBookB;
 
-        float angleX;
-
         if (closing)
-            angleX = (angleT + partialTicks * angleSpeed) * 90;
+            progress += partialTicks;
         else
-            angleX = (angleT - partialTicks * angleSpeed) * 90;
+            progress -= partialTicks;
+
+        float angleX = progress * ANGLE_PER_TICK;
+
+        IBakedModel unbakedModel = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND);
+        if (!(unbakedModel instanceof CompositeModel))
+            return;
+
+        CompositeModel parts = (CompositeModel)unbakedModel;
+        IBakedModel book00 = parts.getPart("0");
+        IBakedModel book30 = parts.getPart("30");
+        IBakedModel book60 = parts.getPart("60");
+        IBakedModel book90 = parts.getPart("90");
+
+        if (debug)
+        {
+            debug = false;
+            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book0.dump.obj"), "book0", book00);
+            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book30.dump.obj"), "book30", book30);
+            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book60.dump.obj"), "book60", book60);
+            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book90.dump.obj"), "book90", book90);
+        }
 
         float blend;
         if (angleX <= 0)
         {
             angleX = 0;
-            modelBookA = book00.get();
+            modelBookA = book00;
             modelBookB = null;
             blend = 0;
         }
         else if (angleX < 30)
         {
-            modelBookA = book00.get();
-            modelBookB = book30.get();
+            modelBookA = book00;
+            modelBookB = book30;
             blend = (angleX) / 30.0f;
         }
         else if (angleX < 60)
         {
-            modelBookA = book30.get();
-            modelBookB = book60.get();
+            modelBookA = book30;
+            modelBookB = book60;
             blend = (angleX - 30) / 30.0f;
         }
         else if (angleX < 90)
         {
-            modelBookA = book60.get();
-            modelBookB = book90.get();
+            modelBookA = book60;
+            modelBookB = book90;
             blend = (angleX - 60) / 30.0f;
         }
         else
         {
             angleX = 90;
-            modelBookA = book90.get();
+            modelBookA = book90;
             modelBookB = null;
             blend = 0;
         }
+
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.color4f(1,1,1,1);
 
         GlStateManager.enableDepthTest();
         GlStateManager.disableBlend();
@@ -149,9 +177,9 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-        gui.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        gui.getRenderEngine().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
-        if (modelBookB != null)
+        if (blend > 0 && modelBookB != null)
         {
             renderModelInterpolate(modelBookA, modelBookB, blend);
         }
@@ -173,8 +201,10 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
     {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
-        for (BakedQuad quad : model.getQuads(null, null, ModelHandle.RANDOM))
+        List<BakedQuad> quads = model.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
+        VertexFormat fmt = quads.get(0).getFormat();
+        worldrenderer.begin(GL11.GL_QUADS, fmt);
+        for (BakedQuad quad : quads)
         {
             worldrenderer.addVertexData(quad.getVertexData());
         }
@@ -183,16 +213,19 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
     private static void renderModelInterpolate(IBakedModel modelA, IBakedModel modelB, float blend)
     {
-        VertexFormat fmt = DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL;
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(GL11.GL_QUADS, fmt);
-        List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, ModelHandle.RANDOM);
-        List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, ModelHandle.RANDOM);
+        List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
+        List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
 
+        VertexFormat fmt = generalQuadsA.get(0).getFormat();
+
+        worldrenderer.begin(GL11.GL_QUADS, fmt);
         int length = fmt.getSize();
 
-        for (int i = 0; i < generalQuadsA.size(); i++)
+        int minSize = Math.min(generalQuadsA.size(),generalQuadsB.size());
+
+        for (int i = 0; i < minSize; i++)
         {
             BakedQuad quadA = generalQuadsA.get(i);
             BakedQuad quadB = generalQuadsB.get(i);

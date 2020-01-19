@@ -1,6 +1,5 @@
 package gigaherz.guidebook.guidebook;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -15,10 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import org.apache.commons.io.FileUtils;
 
@@ -26,7 +22,6 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BookRegistry
@@ -51,6 +46,10 @@ public class BookRegistry
         //if (Loader.instance().hasReachedState(INITIALIZATION))
         //    throw new IllegalStateException("Books must be registered before init, preferably in the BookRegistryEvent.");
         REGISTRY.add(loc);
+    }
+
+    static {
+        registerBook(new ResourceLocation("gbook:xml/guidebook.xml"));
     }
 
     @Nullable
@@ -328,16 +327,11 @@ public class BookRegistry
 
     public static void initServerResourceListener(MinecraftServer server)
     {
-        server.getResourceManager().addReloadListener(new ISelectiveResourceReloadListener()
-        {
-            @Override
-            public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate)
+        server.getResourceManager().addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
+            if (resourcePredicate.test(BookResourceType.INSTANCE))
             {
-                if (resourcePredicate.test(BookResourceType.INSTANCE))
-                {
-                    Collection<ResourceLocation> resources = resourceManager.getAllResourceLocations("gbooks", (filename) -> filename.endsWith(".xml"));
+                Collection<ResourceLocation> resources = resourceManager.getAllResourceLocations("gbooks", (filename) -> filename.endsWith(".xml"));
 
-                }
             }
         });
     }

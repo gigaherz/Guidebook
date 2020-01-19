@@ -1,17 +1,17 @@
 package gigaherz.guidebook.guidebook.conditions;
 
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 
 public class ConditionContext
 {
-    private EntityPlayerSP player;
+    private ClientPlayerEntity player;
 
-    public EntityPlayerSP getPlayer()
+    public ClientPlayerEntity getPlayer()
     {
         return player;
     }
 
-    public void setPlayer(EntityPlayerSP player)
+    public void setPlayer(ClientPlayerEntity player)
     {
         this.player = player;
     }
