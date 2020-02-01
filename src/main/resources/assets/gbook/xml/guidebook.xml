@@ -175,6 +175,10 @@
       <p space="8">Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
       <p indent="8" space="8">&lt;image src=&quot;minecraft:item/coal&quot; tw=&quot;16&quot; th=&quot;16&quot; /&gt;</p>
       <image src="minecraft:item/coal" tw="16" th="16" />
+      <p>Links:</p>
+      <p><link href="https://www.curseforge.com/">Web Link (opens curseforge.com)</link></p>
+      <p><link action="copyText" text="Hi!">Copy to Clipboard</link></p>
+      <p><link action="copyToChat" text="/give @p minecraft:debug_stick">Copy to Chat (useful for commands)</link></p>
     </section>
     <section id="stacks">
       <title>Item Stacks</title>

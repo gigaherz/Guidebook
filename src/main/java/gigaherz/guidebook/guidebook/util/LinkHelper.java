@@ -146,7 +146,7 @@ public class LinkHelper
 
             if (mc.gameSettings.chatLinksPrompt)
             {
-                ObfuscationReflectionHelper.setPrivateValue(Screen.class, parent, uri, "field_175286_t");
+                parent.clickedLink = uri;
                 mc.displayGuiScreen(new ConfirmOpenLinkScreen((result) -> {
                     if (result)
                     {

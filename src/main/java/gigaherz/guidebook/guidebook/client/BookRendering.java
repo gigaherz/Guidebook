@@ -505,7 +505,7 @@ public class BookRendering implements IBookGraphics
         double[] xPos = new double[1], yPos = new double[1];
         GLFW.glfwGetCursorPos(mc.getMainWindow().getHandle(), xPos, yPos);
         double mouseX = xPos[0] * dw / width;
-        double mouseY = dh - yPos[0] * dh / height;
+        double mouseY = yPos[0] * dh / height;
 
         if (mouseButton == 0)
         {

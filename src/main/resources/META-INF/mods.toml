@@ -1,6 +1,6 @@
 modLoader="javafml" #mandatory
-loaderVersion="[25,)" #mandatory
-#updateJSONURL="http://myurl.me/" #optional
+loaderVersion="[31,)" #mandatory
+updateJSONURL="https://raw.githubusercontent.com/gigaherz/Guidebook/master/update.json" #optional
 issueTrackerURL="https://github.com/gigaherz/Guidebook/issues" #optional
 displayURL="https://github.com/gigaherz/Guidebook" #optional
 logoFile="logo.png" #optional
@@ -15,15 +15,15 @@ description='''
 Books that guide
 '''
 
-[[dependencies.examplemod]] #optional
+[[dependencies.gbook]] #optional
     modId="forge" #mandatory
     mandatory=true #mandatory
-    versionRange="[25.0.192,)" #mandatory
+    versionRange="[31.0.1,)" #mandatory
     ordering="NONE"
     side="BOTH"
-[[dependencies.examplemod]]
+[[dependencies.gbook]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.13.2,1.14.0)"
+    versionRange="[1.15.2,1.16)"
     ordering="NONE"
     side="BOTH"
