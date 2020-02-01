@@ -8,6 +8,7 @@ import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -31,6 +32,8 @@ public class ClientProxy implements IModProxy
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
         // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
+
+        BookRegistry.initClientResourceListener((IReloadableResourceManager)Minecraft.getInstance().getResourceManager());
     }
 
     @Override

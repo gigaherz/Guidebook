@@ -9,6 +9,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus= Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientEvents
@@ -17,10 +18,9 @@ public class ClientEvents
     public static class ModClientEvents
     {
         @SubscribeEvent
-        public static void registerModels(ModelRegistryEvent event)
+        public static void registerModels(FMLClientSetupEvent event)
         {
             ModelLoaderRegistry.registerLoader(GuidebookMod.location("book_model"), new BookBakedModel.ModelLoader());
-
             // Ensures that the OBJ models used by the book GUI background, and all referenced textures, are loaded
             ModelLoader.addSpecialModel(AnimatedBookBackground.BOOK_BACKGROUND);
         }

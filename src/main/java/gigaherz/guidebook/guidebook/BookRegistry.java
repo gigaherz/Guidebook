@@ -14,6 +14,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import org.apache.commons.io.FileUtils;
@@ -21,6 +23,7 @@ import org.apache.commons.io.FileUtils;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -186,7 +189,7 @@ public class BookRegistry
             if (!bookDocument.parseBook(stream, true))
                 return null;
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             bookDocument.initializeWithLoadError(e.toString());
         }
@@ -246,8 +249,6 @@ public class BookRegistry
         return base.toURI().relativize(sub.toURI()).getPath();
     }
 
-    /*
-    @SuppressWarnings("unchecked")
     public static void injectCustomResourcePack()
     {
         if (initialized) return;
@@ -269,8 +270,8 @@ public class BookRegistry
         }
 
         final String id = "guidebook_config_folder_resources";
-        final ITextComponent name = new TextComponentString("Guidebook Config Folder Virtual Resource Pack");
-        final ITextComponent description = new TextComponentString("Provides book resources placed in the config/books/resources folder");
+        final ITextComponent name = new StringTextComponent("Guidebook Config Folder Virtual Resource Pack");
+        final ITextComponent description = new StringTextComponent("Provides book resources placed in the config/books/resources folder");
         final IResourcePack pack = new FolderPack(resourcesFolder)
         {
             String prefix = "assets/" + GuidebookMod.MODID + "/";
@@ -280,7 +281,7 @@ public class BookRegistry
             {
                 if ("pack.mcmeta".equals(name))
                 {
-                    return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 4}}").getBytes(Charsets.UTF_8));
+                    return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 5}}").getBytes(StandardCharsets.UTF_8));
                 }
                 if (!name.startsWith(prefix))
                     throw new FileNotFoundException(name);
@@ -309,34 +310,44 @@ public class BookRegistry
             @Override
             public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> nameToPackMap, ResourcePackInfo.IFactory<T> packInfoFactory)
             {
+                //noinspection unchecked
                 nameToPackMap.put(
                         id,
-                        (T)new ResourcePackInfoClient(
+                        (T)new ClientResourcePackInfo(
                                 id, true,
-                                () -> pack, name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.TOP, true, null, true)
-                        );
+                                () -> pack, name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.BOTTOM, true, null, true)
+                );
             }
         });
     }
-    */
 
     public static ResourceLocation[] gatherBookModels()
     {
-        return LOADED_BOOKS.values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+        return getLoadedBooks().values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 
     public static ResourceLocation[] gatherBookCovers()
     {
-        return LOADED_BOOKS.values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+        return getLoadedBooks().values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 
     public static void initServerResourceListener(MinecraftServer server)
     {
-        server.getResourceManager().addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
+        /*server.getResourceManager().addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
             if (resourcePredicate.test(BookResourceType.INSTANCE))
             {
                 Collection<ResourceLocation> resources = resourceManager.getAllResourceLocations("gbooks", (filename) -> filename.endsWith(".xml"));
 
+            }
+        });*/
+    }
+
+    public static void initClientResourceListener(IReloadableResourceManager clientResourceManager)
+    {
+        clientResourceManager.addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
+            if (resourcePredicate.test(BookResourceType.INSTANCE))
+            {
+                booksLoaded = false;
             }
         });
     }

@@ -4,12 +4,12 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.client.DumpBakedModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
@@ -17,8 +17,9 @@ import net.minecraftforge.client.model.CompositeModel;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.lwjgl.opengl.GL11;
 
-import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 public class AnimatedBookBackground implements IAnimatedBookBackground
 {
@@ -57,10 +58,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
     {
         if (closing)
         {
-            if (progress >= ANIMATE_TICKS)
-            {
-                return true;
-            }
+            return progress >= ANIMATE_TICKS;
         }
         else if (progress < 0)
         {
@@ -69,26 +67,24 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         return false;
     }
 
-    /*private static void enableStandardItemLighting()
+    private static void enableBookLighting()
     {
         RenderSystem.enableLighting();
-        RenderSystem.enableLight(0);
-        RenderSystem.enableLight(1);
+        GlStateManager.enableLight(0);
+        GlStateManager.enableLight(1);
         RenderSystem.colorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
         RenderSystem.enableColorMaterial();
-        RenderSystem.light(GL11.GL_LIGHT0, GL11.GL_POSITION, setColorBuffer(-5.0f, -5f, 1.0f, 0.0f));
-        RenderSystem.light(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
-        RenderSystem.light(GL11.GL_LIGHT0, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        RenderSystem.light(GL11.GL_LIGHT0, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        RenderSystem.light(GL11.GL_LIGHT1, GL11.GL_POSITION, setColorBuffer(5.0f, -6f, 5.0f, 0.0f));
-        RenderSystem.light(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
-        RenderSystem.light(GL11.GL_LIGHT1, GL11.GL_AMBIENT, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        RenderSystem.light(GL11.GL_LIGHT1, GL11.GL_SPECULAR, setColorBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_POSITION, GlStateManager.getBuffer(-5.0f, -5f, 1.0f, 0.0f));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, GlStateManager.getBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_AMBIENT, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_SPECULAR, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_POSITION, GlStateManager.getBuffer(5.0f, -6f, 5.0f, 0.0f));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, GlStateManager.getBuffer(0.2F, 0.2F, 0.2F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_AMBIENT, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_SPECULAR, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
         RenderSystem.shadeModel(GL11.GL_SMOOTH);
-        RenderSystem.lightModel(GL11.GL_LIGHT_MODEL_AMBIENT, setColorBuffer(0.4F, 0.4F, 0.4F, 1.0F));
-    }*/
-
-    boolean debug = true;
+        GlStateManager.lightModel(GL11.GL_LIGHT_MODEL_AMBIENT, GlStateManager.getBuffer(0.4F, 0.4F, 0.4F, 1.0F));
+    }
 
     @Override
     public void draw(float partialTicks, int bookHeight, float scalingFactor)
@@ -111,15 +107,6 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         IBakedModel book30 = parts.getPart("30");
         IBakedModel book60 = parts.getPart("60");
         IBakedModel book90 = parts.getPart("90");
-
-        if (debug)
-        {
-            debug = false;
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book0.dump.obj"), "book0", book00);
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book30.dump.obj"), "book30", book30);
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book60.dump.obj"), "book60", book60);
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book90.dump.obj"), "book90", book90);
-        }
 
         float blend;
         if (angleX <= 0)
@@ -155,6 +142,9 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
             blend = 0;
         }
 
+        RenderSystem.clearDepth(1.0);
+        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT, Minecraft.IS_RUNNING_ON_MAC);
+
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.color4f(1,1,1,1);
 
@@ -164,32 +154,33 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         RenderSystem.enableAlphaTest();
 
         RenderSystem.pushMatrix();
-        RenderSystem.enableRescaleNormal();
-        //enableStandardItemLighting();
-        RenderSystem.setupGui3DDiffuseLighting();
-
-        RenderSystem.translated(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, 50);
-        RenderSystem.rotatef(180, 0, 1, 0);
-        RenderSystem.rotatef(-130, 1, 0, 0);
-        RenderSystem.scaled(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
-
-        RenderSystem.rotatef(angleX * 1.1f, 0, 0, 1);
-
-        RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        gui.getRenderEngine().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-
-        if (blend > 0 && modelBookB != null)
         {
-            renderModelInterpolate(modelBookA, modelBookB, blend);
-        }
-        else
-        {
-            renderModel(modelBookA);
-        }
+            RenderSystem.enableRescaleNormal();
+            enableBookLighting();
 
-        RenderHelper.disableStandardItemLighting();
-        RenderSystem.disableRescaleNormal();
+            RenderSystem.translated(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
+            RenderSystem.rotatef(180, 0, 1, 0);
+            RenderSystem.rotatef(-130, 1, 0, 0);
+            RenderSystem.scaled(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
+
+            RenderSystem.rotatef(angleX * 1.1f, 0, 0, 1);
+
+            RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+            gui.getRenderEngine().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+
+            if (blend > 0 && modelBookB != null)
+            {
+                renderModelInterpolate(modelBookA, modelBookB, blend);
+            }
+            else
+            {
+                renderModel(modelBookA);
+            }
+
+            RenderHelper.disableStandardItemLighting();
+            RenderSystem.disableRescaleNormal();
+        }
         RenderSystem.popMatrix();
 
         RenderSystem.enableCull();
@@ -207,7 +198,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
         for (BakedQuad quad : quads)
         {
-            worldrenderer.addVertexData(matrixStack.peek(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
+            worldrenderer.addVertexData(matrixStack.getLast(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
         }
         tessellator.draw();
     }
@@ -247,8 +238,8 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
                 }
             }
 
-            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.getSprite(), quadA.shouldApplyDiffuseLighting());
-            worldrenderer.addVertexData(matrixStack.peek(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
+            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.func_187508_a(), quadA.shouldApplyDiffuseLighting());
+            worldrenderer.addVertexData(matrixStack.getLast(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
         }
         tessellator.draw();
     }

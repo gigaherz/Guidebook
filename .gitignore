@@ -37,3 +37,4 @@ build
 # other
 eclipse
 run
+/dummy/accesstransformer.cfg
