@@ -34,7 +34,7 @@ repositories {
     mavenLocal()
 }
 
-version = "2.9.0"
+version = "3.0.1"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook-1.15.2"
 

@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/gigaherz/Guidebook",
   "promos": {
-    "1.12.2-latest": "2.9.0",
-    "1.12.2-recommended": "2.9.0",
+    "1.12.2-latest": "2.9.2",
+    "1.12.2-recommended": "2.9.2",
     "1.12-latest": "1.7.3",
     "1.12-recommended": "1.7.3",
     "1.11.2-latest": "1.7.3",
@@ -49,6 +49,8 @@
     "2.8.1": "Fix section parsing (broken automatic pagination). Attempt to actually fix crashing on navigation...",
     "2.8.2": "Prevent crash when languages are not loaded. Fix image scaling logic.",
     "2.8.3": "Fix image drawing typo.",
-    "2.9.0": "Tons of improvements to layout engine. Custom item model and custom background rendering. Flexible scaling option."
+    "2.9.0": "Tons of improvements to layout engine. Custom item model and custom background rendering. Flexible scaling option.",
+    "2.9.1": "Added minimum forge in dependencies.",
+    "2.9.2": "Added new link action 'copyToChat'."
   }
 }
