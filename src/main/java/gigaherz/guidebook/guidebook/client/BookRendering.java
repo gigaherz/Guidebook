@@ -2,19 +2,22 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.GlStateManager;
 import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
-import gigaherz.guidebook.guidebook.drawing.*;
+import gigaherz.guidebook.guidebook.drawing.VisualChapter;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualPage;
+import gigaherz.guidebook.guidebook.drawing.VisualText;
 import gigaherz.guidebook.guidebook.util.PointD;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -87,7 +90,7 @@ public class BookRendering implements IBookGraphics
         chapters.clear();
         lastProcessedChapter = 0;
         previousHovering = null;
-        if(contentsChanged)
+        if (contentsChanged)
         {
             history.clear();
             currentChapter = 0;
@@ -665,9 +668,9 @@ public class BookRendering implements IBookGraphics
         if (ConfigValues.flexibleScale)
             GlStateManager.translated(offset.x, offset.y, 0);
         else
-            GlStateManager.translated((int)offset.x, (int)offset.y, 0);
+            GlStateManager.translated((int) offset.x, (int) offset.y, 0);
 
-        if(DEBUG_DRAW_BOUNDS)
+        if (DEBUG_DRAW_BOUNDS)
         {
             AbstractGui.fill(0, 0, pageWidth, pageHeight, 0x3f000000);
         }
@@ -777,10 +780,10 @@ public class BookRendering implements IBookGraphics
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        float tsx = sx / (float)tw;
-        float tsy = sy / (float)th;
-        float tsw = sw / (float)tw;
-        float tsh = sh / (float)th;
+        float tsx = sx / (float) tw;
+        float tsy = sy / (float) th;
+        float tsw = sw / (float) tw;
+        float tsh = sh / (float) th;
         bufferbuilder
                 .pos(dx, dy + dh, 0.0D)
                 .tex(tsx, tsy + tsh)
@@ -822,7 +825,7 @@ public class BookRendering implements IBookGraphics
         TextMetrics.wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.getStringWidth(s);
             sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
-        }, text, width/scale, firstLineWidth/scale, true);
+        }, text, width / scale, firstLineWidth / scale, true);
         return sizes;
     }
 
@@ -845,6 +848,7 @@ public class BookRendering implements IBookGraphics
 
     public static final IAnimatedBookBackgroundFactory DEFAULT_BACKGROUND = AnimatedBookBackground::new;
     public static final Map<ResourceLocation, IAnimatedBookBackgroundFactory> BACKGROUND_FACTORY_MAP = Maps.newHashMap();
+
     public IAnimatedBookBackground createBackground(GuiGuidebook guiGuidebook)
     {
         ResourceLocation loc = book.getBackground();

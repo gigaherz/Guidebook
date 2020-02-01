@@ -6,7 +6,9 @@ import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.*;
+import net.minecraft.item.crafting.AbstractCookingRecipe;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -70,16 +72,17 @@ class CraftingRecipeProvider implements IRecipeProvider
         int recipeWidth;
         int recipeHeight;
         int recipeGraphic;
-        if(recipe instanceof AbstractCookingRecipe)
+        if (recipe instanceof AbstractCookingRecipe)
         {
             recipeWidth = 1;
             recipeHeight = 1;
             recipeGraphic = 2;
         }
-        else {
+        else
+        {
             if (recipe instanceof IShapedRecipe)
             {
-                IShapedRecipe<?> shapedRecipe = (IShapedRecipe<?>)recipe;
+                IShapedRecipe<?> shapedRecipe = (IShapedRecipe<?>) recipe;
                 recipeWidth = shapedRecipe.getRecipeWidth();
                 recipeHeight = shapedRecipe.getRecipeHeight();
             }
@@ -87,14 +90,20 @@ class CraftingRecipeProvider implements IRecipeProvider
             {
                 int ingredients = recipe.getIngredients().size();
                 recipeWidth = MathHelper.ceil(Math.sqrt(ingredients));
-                recipeHeight = MathHelper.ceil(ingredients / (double)recipeWidth);
+                recipeHeight = MathHelper.ceil(ingredients / (double) recipeWidth);
             }
 
-            switch (Math.max(recipeWidth,recipeHeight))
+            switch (Math.max(recipeWidth, recipeHeight))
             {
-                case 1: recipeGraphic = 3; break;
-                case 2: recipeGraphic = 1; break;
-                default: recipeGraphic = 0; break;
+                case 1:
+                    recipeGraphic = 3;
+                    break;
+                case 2:
+                    recipeGraphic = 1;
+                    break;
+                default:
+                    recipeGraphic = 0;
+                    break;
             }
         }
 

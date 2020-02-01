@@ -2,10 +2,10 @@ package gigaherz.guidebook.guidebook.elements;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.util.Rect;
-import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualImage;
+import gigaherz.guidebook.guidebook.util.Rect;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.renderer.model.Material;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;

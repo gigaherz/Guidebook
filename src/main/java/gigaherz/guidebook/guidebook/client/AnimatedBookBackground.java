@@ -102,7 +102,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         if (!(unbakedModel instanceof CompositeModel))
             return;
 
-        CompositeModel parts = (CompositeModel)unbakedModel;
+        CompositeModel parts = (CompositeModel) unbakedModel;
         IBakedModel book00 = parts.getPart("0");
         IBakedModel book30 = parts.getPart("30");
         IBakedModel book60 = parts.getPart("60");
@@ -146,7 +146,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT, Minecraft.IS_RUNNING_ON_MAC);
 
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        RenderSystem.color4f(1,1,1,1);
+        RenderSystem.color4f(1, 1, 1, 1);
 
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
@@ -215,7 +215,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
         int length = DefaultVertexFormats.BLOCK.getSize();
 
-        int minSize = Math.min(generalQuadsA.size(),generalQuadsB.size());
+        int minSize = Math.min(generalQuadsA.size(), generalQuadsB.size());
 
         for (int i = 0; i < minSize; i++)
         {

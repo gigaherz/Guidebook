@@ -1,7 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
@@ -17,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 public class GuiGuidebook extends Screen
 {
@@ -118,7 +116,7 @@ public class GuiGuidebook extends Screen
     {
         this.width = minecraft.getMainWindow().getScaledWidth();
         this.height = minecraft.getMainWindow().getScaledHeight();
-        if(book.refreshScalingFactor())
+        if (book.refreshScalingFactor())
         {
             book.resetRendering(false);
         }
@@ -178,7 +176,7 @@ public class GuiGuidebook extends Screen
 
         int leftLeft = left;
         int rightRight = right;
-        int topTop = top - 16 + (int)(8*bookScale);
+        int topTop = top - 16 + (int) (8 * bookScale);
         int bottomBottom = bottom + 2;
 
         buttonHome.x = leftLeft;
@@ -208,7 +206,7 @@ public class GuiGuidebook extends Screen
 
         renderBackground();
 
-        background.draw(partialTicks, (int) bookHeight, (float)backgroundScale);
+        background.draw(partialTicks, (int) bookHeight, (float) backgroundScale);
 
         if (background.isFullyOpen())
         {

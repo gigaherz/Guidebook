@@ -3,8 +3,8 @@ package gigaherz.guidebook.guidebook.elements;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.SectionRef;
-import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.util.LinkHelper;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -70,7 +70,7 @@ public class ElementLink extends ElementSpan
     public ElementInline copy()
     {
         ElementLink link = super.copy(new ElementLink(isFirstElement, isLastElement));
-        for(ElementInline run : inlines)
+        for (ElementInline run : inlines)
         {
             link.inlines.add(run.copy());
         }

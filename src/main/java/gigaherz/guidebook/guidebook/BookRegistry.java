@@ -8,8 +8,8 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.client.BookResourceType;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.client.resources.*;
+import net.minecraft.client.resources.ClientResourcePackInfo;
+import net.minecraft.client.resources.LanguageManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
 import net.minecraft.server.MinecraftServer;
@@ -51,7 +51,8 @@ public class BookRegistry
         REGISTRY.add(loc);
     }
 
-    static {
+    static
+    {
         registerBook(new ResourceLocation("gbook:xml/guidebook.xml"));
     }
 
@@ -313,7 +314,7 @@ public class BookRegistry
                 //noinspection unchecked
                 nameToPackMap.put(
                         id,
-                        (T)new ClientResourcePackInfo(
+                        (T) new ClientResourcePackInfo(
                                 id, true,
                                 () -> pack, name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.BOTTOM, true, null, true)
                 );
@@ -351,5 +352,4 @@ public class BookRegistry
             }
         });
     }
-
 }

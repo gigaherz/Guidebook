@@ -7,7 +7,10 @@ import com.google.common.primitives.Floats;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.conditions.ConditionManager;
-import gigaherz.guidebook.guidebook.drawing.*;
+import gigaherz.guidebook.guidebook.drawing.VisualChapter;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.drawing.VisualPage;
+import gigaherz.guidebook.guidebook.drawing.VisualPageBreak;
 import gigaherz.guidebook.guidebook.elements.*;
 import gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import gigaherz.guidebook.guidebook.templates.TemplateElement;
@@ -169,7 +172,7 @@ public class BookDocument implements IConditionSource
         ChapterData ch = new ChapterData(0);
         chapters.add(ch);
 
-        PageData pg = new PageData(new SectionRef(0,0));
+        PageData pg = new PageData(new SectionRef(0, 0));
         ch.sections.add(pg);
 
         pg.elements.add(ElementParagraph.of("Error loading book:", TextStyle.ERROR));
@@ -450,7 +453,7 @@ public class BookDocument implements IConditionSource
         for (int k = 0; k < elementsList.getLength(); k++)
         {
             boolean isFirstElement = k == 0;
-            boolean isLastElement = (k+1) == elementsList.getLength();
+            boolean isLastElement = (k + 1) == elementsList.getLength();
 
             Node elementItem = elementsList.item(k);
 
@@ -459,7 +462,7 @@ public class BookDocument implements IConditionSource
             String nodeName = elementItem.getNodeName();
             ResourceLocation nodeLoc =
                     elementItem.getNodeType() == Node.ELEMENT_NODE ?
-                    new ResourceLocation(nodeName) : new ResourceLocation("_");
+                            new ResourceLocation(nodeName) : new ResourceLocation("_");
 
             if (nodeName.equals("section-break"))
             {
@@ -568,7 +571,7 @@ public class BookDocument implements IConditionSource
             }
             else if (elementItem.getNodeType() == Node.TEXT_NODE)
             {
-                if(generateParagraphs)
+                if (generateParagraphs)
                 {
                     String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
                     if (!Strings.isNullOrEmpty(textContent) && !textContent.matches("^[ \t\r\n]+$"))
@@ -708,7 +711,7 @@ public class BookDocument implements IConditionSource
         for (int k = 0; k < elementsList.getLength(); k++)
         {
             boolean isFirstElement = k == 0;
-            boolean isLastElement = (k+1) == elementsList.getLength();
+            boolean isLastElement = (k + 1) == elementsList.getLength();
 
             Node elementItem = elementsList.item(k);
 

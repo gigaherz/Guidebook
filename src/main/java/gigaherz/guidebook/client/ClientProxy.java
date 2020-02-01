@@ -28,12 +28,12 @@ public class ClientProxy implements IModProxy
         AdvancementCondition.register();
 
         // TODO: if (ModList.get.isLoaded("gamestages"))
-            //GameStageCondition.register();
+        //GameStageCondition.register();
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
         // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
 
-        BookRegistry.initClientResourceListener((IReloadableResourceManager)Minecraft.getInstance().getResourceManager());
+        BookRegistry.initClientResourceListener((IReloadableResourceManager) Minecraft.getInstance().getResourceManager());
     }
 
     @Override

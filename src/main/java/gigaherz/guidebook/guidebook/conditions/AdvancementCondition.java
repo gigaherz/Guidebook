@@ -11,7 +11,6 @@ import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -26,7 +25,7 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
         ClientAdvancementManager mgr = Minecraft.getInstance().player.connection.getAdvancementManager();
         Advancement adv = mgr.getAdvancementList().getAdvancement(advancement);
         Map<Advancement, AdvancementProgress> advancementToProgress =
-                ObfuscationReflectionHelper.getPrivateValue(ClientAdvancementManager.class, mgr,"field_192803_d");
+                ObfuscationReflectionHelper.getPrivateValue(ClientAdvancementManager.class, mgr, "field_192803_d");
         return advancementToProgress.get(adv);
     }
 

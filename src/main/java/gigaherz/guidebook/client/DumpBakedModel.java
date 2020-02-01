@@ -37,7 +37,7 @@ public class DumpBakedModel
                 writer.write(String.format("g %s\n", dir));
 
                 List<String> faces = Lists.newArrayList();
-                for(BakedQuad quad : model.getQuads(null, dir, rand, EmptyModelData.INSTANCE))
+                for (BakedQuad quad : model.getQuads(null, dir, rand, EmptyModelData.INSTANCE))
                 {
                     VertexFormat fmt = DefaultVertexFormats.BLOCK;
                     int[] data = quad.getVertexData();
@@ -48,14 +48,14 @@ public class DumpBakedModel
                     List<Integer> indices2 = Lists.newArrayList();
                     List<Integer> indices3 = Lists.newArrayList();
                     boolean hasTex = false;
-                    for(VertexFormatElement element : fmt.getElements())
+                    for (VertexFormatElement element : fmt.getElements())
                     {
                         if (element.getUsage() != VertexFormatElement.Usage.PADDING)
                         {
                             String elementValues0 = decodeElement(data, byteStart, element);
-                            String elementValues1 = decodeElement(data, byteStart+byteLen, element);
-                            String elementValues2 = decodeElement(data, byteStart+byteLen*2, element);
-                            String elementValues3 = decodeElement(data, byteStart+byteLen*3, element);
+                            String elementValues1 = decodeElement(data, byteStart + byteLen, element);
+                            String elementValues2 = decodeElement(data, byteStart + byteLen * 2, element);
+                            String elementValues3 = decodeElement(data, byteStart + byteLen * 3, element);
                             String prefix;
                             switch (element.getUsage())
                             {
@@ -100,8 +100,7 @@ public class DumpBakedModel
                             formatIndices(indices1, hasTex),
                             formatIndices(indices2, hasTex),
                             formatIndices(indices3, hasTex)
-                            ));
-
+                    ));
                 }
             }
         }
@@ -126,69 +125,97 @@ public class DumpBakedModel
 
     private static String decodeElement(int[] data, int byteStart, VertexFormatElement element)
     {
-        switch(element.getType())
+        switch (element.getType())
         {
             case FLOAT:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%f", getFloatAt(data, byteStart));
-                    case 2: return String.format("%f %f", getFloatAt(data, byteStart), getFloatAt(data, byteStart+4));
-                    case 3: return String.format("%f %f %f", getFloatAt(data, byteStart), getFloatAt(data, byteStart+4), getFloatAt(data, byteStart+8));
-                    case 4: return String.format("%f %f %f %f", getFloatAt(data, byteStart), getFloatAt(data, byteStart+4), getFloatAt(data, byteStart+8), getFloatAt(data, byteStart+12));
+                    case 1:
+                        return String.format("%f", getFloatAt(data, byteStart));
+                    case 2:
+                        return String.format("%f %f", getFloatAt(data, byteStart), getFloatAt(data, byteStart + 4));
+                    case 3:
+                        return String.format("%f %f %f", getFloatAt(data, byteStart), getFloatAt(data, byteStart + 4), getFloatAt(data, byteStart + 8));
+                    case 4:
+                        return String.format("%f %f %f %f", getFloatAt(data, byteStart), getFloatAt(data, byteStart + 4), getFloatAt(data, byteStart + 8), getFloatAt(data, byteStart + 12));
                 }
                 break;
             case UBYTE:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%f", getUByteAt(data, byteStart)/255.0f);
-                    case 2: return String.format("%f %f", getUByteAt(data, byteStart)/255.0f, getUByteAt(data, byteStart+1)/255.0f);
-                    case 3: return String.format("%f %f %f", getUByteAt(data, byteStart)/255.0f, getUByteAt(data, byteStart+1)/255.0f, getUByteAt(data, byteStart+2)/255.0f);
-                    case 4: return String.format("%f %f %f %f", getUByteAt(data, byteStart)/255.0f, getUByteAt(data, byteStart+1)/255.0f, getUByteAt(data, byteStart+2)/255.0f, getUByteAt(data, byteStart+3)/255.0f);
+                    case 1:
+                        return String.format("%f", getUByteAt(data, byteStart) / 255.0f);
+                    case 2:
+                        return String.format("%f %f", getUByteAt(data, byteStart) / 255.0f, getUByteAt(data, byteStart + 1) / 255.0f);
+                    case 3:
+                        return String.format("%f %f %f", getUByteAt(data, byteStart) / 255.0f, getUByteAt(data, byteStart + 1) / 255.0f, getUByteAt(data, byteStart + 2) / 255.0f);
+                    case 4:
+                        return String.format("%f %f %f %f", getUByteAt(data, byteStart) / 255.0f, getUByteAt(data, byteStart + 1) / 255.0f, getUByteAt(data, byteStart + 2) / 255.0f, getUByteAt(data, byteStart + 3) / 255.0f);
                 }
                 break;
             case BYTE:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%f", getByteAt(data, byteStart)/127.0f);
-                    case 2: return String.format("%f %f", getByteAt(data, byteStart)/127.0f, getByteAt(data, byteStart+1)/127.0f);
-                    case 3: return String.format("%f %f %f", getByteAt(data, byteStart)/127.0f, getByteAt(data, byteStart+1)/127.0f, getByteAt(data, byteStart+2)/127.0f);
-                    case 4: return String.format("%f %f %f %f", getByteAt(data, byteStart)/127.0f, getByteAt(data, byteStart+1)/127.0f, getByteAt(data, byteStart+2)/127.0f, getByteAt(data, byteStart+3)/127.0f);
+                    case 1:
+                        return String.format("%f", getByteAt(data, byteStart) / 127.0f);
+                    case 2:
+                        return String.format("%f %f", getByteAt(data, byteStart) / 127.0f, getByteAt(data, byteStart + 1) / 127.0f);
+                    case 3:
+                        return String.format("%f %f %f", getByteAt(data, byteStart) / 127.0f, getByteAt(data, byteStart + 1) / 127.0f, getByteAt(data, byteStart + 2) / 127.0f);
+                    case 4:
+                        return String.format("%f %f %f %f", getByteAt(data, byteStart) / 127.0f, getByteAt(data, byteStart + 1) / 127.0f, getByteAt(data, byteStart + 2) / 127.0f, getByteAt(data, byteStart + 3) / 127.0f);
                 }
                 break;
             case USHORT:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%d", getUShortAt(data, byteStart));
-                    case 2: return String.format("%d %d", getUShortAt(data, byteStart), getUShortAt(data, byteStart+2));
-                    case 3: return String.format("%d %d %d", getUShortAt(data, byteStart), getUShortAt(data, byteStart+2), getUShortAt(data, byteStart+4));
-                    case 4: return String.format("%d %d %d %d", getUShortAt(data, byteStart), getUShortAt(data, byteStart+2), getUShortAt(data, byteStart+4), getUShortAt(data, byteStart+6));
+                    case 1:
+                        return String.format("%d", getUShortAt(data, byteStart));
+                    case 2:
+                        return String.format("%d %d", getUShortAt(data, byteStart), getUShortAt(data, byteStart + 2));
+                    case 3:
+                        return String.format("%d %d %d", getUShortAt(data, byteStart), getUShortAt(data, byteStart + 2), getUShortAt(data, byteStart + 4));
+                    case 4:
+                        return String.format("%d %d %d %d", getUShortAt(data, byteStart), getUShortAt(data, byteStart + 2), getUShortAt(data, byteStart + 4), getUShortAt(data, byteStart + 6));
                 }
                 break;
             case SHORT:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%d", getShortAt(data, byteStart));
-                    case 2: return String.format("%d %d", getShortAt(data, byteStart), getShortAt(data, byteStart+2));
-                    case 3: return String.format("%d %d %d", getShortAt(data, byteStart), getShortAt(data, byteStart+2), getShortAt(data, byteStart+4));
-                    case 4: return String.format("%d %d %d %d", getShortAt(data, byteStart), getShortAt(data, byteStart+2), getShortAt(data, byteStart+4), getShortAt(data, byteStart+6));
+                    case 1:
+                        return String.format("%d", getShortAt(data, byteStart));
+                    case 2:
+                        return String.format("%d %d", getShortAt(data, byteStart), getShortAt(data, byteStart + 2));
+                    case 3:
+                        return String.format("%d %d %d", getShortAt(data, byteStart), getShortAt(data, byteStart + 2), getShortAt(data, byteStart + 4));
+                    case 4:
+                        return String.format("%d %d %d %d", getShortAt(data, byteStart), getShortAt(data, byteStart + 2), getShortAt(data, byteStart + 4), getShortAt(data, byteStart + 6));
                 }
                 break;
             case UINT:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%d", getUIntAt(data, byteStart));
-                    case 2: return String.format("%d %d", getUIntAt(data, byteStart), getUIntAt(data, byteStart+4));
-                    case 3: return String.format("%d %d %d", getUIntAt(data, byteStart), getUIntAt(data, byteStart+4), getUIntAt(data, byteStart+8));
-                    case 4: return String.format("%d %d %d %d", getUIntAt(data, byteStart), getUIntAt(data, byteStart+4), getUIntAt(data, byteStart+8), getUIntAt(data, byteStart+12));
+                    case 1:
+                        return String.format("%d", getUIntAt(data, byteStart));
+                    case 2:
+                        return String.format("%d %d", getUIntAt(data, byteStart), getUIntAt(data, byteStart + 4));
+                    case 3:
+                        return String.format("%d %d %d", getUIntAt(data, byteStart), getUIntAt(data, byteStart + 4), getUIntAt(data, byteStart + 8));
+                    case 4:
+                        return String.format("%d %d %d %d", getUIntAt(data, byteStart), getUIntAt(data, byteStart + 4), getUIntAt(data, byteStart + 8), getUIntAt(data, byteStart + 12));
                 }
                 break;
             case INT:
                 switch (element.getElementCount())
                 {
-                    case 1: return String.format("%d", getIntAt(data, byteStart));
-                    case 2: return String.format("%d %d", getIntAt(data, byteStart), getIntAt(data, byteStart+4));
-                    case 3: return String.format("%d %d %d", getIntAt(data, byteStart), getIntAt(data, byteStart+4), getIntAt(data, byteStart+8));
-                    case 4: return String.format("%d %d %d %d", getIntAt(data, byteStart), getIntAt(data, byteStart+4), getIntAt(data, byteStart+8), getIntAt(data, byteStart+12));
+                    case 1:
+                        return String.format("%d", getIntAt(data, byteStart));
+                    case 2:
+                        return String.format("%d %d", getIntAt(data, byteStart), getIntAt(data, byteStart + 4));
+                    case 3:
+                        return String.format("%d %d %d", getIntAt(data, byteStart), getIntAt(data, byteStart + 4), getIntAt(data, byteStart + 8));
+                    case 4:
+                        return String.format("%d %d %d %d", getIntAt(data, byteStart), getIntAt(data, byteStart + 4), getIntAt(data, byteStart + 8), getIntAt(data, byteStart + 12));
                 }
                 break;
         }
@@ -202,35 +229,35 @@ public class DumpBakedModel
 
     private static long getUIntAt(int[] data, int n)
     {
-        return (getUByteAt(data,n+3) << 24) + (getUByteAt(data,n+2) << 16) + (getUByteAt(data,n+1) << 8) + getUByteAt(data,n);
+        return (getUByteAt(data, n + 3) << 24) + (getUByteAt(data, n + 2) << 16) + (getUByteAt(data, n + 1) << 8) + getUByteAt(data, n);
     }
 
     private static int getIntAt(int[] data, int n)
     {
-        return (getByteAt(data,n+3) << 24) + (getUByteAt(data,n+2) << 16) + (getUByteAt(data,n+1) << 8) + getUByteAt(data,n);
+        return (getByteAt(data, n + 3) << 24) + (getUByteAt(data, n + 2) << 16) + (getUByteAt(data, n + 1) << 8) + getUByteAt(data, n);
     }
 
     private static int getUShortAt(int[] data, int n)
     {
-        return (getUByteAt(data,n+1) << 8) + getUByteAt(data,n);
+        return (getUByteAt(data, n + 1) << 8) + getUByteAt(data, n);
     }
 
     private static int getShortAt(int[] data, int n)
     {
-        return (getByteAt(data,n+1) << 8) + getUByteAt(data,n);
+        return (getByteAt(data, n + 1) << 8) + getUByteAt(data, n);
     }
 
     private static int getUByteAt(int[] data, int n)
     {
         int idx = n / 4;
-        int off = (n % 4)*8;
-        return (data[idx]>>off)&0xFF;
+        int off = (n % 4) * 8;
+        return (data[idx] >> off) & 0xFF;
     }
 
     private static int getByteAt(int[] data, int n)
     {
         int idx = n / 4;
-        int off = 24-(n % 4)*8;
-        return (data[idx]<<off)>>24;
+        int off = 24 - (n % 4) * 8;
+        return (data[idx] << off) >> 24;
     }
 }

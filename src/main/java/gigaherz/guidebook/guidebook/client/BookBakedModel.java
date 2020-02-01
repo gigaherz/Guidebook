@@ -21,13 +21,13 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.*;
+import net.minecraftforge.client.model.IModelConfiguration;
+import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.SelectiveReloadStateHandler;
 
 import javax.annotation.Nullable;
-import javax.xml.stream.Location;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -160,7 +160,7 @@ public class BookBakedModel implements IBakedModel
 
             textures.addAll(baseModel.getTextures(modelGetter, missingTextureErrors));
 
-            for(ResourceLocation bookModel : BookRegistry.gatherBookModels())
+            for (ResourceLocation bookModel : BookRegistry.gatherBookModels())
             {
                 bookModels.computeIfAbsent(bookModel, (loc) -> {
                     IUnbakedModel mdl = modelGetter.apply(loc);
@@ -169,13 +169,13 @@ public class BookBakedModel implements IBakedModel
                 });
             }
 
-            for(ResourceLocation bookCover : BookRegistry.gatherBookCovers())
+            for (ResourceLocation bookCover : BookRegistry.gatherBookCovers())
             {
                 coverModels.computeIfAbsent(bookCover, (loc) -> {
                     BlockModel mdl = new BlockModel(
                             new ResourceLocation(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
                             Collections.emptyList(),
-                            ImmutableMap.of("cover", Either.<Material,String>left(new Material(AtlasTexture.LOCATION_BLOCKS_TEXTURE, bookCover))),
+                            ImmutableMap.of("cover", Either.<Material, String>left(new Material(AtlasTexture.LOCATION_BLOCKS_TEXTURE, bookCover))),
                             true, owner.isSideLit() ? BlockModel.GuiLight.SIDE : BlockModel.GuiLight.FRONT, ItemCameraTransforms.DEFAULT, Collections.emptyList());
                     mdl.parent = baseModel;
                     textures.addAll(mdl.getTextures(modelGetter, missingTextureErrors));

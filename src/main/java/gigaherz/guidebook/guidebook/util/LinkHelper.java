@@ -5,10 +5,9 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
+import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -102,7 +101,8 @@ public class LinkHelper
             {
                 ObfuscationReflectionHelper.setPrivateValue(Screen.class, parent, uri, "field_175286_t");
                 mc.displayGuiScreen(new ConfirmOpenLinkScreen((result) -> {
-                    if (result) {
+                    if (result)
+                    {
                         openWebLink(uri);
                     }
 
