@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -107,7 +107,7 @@ public class ElementParagraph extends Element
             }
         }
 
-        processAlignment(paragraph, bounds.size.width-currentIndent, currentLineLeft, firstInLine);
+        processAlignment(paragraph, bounds.size.width - currentIndent, currentLineLeft, firstInLine);
 
         if (position != POS_RELATIVE)
             return bounds.position.y;
@@ -216,7 +216,7 @@ public class ElementParagraph extends Element
     public String toString(boolean complete)
     {
         // TODO: Complete mode
-        return "<p ...>" + inlines.stream().map(Object::toString).collect(Collectors.joining())  + "</p>";
+        return "<p ...>" + inlines.stream().map(Object::toString).collect(Collectors.joining()) + "</p>";
     }
 
     @Override
@@ -246,7 +246,7 @@ public class ElementParagraph extends Element
         {
             Element t = element.applyTemplate(book, sourceElements);
             if (t instanceof ElementInline)
-                paragraph.inlines.add((ElementInline)t);
+                paragraph.inlines.add((ElementInline) t);
         }
 
         if (paragraph.inlines.size() == 0)

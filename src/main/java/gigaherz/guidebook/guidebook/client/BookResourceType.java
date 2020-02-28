@@ -5,5 +5,8 @@ import net.minecraftforge.resource.IResourceType;
 public class BookResourceType implements IResourceType
 {
     public static final BookResourceType INSTANCE = new BookResourceType();
-    private BookResourceType() {}
+
+    private BookResourceType()
+    {
+    }
 }

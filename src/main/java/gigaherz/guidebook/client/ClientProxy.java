@@ -4,11 +4,11 @@ import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
-import gigaherz.guidebook.guidebook.client.ModelHandle;
 import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -23,17 +23,17 @@ public class ClientProxy implements IModProxy
 
     public static void initialize()
     {
-        ModelHandle.init();
-
         BasicConditions.register();
         CompositeCondition.register();
         AdvancementCondition.register();
 
         // TODO: if (ModList.get.isLoaded("gamestages"))
-            //GameStageCondition.register();
+        //GameStageCondition.register();
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
         // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
+
+        BookRegistry.initClientResourceListener((IReloadableResourceManager) Minecraft.getInstance().getResourceManager());
     }
 
     @Override

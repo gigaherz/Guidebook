@@ -5,10 +5,10 @@ import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
-import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
@@ -61,14 +61,14 @@ public class ElementPanel extends Element
         }
 
         attr = attributes.getNamedItem("mode");
-        if(attr != null)
+        if (attr != null)
         {
             String t = attr.getTextContent();
             try
             {
                 mode = PanelMode.valueOf(t.toUpperCase());
             }
-            catch(IllegalArgumentException e)
+            catch (IllegalArgumentException e)
             {
                 mode = PanelMode.DEFAULT;
             }
@@ -79,7 +79,7 @@ public class ElementPanel extends Element
     public String toString(boolean complete)
     {
         // TODO: Complete mode
-        return "<panel ...>" + innerElements.stream().map(Object::toString).collect(Collectors.joining())  + "</panel>";
+        return "<panel ...>" + innerElements.stream().map(Object::toString).collect(Collectors.joining()) + "</panel>";
     }
 
     @Override
@@ -112,7 +112,7 @@ public class ElementPanel extends Element
             {
                 if (element.conditionResult)
                 {
-                     element.reflow(visuals, nav, adjustedBounds, pageBounds);
+                    element.reflow(visuals, nav, adjustedBounds, pageBounds);
                 }
             }
             top += adjustedBounds.size.height;
@@ -143,7 +143,7 @@ public class ElementPanel extends Element
 
         if (visuals.size() > 0)
         {
-            Size size = new Size(bounds.size.width,top-adjustedPosition.y);
+            Size size = new Size(bounds.size.width, top - adjustedPosition.y);
 
             VisualPanel p = new VisualPanel(size, position, baseline, verticalAlignment);
 

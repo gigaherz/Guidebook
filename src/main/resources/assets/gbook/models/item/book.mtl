@@ -1,9 +1,9 @@
 # Rhino
-newmtl CoverGraphics
-map_Kd gbook:covers/default
-
-newmtl Default
+newmtl Pages
 map_Kd gbook:paper
 
 newmtl Cover
 map_Kd gbook:cover
+
+newmtl CoverGraphics
+map_Kd #cover

@@ -10,7 +10,9 @@ public class ConfigValues
 {
     public static final ServerConfig SERVER;
     public static final ForgeConfigSpec SERVER_SPEC;
-    static {
+
+    static
+    {
         final Pair<ServerConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ServerConfig::new);
         SERVER_SPEC = specPair.getRight();
         SERVER = specPair.getLeft();
@@ -18,7 +20,9 @@ public class ConfigValues
 
     public static final ClientConfig CLIENT;
     public static final ForgeConfigSpec CLIENT_SPEC;
-    static {
+
+    static
+    {
         final Pair<ClientConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
         CLIENT_SPEC = specPair.getRight();
         CLIENT = specPair.getLeft();
@@ -32,7 +36,8 @@ public class ConfigValues
     {
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> giveOnFirstJoin;
 
-        ServerConfig(ForgeConfigSpec.Builder builder) {
+        ServerConfig(ForgeConfigSpec.Builder builder)
+        {
             builder.push("general");
             giveOnFirstJoin = builder
                     .comment("List of books to give to the player when they join. Applied retroactively to existing players if a new book is added to the list.")
@@ -47,7 +52,8 @@ public class ConfigValues
         public final ForgeConfigSpec.IntValue bookGUIScale;
         public final ForgeConfigSpec.BooleanValue flexibleScale;
 
-        ClientConfig(ForgeConfigSpec.Builder builder) {
+        ClientConfig(ForgeConfigSpec.Builder builder)
+        {
             builder.comment("Options for customizing the display of tools on the player")
                     .push("display");
             bookGUIScale = builder

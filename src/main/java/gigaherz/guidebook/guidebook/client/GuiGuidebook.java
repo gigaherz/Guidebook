@@ -116,7 +116,7 @@ public class GuiGuidebook extends Screen
     {
         this.width = minecraft.mainWindow.getScaledWidth();
         this.height = minecraft.mainWindow.getScaledHeight();
-        if(book.refreshScalingFactor())
+        if (book.refreshScalingFactor())
         {
             book.resetRendering(false);
         }
@@ -176,7 +176,7 @@ public class GuiGuidebook extends Screen
 
         int leftLeft = left;
         int rightRight = right;
-        int topTop = top - 16 + (int)(8*bookScale);
+        int topTop = top - 16 + (int) (8 * bookScale);
         int bottomBottom = bottom + 2;
 
         buttonHome.x = leftLeft;
@@ -206,17 +206,12 @@ public class GuiGuidebook extends Screen
 
         renderBackground();
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translatef(0,0,500);
-
-        background.draw(partialTicks, (int) bookHeight, (float)backgroundScale);
+        background.draw(partialTicks, (int) bookHeight, (float) backgroundScale);
 
         if (background.isFullyOpen())
         {
             book.drawCurrentPages();
         }
-
-        GlStateManager.popMatrix();
 
         super.render(mouseX, mouseY, partialTicks);
 
@@ -224,16 +219,6 @@ public class GuiGuidebook extends Screen
         {
             book.mouseHover(mouseX, mouseY);
         }
-
-        /*
-        ScaledResolution sr = new ScaledResolution(minecraft);
-        float mcScale = sr.getScaleFactor();
-        double bookScale = book.getScalingFactor();
-
-        drawString(fontRenderer, String.format("Gui scale: %f, Book scale: %f, Total: %f, background scale: %f",
-                mcScale, bookScale, bookScale * mcScale,
-                backgroundScale), 5, 5, 0xFFFFFFFF);
-        */
     }
 
     public void drawTooltip(ItemStack stack, int x, int y)

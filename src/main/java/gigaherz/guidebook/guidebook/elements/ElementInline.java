@@ -2,8 +2,8 @@ package gigaherz.guidebook.guidebook.elements;
 
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.util.Rect;
 import org.w3c.dom.NamedNodeMap;
 
 import java.util.List;

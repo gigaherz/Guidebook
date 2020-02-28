@@ -5,14 +5,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.util.Rect;
-import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualStack;
+import gigaherz.guidebook.guidebook.util.Rect;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -168,7 +168,7 @@ public class ElementStack extends ElementInline
     {
         ElementStack newStack = super.copy(new ElementStack(isFirstElement, isLastElement));
         newStack.scale = scale;
-        for(ItemStack stack : stacks)
+        for (ItemStack stack : stacks)
         {
             newStack.stacks.add(stack.copy());
         }

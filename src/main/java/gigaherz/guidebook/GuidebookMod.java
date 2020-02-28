@@ -5,9 +5,12 @@ import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.ItemGuidebook;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -31,7 +34,9 @@ public class GuidebookMod
 
     public static GuidebookMod instance;
 
-    public static final IModProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new IModProxy(){});
+    public static final IModProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new IModProxy()
+    {
+    });
 
     // Items
     @ObjectHolder("gbook:guidebook")
@@ -63,6 +68,7 @@ public class GuidebookMod
     {
         instance = this;
 
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> BookRegistry::injectCustomResourcePack);
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addGenericListener(Item.class, this::registerItems);

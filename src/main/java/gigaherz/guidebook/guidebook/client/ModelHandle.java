@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.IUnbakedModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.crash.CrashReport;
@@ -17,7 +16,6 @@ import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.BasicState;
-import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -122,7 +120,7 @@ public class ModelHandle
 
     /**
      * @param texChannel : the texture channel, a.k.a the texture identifier name (example for blocks : "all", or "side")
-     * @param resloc : the new texture location
+     * @param resloc     : the new texture location
      */
     public ModelHandle replace(String texChannel, String resloc)
     {

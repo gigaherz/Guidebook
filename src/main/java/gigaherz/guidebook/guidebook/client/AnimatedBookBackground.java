@@ -1,23 +1,23 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.client.DumpBakedModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.composite.CompositeModel;
+import net.minecraftforge.client.model.CompositeModel;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.lwjgl.opengl.GL11;
 
-import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 import static net.minecraft.client.renderer.RenderHelper.setColorBuffer;
 
@@ -107,20 +107,11 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         if (!(unbakedModel instanceof CompositeModel))
             return;
 
-        CompositeModel parts = (CompositeModel)unbakedModel;
+        CompositeModel parts = (CompositeModel) unbakedModel;
         IBakedModel book00 = parts.getPart("0");
         IBakedModel book30 = parts.getPart("30");
         IBakedModel book60 = parts.getPart("60");
         IBakedModel book90 = parts.getPart("90");
-
-        if (debug)
-        {
-            debug = false;
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book0.dump.obj"), "book0", book00);
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book30.dump.obj"), "book30", book30);
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book60.dump.obj"), "book60", book60);
-            DumpBakedModel.dumpToOBJ(new File("F:/Modding/Guidebook-1.14.x/book90.dump.obj"), "book90", book90);
-        }
 
         float blend;
         if (angleX <= 0)
@@ -157,7 +148,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         }
 
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        GlStateManager.color4f(1,1,1,1);
+        GlStateManager.color4f(1, 1, 1, 1);
 
         GlStateManager.enableDepthTest();
         GlStateManager.disableBlend();
@@ -223,7 +214,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         worldrenderer.begin(GL11.GL_QUADS, fmt);
         int length = fmt.getSize();
 
-        int minSize = Math.min(generalQuadsA.size(),generalQuadsB.size());
+        int minSize = Math.min(generalQuadsA.size(), generalQuadsB.size());
 
         for (int i = 0; i < minSize; i++)
         {

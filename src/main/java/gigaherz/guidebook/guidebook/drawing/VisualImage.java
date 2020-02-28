@@ -52,7 +52,8 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     @Override
     public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
     {
-        if (linkContext != null ) {
+        if (linkContext != null)
+        {
             linkContext.isHovering = true;
             //Mouse.setNativeCursor(Cursor.)
         }
@@ -61,7 +62,8 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     @Override
     public void mouseOut(IBookGraphics nav, HoverContext hoverContext)
     {
-        if (linkContext != null ) {
+        if (linkContext != null)
+        {
             linkContext.isHovering = false;
         }
     }

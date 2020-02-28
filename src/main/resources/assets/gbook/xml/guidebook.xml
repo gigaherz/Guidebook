@@ -173,8 +173,12 @@
       <p>Image tags let you draw a piece of an image. The 'x', 'y', 'w', 'h' attributes define the location and size to draw.</p>
       <p>The location to draw from the texture is taken from the 'tx' and 'ty' attributes, if not zero. If the image size is not exactly 256x256, you will have to specify the total size of the texture in 'tw' and 'th' attributes.</p>
       <p space="8">Image tags are relative to the current vertical offset, but they do not increment the vertical offset.</p>
-      <p indent="8" space="8">&lt;image src=&quot;minecraft:items/coal&quot; tw=&quot;16&quot; th=&quot;16&quot; /&gt;</p>
-      <image src="minecraft:items/coal" tw="16" th="16" />
+      <p indent="8" space="8">&lt;image src=&quot;minecraft:item/coal&quot; tw=&quot;16&quot; th=&quot;16&quot; /&gt;</p>
+      <image src="minecraft:item/coal" tw="16" th="16" />
+      <p>Links:</p>
+      <p><link href="https://www.curseforge.com/">Web Link (opens curseforge.com)</link></p>
+      <p><link action="copyText" text="Hi!">Copy to Clipboard</link></p>
+      <p><link action="copyToChat" text="/give @p minecraft:debug_stick">Copy to Chat (useful for commands)</link></p>
     </section>
     <section id="stacks">
       <title>Item Stacks</title>

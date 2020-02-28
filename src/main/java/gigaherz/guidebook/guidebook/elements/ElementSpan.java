@@ -25,7 +25,7 @@ public class ElementSpan extends ElementInline
     {
         List<VisualElement> visuals = Lists.newArrayList();
 
-        for(ElementInline run : inlines)
+        for (ElementInline run : inlines)
         {
             visuals.addAll(run.measure(nav, width, firstLineWidth));
         }
@@ -42,14 +42,14 @@ public class ElementSpan extends ElementInline
     public String toString(boolean complete)
     {
         // TODO: Complete mode
-        return "<span ...>" + inlines.stream().map(Object::toString).collect(Collectors.joining())  + "</span>";
+        return "<span ...>" + inlines.stream().map(Object::toString).collect(Collectors.joining()) + "</span>";
     }
 
     @Override
     public ElementInline copy()
     {
         ElementSpan span = super.copy(new ElementSpan(isFirstElement, isLastElement));
-        for(ElementInline run : inlines)
+        for (ElementInline run : inlines)
         {
             span.inlines.add(run.copy());
         }

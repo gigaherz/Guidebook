@@ -27,8 +27,8 @@ public class RecipeProviders
     public static Either<IRecipeProvider, String> getProvider(ResourceLocation id)
     {
         return Registry.RECIPE_TYPE.getValue(id).map(iRecipeType -> Optional.of(registry.get(iRecipeType))
-                    .map(Either::<IRecipeProvider, String>left)
-                    .orElseGet(() -> Either.right("There is no recipe provider for recipe type '" + id + "'"))
-                ).orElseGet(() -> Either.right("There is no recipe type with id '" + id + "'"));
+                .map(Either::<IRecipeProvider, String>left)
+                .orElseGet(() -> Either.right("There is no recipe provider for recipe type '" + id + "'"))
+        ).orElseGet(() -> Either.right("There is no recipe type with id '" + id + "'"));
     }
 }

@@ -1,9 +1,10 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import net.minecraft.block.BlockState;
@@ -16,11 +17,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.*;
+import net.minecraftforge.client.model.IModelConfiguration;
+import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
-import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.SelectiveReloadStateHandler;
 
@@ -31,31 +33,22 @@ import java.util.function.Predicate;
 
 public class BookBakedModel implements IBakedModel
 {
-    public static final ResourceLocation BASE_MODEL = GuidebookMod.location("block/book.obj");
-
+    private final ItemCameraTransforms cameraTransforms;
     private final TextureAtlasSprite particle;
     private final ItemOverrideList overrideList;
 
-    public BookBakedModel(ModelBakery bakery, IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
-                          Function<ResourceLocation, TextureAtlasSprite> spriteGetter,
-                          @Nullable IModelState state,
-                          VertexFormat format,
-                          @Nullable TextureAtlasSprite particle)
+    public BookBakedModel(IBakedModel baseModel, ModelBakery bakery, IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
+                          Function<ResourceLocation, TextureAtlasSprite> spriteGetter, ItemCameraTransforms cameraTransforms,
+                          Map<ResourceLocation, IBakedModel> bookModels, Map<ResourceLocation, IBakedModel> coverModels, @Nullable TextureAtlasSprite particle, VertexFormat format)
     {
         this.particle = particle;
+        this.cameraTransforms = cameraTransforms;
         this.overrideList = new ItemOverrideList(bakery, unbakedModel, modelGetter, spriteGetter, Collections.emptyList(), format)
         {
             @Nullable
             @Override
             public IBakedModel getModelWithOverrides(IBakedModel model, ItemStack stack, @Nullable World worldIn, @Nullable LivingEntity entityIn)
             {
-                ModelHandle mh = ModelHandle.of(BASE_MODEL);
-
-                if (state != null)
-                {
-                    mh = mh.state(state);
-                }
-
                 CompoundNBT tag = stack.getTag();
                 if (tag != null)
                 {
@@ -63,25 +56,22 @@ public class BookBakedModel implements IBakedModel
                     BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
                     if (bookDocument != null)
                     {
-                        ModelResourceLocation _model = bookDocument.getModel();
-                        if (_model != null)
+                        ResourceLocation modelLocation = bookDocument.getModel();
+                        if (modelLocation != null)
                         {
-                            mh = ModelHandle.of(_model);
-                            if (state != null)
-                            {
-                                mh = mh.state(state);
-                            }
+                            return bookModels.get(modelLocation);
                         }
                         else
                         {
                             ResourceLocation cover = bookDocument.getCover();
+
                             if (cover != null)
-                                mh = mh.replace("#CoverGraphics", cover.toString());
+                                return coverModels.get(cover);
                         }
                     }
                 }
 
-                return mh.get();
+                return baseModel;
             }
         };
     }
@@ -120,7 +110,7 @@ public class BookBakedModel implements IBakedModel
     @Override
     public ItemCameraTransforms getItemCameraTransforms()
     {
-        return null;
+        return cameraTransforms;
     }
 
     @Override
@@ -131,12 +121,13 @@ public class BookBakedModel implements IBakedModel
 
     public static class Model implements IModelGeometry<Model>
     {
-        public Collection<ResourceLocation> getDependencies()
+        private final BlockModel baseModel;
+        private final Map<ResourceLocation, IUnbakedModel> bookModels = Maps.newHashMap();
+        private final Map<ResourceLocation, IUnbakedModel> coverModels = Maps.newHashMap();
+
+        public Model(BlockModel baseModel)
         {
-            Set<ResourceLocation> dependencies = Sets.newHashSet();
-            dependencies.add(BASE_MODEL);
-            Collections.addAll(dependencies, BookRegistry.gatherBookModels());
-            return dependencies;
+            this.baseModel = baseModel;
         }
 
         @Override
@@ -144,7 +135,13 @@ public class BookBakedModel implements IBakedModel
         {
             String particleLocation = owner.resolveTexture("particle");
             TextureAtlasSprite part = spriteGetter.apply(new ResourceLocation(particleLocation));
-            return new BookBakedModel(bakery, (IUnbakedModel)owner, bakery::getUnbakedModel, spriteGetter, sprite.getState(), format, part);
+
+            Map<ResourceLocation, IBakedModel> bakedBookModels = Maps.transformEntries(bookModels, (k, v) -> v.bake(bakery, spriteGetter, sprite, format));
+            Map<ResourceLocation, IBakedModel> bakedCoverModels = Maps.transformEntries(coverModels, (k, v) -> v.bake(bakery, spriteGetter, sprite, format));
+
+            return new BookBakedModel(
+                    baseModel.bake(bakery, baseModel, spriteGetter, sprite, format),
+                    bakery, owner.getOwnerModel(), bakery::getUnbakedModel, spriteGetter, owner.getCameraTransforms(), bakedBookModels, bakedCoverModels, part, format);
         }
 
         @Override
@@ -152,10 +149,29 @@ public class BookBakedModel implements IBakedModel
         {
             Set<ResourceLocation> textures = Sets.newHashSet();
 
-            for (ResourceLocation loc : getDependencies())
+            textures.addAll(baseModel.getTextures(modelGetter, missingTextureErrors));
+
+            for (ResourceLocation bookModel : BookRegistry.gatherBookModels())
             {
-                IUnbakedModel mdl = ModelLoaderRegistry.getModelOrMissing(loc);
-                textures.addAll(mdl.getTextures(modelGetter, missingTextureErrors));
+                bookModels.computeIfAbsent(bookModel, (loc) -> {
+                    IUnbakedModel mdl = modelGetter.apply(loc);
+                    textures.addAll(mdl.getTextures(modelGetter, missingTextureErrors));
+                    return mdl;
+                });
+            }
+
+            for (ResourceLocation bookCover : BookRegistry.gatherBookCovers())
+            {
+                coverModels.computeIfAbsent(bookCover, (loc) -> {
+                    BlockModel mdl = new BlockModel(
+                            new ResourceLocation(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
+                            Collections.emptyList(),
+                            ImmutableMap.of("cover", bookCover.toString()),
+                            true, true, ItemCameraTransforms.DEFAULT, Collections.emptyList());
+                    mdl.parent = baseModel;
+                    textures.addAll(mdl.getTextures(modelGetter, missingTextureErrors));
+                    return mdl;
+                });
             }
 
             for (BookDocument renderer : BookRegistry.getLoadedBooks().values())
@@ -186,7 +202,8 @@ public class BookBakedModel implements IBakedModel
         @Override
         public Model read(JsonDeserializationContext deserializationContext, JsonObject modelContents)
         {
-            return new Model();
+            BlockModel baseModel = deserializationContext.deserialize(JSONUtils.getJsonObject(modelContents, "base_model"), BlockModel.class);
+            return new Model(baseModel);
         }
     }
 }

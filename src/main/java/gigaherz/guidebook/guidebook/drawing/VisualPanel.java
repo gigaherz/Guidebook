@@ -31,7 +31,7 @@ public class VisualPanel extends VisualElement
         double x = hoverContext.mouseScaledX;
         double y = hoverContext.mouseScaledY;
         VisualElement newOver = null;
-        for(VisualElement child : children)
+        for (VisualElement child : children)
         {
             if (child.wantsHover()
                     && x >= child.position.x

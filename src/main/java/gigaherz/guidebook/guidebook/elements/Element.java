@@ -3,9 +3,9 @@ package gigaherz.guidebook.guidebook.elements;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
-import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -224,7 +224,8 @@ public abstract class Element
             String text = attr.getTextContent();
             try
             {
-                return Integer.parseInt(text);            }
+                return Integer.parseInt(text);
+            }
             catch (NumberFormatException e)
             {
                 // ignored

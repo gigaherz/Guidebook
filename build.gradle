@@ -4,9 +4,12 @@ buildscript {
         maven { url = 'http://files.minecraftforge.net/maven' }
         jcenter()
         mavenCentral()
+        maven {
+            url 'http://dogforce-games.com/maven'
+        }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.0.165-run-configs-rework', changing: true
     }
 }
 
@@ -38,7 +41,7 @@ compileJava {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20190928-1.14.3'
+    mappings channel: 'stable', version: '56-1.14.3'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -49,10 +52,6 @@ minecraft {
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
             property 'forge.logging.noansi', "false"
-
-            ideaModule "${project.name}.main"
-
-            environment 'MOD_CLASSES', "${project.file("out/production/resources").canonicalPath};${project.file("out/production/classes").canonicalPath}"
         }
 
         server {
@@ -61,16 +60,12 @@ minecraft {
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
             property 'forge.logging.noansi', "false"
-
-            ideaModule "${project.name}.main"
-
-            environment 'MOD_CLASSES', "${project.file("build/resources/main").canonicalPath};${project.file("build/classes/java/main").canonicalPath}"
         }
     }
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.14.4-28.1.141-model-system-backup-with-dynamic-models'
+    minecraft 'net.minecraftforge:forge:1.14.4-28.2.2'
 
     //compileOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25:api")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25")

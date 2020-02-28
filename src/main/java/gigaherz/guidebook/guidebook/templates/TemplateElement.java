@@ -3,10 +3,10 @@ package gigaherz.guidebook.guidebook.templates;
 import com.google.common.primitives.Ints;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
-import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.Element;
 import gigaherz.guidebook.guidebook.elements.ElementInline;
+import gigaherz.guidebook.guidebook.util.Rect;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 

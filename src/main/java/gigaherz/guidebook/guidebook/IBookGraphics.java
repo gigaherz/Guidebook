@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook;
 
-import gigaherz.guidebook.guidebook.util.Size;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
+import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
