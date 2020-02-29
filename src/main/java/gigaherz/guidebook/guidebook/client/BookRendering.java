@@ -18,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -597,7 +598,7 @@ public class BookRendering implements IBookGraphics
         double[] xPos = new double[1], yPos = new double[1];
         GLFW.glfwGetCursorPos(mc.mainWindow.getHandle(), xPos, yPos);
         double mX = xPos[0] * dw / width;
-        double mY = dh - yPos[0] * dh / height;
+        double mY = yPos[0] * dh / height;
         PointD offset = getPageOffset(isLeftPage);
 
         mX -= offset.x;
@@ -698,11 +699,13 @@ public class BookRendering implements IBookGraphics
         GlStateManager.translated(left, top, z);
         GlStateManager.scaled(scale, scale, scale);
 
+        ItemRenderer itemRenderer = gui.getMinecraft().getItemRenderer();
+
         RenderHelper.enableGUIStandardItemLighting();
-        gui.getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
+        itemRenderer.renderItemAndEffectIntoGUI(stack, 0, 0);
         RenderHelper.disableStandardItemLighting();
 
-        gui.getMinecraft().getItemRenderer().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
+        itemRenderer.renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
 
         GlStateManager.popMatrix();
 

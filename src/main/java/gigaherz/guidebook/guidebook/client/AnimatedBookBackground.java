@@ -159,10 +159,13 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         GlStateManager.enableRescaleNormal();
         enableStandardItemLighting();
 
-        GlStateManager.translated(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, 50);
+        scalingFactor *= 2.16;
+
+        GlStateManager.translated(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, 250);
         GlStateManager.rotated(180, 0, 1, 0);
         GlStateManager.rotated(-130, 1, 0, 0);
-        GlStateManager.scaled(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
+        GlStateManager.scaled(scalingFactor, scalingFactor, scalingFactor);
+        GlStateManager.scaled(1, 1, 1.25);
 
         GlStateManager.rotated(angleX * 1.1f, 0, 0, 1);
 

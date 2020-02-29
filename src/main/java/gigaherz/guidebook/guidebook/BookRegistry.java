@@ -252,10 +252,12 @@ public class BookRegistry
 
     public static void injectCustomResourcePack()
     {
-        if (initialized) return;
-        initialized = true;
+        Minecraft mc = Minecraft.getInstance();
 
-        File resourcesFolder = new File(new File(new File(Minecraft.getInstance().gameDir, "config"), "books"), "resources");
+        if (mc == null)
+            return;
+
+        File resourcesFolder = new File(new File(new File(mc.gameDir, "config"), "books"), "resources");
 
         if (!resourcesFolder.exists())
         {
@@ -306,7 +308,7 @@ public class BookRegistry
             }
         };
 
-        Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
+        mc.getResourcePackList().addPackFinder(new IPackFinder()
         {
             @Override
             public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> nameToPackMap, ResourcePackInfo.IFactory<T> packInfoFactory)

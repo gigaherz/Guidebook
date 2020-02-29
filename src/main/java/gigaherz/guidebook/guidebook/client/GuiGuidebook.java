@@ -208,6 +208,8 @@ public class GuiGuidebook extends Screen
 
         background.draw(partialTicks, (int) bookHeight, (float) backgroundScale);
 
+        itemRenderer.zLevel += 500;
+
         if (background.isFullyOpen())
         {
             book.drawCurrentPages();
@@ -219,6 +221,8 @@ public class GuiGuidebook extends Screen
         {
             book.mouseHover(mouseX, mouseY);
         }
+
+        itemRenderer.zLevel -= 500;
     }
 
     public void drawTooltip(ItemStack stack, int x, int y)
