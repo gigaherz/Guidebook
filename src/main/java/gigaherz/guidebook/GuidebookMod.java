@@ -78,7 +78,6 @@ public class GuidebookMod
 
         MinecraftForge.EVENT_BUS.addListener(this::entityJoinWorld);
 
-
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
         modLoadingContext.registerConfig(ModConfig.Type.SERVER, ConfigValues.SERVER_SPEC);
         modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);

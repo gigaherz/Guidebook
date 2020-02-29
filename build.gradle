@@ -1,7 +1,6 @@
 buildscript {
     repositories {
-        mavenLocal()
-        maven { url = 'http://files.minecraftforge.net/maven' }
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
         mavenCentral()
         maven {
@@ -9,7 +8,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.0.165-run-configs-rework', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.0.163+pull-657', changing: true
     }
 }
 
@@ -34,7 +33,7 @@ repositories {
     mavenLocal()
 }
 
-version = "3.0.1"
+version = "3.0.5"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook-1.15.2"
 
@@ -68,7 +67,9 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.15.2-31.0.14'
+    minecraft('net.minecraftforge:forge:1.15.2-31.1.14') {
+        transitive=false
+    }
 
     //compileOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25:api")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25")
@@ -97,6 +98,14 @@ publishing {
             from components.java
 
             //artifact sourceJar
+
+            pom.withXml {
+                asNode().dependencies.dependency.each { dep ->
+                    if(dep.groupId.last().value().last() in ["net.minecraftforge"]) {
+                        assert dep.parent().remove(dep)
+                    }
+                }
+            }
         }
     }
 
@@ -106,4 +115,3 @@ publishing {
         }
     }
 }
-

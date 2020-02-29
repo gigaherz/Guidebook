@@ -69,8 +69,6 @@ public class BookRegistry
         return loc == null ? null : get(new ResourceLocation(loc));
     }
 
-    private static boolean initialized = false;
-
     public static void parseAllBooks(IResourceManager manager)
     {
         booksLoaded = true;
@@ -250,12 +248,15 @@ public class BookRegistry
         return base.toURI().relativize(sub.toURI()).getPath();
     }
 
+    @SuppressWarnings("ConstantConditions")
     public static void injectCustomResourcePack()
     {
-        if (initialized) return;
-        initialized = true;
+        Minecraft mc = Minecraft.getInstance();
 
-        File resourcesFolder = new File(new File(new File(Minecraft.getInstance().gameDir, "config"), "books"), "resources");
+        if (mc == null)
+            return;
+
+        File resourcesFolder = new File(new File(new File(mc.gameDir, "config"), "books"), "resources");
 
         if (!resourcesFolder.exists())
         {

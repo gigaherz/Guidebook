@@ -149,7 +149,7 @@
       <p space="8">You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
       <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
       <p bold="true" italics="true">Formatted text</p>
-      <page-break />
+      <section-break />
       <p space="8">Sometimes, you need indented text, or you want to change the separation between successive paragraphs, for this, you have 'indent' and 'space', respectively.</p>
       <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
       <p indent="20" space="20">Indented spaced text</p>
@@ -202,7 +202,7 @@
       <p indent="12" color="505050">&lt;stack item="minecraft:comparator"/&gt;</p>
       <p indent="6" color="505050">&lt;/recipe.result&gt;</p>
       <p indent="0" color="505050">&lt;/recipe&gt;</p>
-      <page-break/>
+      <section-break/>
       <p space="6">Which produces the following RecipePanel:</p>
       <recipe type="crafting">
         <recipe.result>
@@ -240,12 +240,12 @@
     </section>
     <section>
       <p indent="8" color="505050">type="shaped"</p>
-      <p space="12" indent="8" color="1E50A0">key="minecraft:red_stained_hardened_clay"</p>
-      <recipe type="crafting" key="minecraft:red_stained_hardened_clay"/>
+      <p space="12" indent="8" color="1E50A0">key="minecraft:red_terracotta"</p>
+      <recipe type="crafting" key="minecraft:red_terracotta"/>
       <space height="12"/>
       <divider/>
       <space height="6"/>
-      <p color="8C3321">Warning: This feature will NOT work with furnace recipes as they are registered in code and without a registry key. This may be the case with other custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
+      <p color="8C3321">Warning: This feature will NOT work with recipe systems that have recipes without a registry key. This may be the case with custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
     </section>
     <section id="recipe_indices">
       <page_title>
