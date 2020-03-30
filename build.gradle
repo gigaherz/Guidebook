@@ -24,12 +24,12 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "2.9.2"
+version = "2.9.3"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook-1.12.2"
 
 minecraft {
-    version = "1.12.2-14.23.5.2814"
+    version = "1.12.2-14.23.5.2847"
     runDir = "run"
     mappings = "stable_39"
 
@@ -37,15 +37,8 @@ minecraft {
     replaceIn "GuidebookMod.java"
 }
 
-configurations {
-    // configuration that holds jars to embed inside the jar
-    embed
-    embed.transitive = false
-}
-
 dependencies {
     deobfCompile "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
-    embed "gigaherz.commons:gigaherz.commons-1.12.1:0.6.4"
 
     deobfCompile "net.darkhax.gamestages:GameStages-1.12.2:2.0.91"
     deobfCompile "net.darkhax.bookshelf:Bookshelf-1.12.2:2.3.552"
@@ -54,13 +47,8 @@ dependencies {
 }
 
 jar {
-    into('/META-INF/libraries') {
-        from configurations.embed
-    }
-
     manifest {
         attributes([
-            "ContainedDeps": configurations.embed.collect { it.getName() }.join(' '),
             "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}",
             'Timestamp': System.currentTimeMillis()
         ])

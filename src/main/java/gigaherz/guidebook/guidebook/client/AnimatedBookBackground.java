@@ -1,6 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
-import gigaherz.common.client.ModelHandle;
+import gigaherz.guidebook.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;

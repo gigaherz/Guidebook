@@ -3,7 +3,7 @@ package gigaherz.guidebook.guidebook.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import gigaherz.common.client.ModelHandle;
+import gigaherz.guidebook.client.ModelHandle;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import net.minecraft.block.state.IBlockState;

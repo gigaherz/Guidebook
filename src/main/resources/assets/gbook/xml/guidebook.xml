@@ -149,7 +149,7 @@
       <p space="8">You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
       <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
       <p bold="true" italics="true">Formatted text</p>
-      <page-break />
+      <section-break />
       <p space="8">Sometimes, you need indented text, or you want to change the separation between successive paragraphs, for this, you have 'indent' and 'space', respectively.</p>
       <p indent="8" space="8">&lt;p indent=&quot;20&quot; space=&quot;20&quot;&gt;Indented spaced text&lt;/p&gt;</p>
       <p indent="20" space="20">Indented spaced text</p>
