@@ -206,6 +206,11 @@
           <stack item="minecraft:comparator"/>
         </recipe.result>
       </recipe>
+      <recipe type="shaped">
+        <recipe.result>
+          <stack item="minecraft:dark_oak_door"/>
+        </recipe.result>
+      </recipe>
       <space height="3"/>
       <divider/>
       <p indent="8" color="505050">type="shapeless"</p>

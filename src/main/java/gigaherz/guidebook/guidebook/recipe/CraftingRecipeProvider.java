@@ -9,9 +9,12 @@ import gigaherz.guidebook.guidebook.elements.ElementStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.crafting.IShapedRecipe;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,12 +79,24 @@ class CraftingRecipeProvider extends RecipeProvider
         if (recipe == null)
             return null;
 
-        int constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
         ArrayList<ElementStack> stackComponents = new ArrayList<>();
         VisualElement additionalRenderer = new VisualElement(new Size(), 0, 0, 0)
         {
         };
-        int gridWidth = constantIndex == 0 ? 3 : 2;
+
+        int constantIndex;
+        int gridWidth;
+        if (recipe instanceof IShapedRecipe)
+        {
+            IShapedRecipe shaped = ((IShapedRecipe)recipe);
+            constantIndex = (shaped.getRecipeWidth() <= 2 && shaped.getRecipeHeight() <= 2) ? 1 : 0;
+            gridWidth = shaped.getRecipeWidth();
+        }
+        else
+        {
+            constantIndex = recipe.getIngredients().size() <= 4 ? 1 : 0; // Whether to use the 3x3 (0) or 2x2 (1) grid
+            gridWidth = constantIndex == 0 ? 3 : 2;
+        }
 
         // Set up input slots
         NonNullList<Ingredient> ingredients = recipe.getIngredients();
