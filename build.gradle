@@ -3,12 +3,9 @@ buildscript {
         maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
         mavenCentral()
-        maven {
-            url 'http://dogforce-games.com/maven'
-        }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.0.163+pull-657', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
 
@@ -43,7 +40,7 @@ compileJava {
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200131-1.15.1'
+    mappings channel: 'snapshot', version: '20200506-1.15.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -62,12 +59,14 @@ minecraft {
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
             property 'forge.logging.noansi', "false"
+
+            singleInstance true
         }
     }
 }
 
 dependencies {
-    minecraft('net.minecraftforge:forge:1.15.2-31.1.14') {
+    minecraft('net.minecraftforge:forge:1.15.2-31.1.78') {
         transitive=false
     }
 

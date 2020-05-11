@@ -1,5 +1,6 @@
 package gigaherz.guidebook;
 
+import gigaherz.guidebook.client.ClientEvents;
 import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookRegistry;
@@ -13,7 +14,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.GenericEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -26,6 +30,8 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ObjectHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.function.Consumer;
 
 @Mod(GuidebookMod.MODID)
 public class GuidebookMod
@@ -71,16 +77,26 @@ public class GuidebookMod
         DistExecutor.runWhenOn(Dist.CLIENT, () -> BookRegistry::injectCustomResourcePack);
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addGenericListener(Item.class, this::registerItems);
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::modConfig);
         modEventBus.addListener(this::serverStarting);
 
-        MinecraftForge.EVENT_BUS.addListener(this::entityJoinWorld);
-
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
         modLoadingContext.registerConfig(ModConfig.Type.SERVER, ConfigValues.SERVER_SPEC);
         modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
+
+        addModGenericListener(RegistryEvent.Register.class, Item.class, this::registerItems);
+        addForgeListener(PlayerEvent.PlayerLoggedInEvent.class, this::playerLogIn);
+    }
+
+    public static <T extends Event> void addForgeListener(Class<T> cls, Consumer<T> handler) {
+        MinecraftForge.EVENT_BUS.addListener(handler);
+    }
+
+    public static <S, T extends GenericEvent<S>> void addModGenericListener(Class<T> cls, Class<S> clsParameter, Consumer<T> consumer) {
+
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addGenericListener(clsParameter, consumer);
     }
 
     private void serverStarting(FMLServerStartingEvent event)
@@ -109,11 +125,12 @@ public class GuidebookMod
                 new ItemGuidebook(new Item.Properties()
                         .maxStackSize(1)
                         .group(GuidebookMod.tabGuidebooks)
+                        .setISTER(() -> ClientEvents::createBookItemRenderer)
                 ).setRegistryName("guidebook")
         );
     }
 
-    private void entityJoinWorld(PlayerEvent.PlayerLoggedInEvent event)
+    private void playerLogIn(PlayerEvent.PlayerLoggedInEvent event)
     {
         PlayerEntity e = event.getPlayer();
         if (!e.world.isRemote)

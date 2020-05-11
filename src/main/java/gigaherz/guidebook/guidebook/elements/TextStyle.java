@@ -31,7 +31,7 @@ public class TextStyle
 
         boolean underline1 = Element.getAttribute(attributes, "underline", defaults != null ? defaults.underline : DEFAULT.underline);
 
-        int color1 = Element.getColorAttribute(attributes, "color", defaults != null ? defaults.color : DEFAULT.color);
+        int color1 = Element.getColorAttribute(attributes, defaults != null ? defaults.color : DEFAULT.color);
 
         float scale = Element.getAttribute(attributes, "scale", DEFAULT.scale);
 

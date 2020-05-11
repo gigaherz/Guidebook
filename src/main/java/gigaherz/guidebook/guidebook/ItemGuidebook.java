@@ -44,15 +44,15 @@ public class ItemGuidebook extends Item
     private ActionResult<ItemStack> showBook(World worldIn, ItemStack stack)
     {
         if (!worldIn.isRemote)
-            return ActionResult.func_226251_d_(stack);
+            return ActionResult.resultSuccess(stack);
 
         CompoundNBT nbt = stack.getTag();
         if (nbt == null || !nbt.contains("Book", Constants.NBT.TAG_STRING))
-            return ActionResult.func_226251_d_(stack);
+            return ActionResult.resultFail(stack);
 
         GuidebookMod.proxy.displayBook(nbt.getString("Book"));
 
-        return ActionResult.func_226248_a_(stack);
+        return ActionResult.resultSuccess(stack);
     }
 
     public ItemStack of(ResourceLocation book)
