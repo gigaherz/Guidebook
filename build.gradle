@@ -27,6 +27,7 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.k-4u.nl"
     }
+    maven { url 'https://jitpack.io' }
     mavenLocal()
 }
 
@@ -34,13 +35,21 @@ version = "3.0.5"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook-1.15.2"
 
-sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+sourceCompatibility = 14
+targetCompatibility = 8
+
 compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
+    sourceCompatibility = 14
+    targetCompatibility = 8
+
+    options.compilerArgs = [
+            "--release", "8" // Avoid using Java 12 APIs
+    ]
+    options.fork = true
 }
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200506-1.15.1'
+    mappings channel: 'snapshot', version: '20200517-1.15.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -66,12 +75,14 @@ minecraft {
 }
 
 dependencies {
-    minecraft('net.minecraftforge:forge:1.15.2-31.1.78') {
+    minecraft('net.minecraftforge:forge:1.15.2-31.2.0') {
         transitive=false
     }
 
     //compileOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25:api")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25")
+
+    annotationProcessor 'com.github.bsideup:jabel:ed36f18'
 }
 
 jar {

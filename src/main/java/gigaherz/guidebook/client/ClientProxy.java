@@ -60,10 +60,10 @@ public class ClientProxy implements IModProxy
     @Override
     public String getBookName(String book)
     {
-        BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
+        var bookDocument = BookRegistry.get(new ResourceLocation(book));
         if (bookDocument != null)
         {
-            String name = bookDocument.getName();
+            var name = bookDocument.getName();
             if (name != null)
                 return name;
         }

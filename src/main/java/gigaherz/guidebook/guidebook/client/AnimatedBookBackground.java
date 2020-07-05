@@ -190,7 +190,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
     private static void renderModel(IBakedModel model)
     {
-        MatrixStack matrixStack = new MatrixStack();
+        var matrixStack = new MatrixStack();
         matrixStack.push();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
@@ -205,7 +205,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
     private static void renderModelInterpolate(IBakedModel modelA, IBakedModel modelB, float blend)
     {
-        MatrixStack matrixStack = new MatrixStack();
+        var matrixStack = new MatrixStack();
         matrixStack.push();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();

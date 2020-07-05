@@ -27,7 +27,7 @@ public class ElementLink extends ElementSpan
         texts.forEach(e -> {
             if (e instanceof LinkHelper.ILinkable)
             {
-                LinkHelper.ILinkable linkable = (LinkHelper.ILinkable) e;
+                var linkable = (LinkHelper.ILinkable) e;
                 linkable.setLinkContext(ctx);
             }
         });
@@ -39,7 +39,7 @@ public class ElementLink extends ElementSpan
     {
         super.parse(book, attributes);
 
-        Node attr = attributes.getNamedItem("ref");
+        var attr = attributes.getNamedItem("ref");
         if (attr != null)
         {
             String ref = attr.getTextContent();

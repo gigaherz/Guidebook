@@ -17,7 +17,6 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.GenericEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -63,7 +62,7 @@ public class GuidebookMod
         {
             //super.fill(items);
 
-            for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
+            for (var resourceLocation : GuidebookMod.proxy.getBooksList())
             {
                 items.add(guidebook.of(resourceLocation));
             }
@@ -76,27 +75,17 @@ public class GuidebookMod
 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> BookRegistry::injectCustomResourcePack);
 
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addGenericListener(Item.class, this::registerItems);
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::modConfig);
         modEventBus.addListener(this::serverStarting);
 
+        MinecraftForge.EVENT_BUS.addListener(this::playerLogIn);
+
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
         modLoadingContext.registerConfig(ModConfig.Type.SERVER, ConfigValues.SERVER_SPEC);
         modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
-
-        addModGenericListener(RegistryEvent.Register.class, Item.class, this::registerItems);
-        addForgeListener(PlayerEvent.PlayerLoggedInEvent.class, this::playerLogIn);
-    }
-
-    public static <T extends Event> void addForgeListener(Class<T> cls, Consumer<T> handler) {
-        MinecraftForge.EVENT_BUS.addListener(handler);
-    }
-
-    public static <S, T extends GenericEvent<S>> void addModGenericListener(Class<T> cls, Class<S> clsParameter, Consumer<T> consumer) {
-
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addGenericListener(clsParameter, consumer);
     }
 
     private void serverStarting(FMLServerStartingEvent event)
@@ -106,7 +95,7 @@ public class GuidebookMod
 
     private void modConfig(ModConfig.ModConfigEvent event)
     {
-        ModConfig config = event.getConfig();
+        var config = event.getConfig();
         if (config.getSpec() == ConfigValues.CLIENT_SPEC)
             ConfigValues.refreshClient();
         else if (config.getSpec() == ConfigValues.SERVER_SPEC)
@@ -132,12 +121,12 @@ public class GuidebookMod
 
     private void playerLogIn(PlayerEvent.PlayerLoggedInEvent event)
     {
-        PlayerEntity e = event.getPlayer();
+        var e = event.getPlayer();
         if (!e.world.isRemote)
         {
-            for (String g : ConfigValues.giveOnFirstJoin)
+            for (var g : ConfigValues.giveOnFirstJoin)
             {
-                String tag = MODID + ":givenBook:" + g;
+                var tag = String.format("%s:givenBook:%s", MODID, g);
                 if (!e.getTags().contains(tag))
                 {
                     ItemHandlerHelper.giveItemToPlayer(e, guidebook.of(new ResourceLocation(g)));

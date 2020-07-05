@@ -48,7 +48,7 @@ public class ClientEvents
     public static class ModClientEvents
     {
         @SubscribeEvent
-        public static void registerModels(FMLClientSetupEvent event)
+        public static void clientSetup(FMLClientSetupEvent event)
         {
             ModelLoaderRegistry.registerLoader(GuidebookMod.location("special_model"), new SpecialBakedModel.ModelLoader());
             ModelLoaderRegistry.registerLoader(GuidebookMod.location("book_model"), new BookBakedModel.ModelLoader());
@@ -71,12 +71,12 @@ public class ClientEvents
         @Override
         public void render(ItemStack stack, MatrixStack matrixStack, IRenderTypeBuffer buffers, int combinedLight, int combinedOverlay)
         {
-            IBakedModel model = Minecraft.getInstance().getModelManager().getModel(MODEL_HELPER);
-            IBakedModel bookModel = model.getOverrides().getModelWithOverrides(model, stack, null, null);
+            var model = Minecraft.getInstance().getModelManager().getModel(MODEL_HELPER);
+            var bookModel = model.getOverrides().getModelWithOverrides(model, stack, null, null);
             if (bookModel == null)
                 bookModel = model;
 
-            boolean leftHand = (SpecialBakedModel.cameraTransformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
+            var leftHand = (SpecialBakedModel.cameraTransformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
                     || (SpecialBakedModel.cameraTransformType == ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND);
 
             matrixStack.push();
@@ -89,11 +89,11 @@ public class ClientEvents
             }
 
             IVertexBuilder buffer = buffers.getBuffer(CustomRenderTypes.ENTITY_TRANSLUCENT_UNSORTED_BLOCKATLAS);
-            for(Direction side : sides)
+            for(var side : sides)
             {
-                Random rnd = new Random();
+                var rnd = new Random();
                 rnd.setSeed(42);
-                for (BakedQuad quad : bookModel.getQuads(null, side, rnd, EmptyModelData.INSTANCE))
+                for (var quad : bookModel.getQuads(null, side, rnd, EmptyModelData.INSTANCE))
                 {
                     buffer.addQuad(matrixStack.getLast(), quad, 1.0f, 1.0f, 1.0f, combinedLight, combinedOverlay);
                 }
@@ -105,13 +105,13 @@ public class ClientEvents
 
     private static class CustomRenderTypes extends RenderType
     {
-        private CustomRenderTypes(String p_i225992_1_, VertexFormat p_i225992_2_, int p_i225992_3_, int p_i225992_4_, boolean p_i225992_5_, boolean p_i225992_6_, Runnable p_i225992_7_, Runnable p_i225992_8_)
+        private CustomRenderTypes(String name, VertexFormat fmt, int glMode, int bufferSize, boolean delegate, boolean sort, Runnable setupActions, Runnable cleanupActions)
         {
-            super(p_i225992_1_, p_i225992_2_, p_i225992_3_, p_i225992_4_, p_i225992_5_, p_i225992_6_, p_i225992_7_, p_i225992_8_);
+            super(name, fmt, glMode, bufferSize, delegate, sort, setupActions, cleanupActions);
         }
 
         public static RenderType entityTranslucentUnsorted(ResourceLocation texture, boolean doOverlay) {
-            RenderType.State rendertype$state = RenderType.State.getBuilder()
+            var rendertype$state = RenderType.State.getBuilder()
                     .texture(new RenderState.TextureState(texture, false, false))
                     .transparency(TRANSLUCENT_TRANSPARENCY)
                     .diffuseLighting(DIFFUSE_LIGHTING_ENABLED)
