@@ -52,7 +52,7 @@ public class BookRendering implements IBookGraphics
     private BookDocument book;
 
     private boolean hasScale;
-    private double scalingFactor;
+    private float scalingFactor;
 
     private double scaledWidthD;
     private double scaledHeightD;
@@ -190,7 +190,7 @@ public class BookRendering implements IBookGraphics
 
         if (hasScale)
         {
-            this.scalingFactor = Math.min(gui.width / scaledWidth, gui.height / scaledHeight);
+            this.scalingFactor = (float) Math.min(gui.width / scaledWidth, gui.height / scaledHeight);
 
             this.bookWidth = (int) (DEFAULT_BOOK_WIDTH / fontSize);
             this.bookHeight = (int) (DEFAULT_BOOK_HEIGHT / fontSize);
@@ -627,8 +627,8 @@ public class BookRendering implements IBookGraphics
     {
         if (hasScale)
         {
-            RenderSystem.pushMatrix();
-            RenderSystem.scaled(scalingFactor, scalingFactor, scalingFactor);
+            matrixStack.push();
+            matrixStack.scale(scalingFactor, scalingFactor, scalingFactor);
         }
 
         if (DEBUG_DRAW_BOUNDS)
@@ -643,7 +643,7 @@ public class BookRendering implements IBookGraphics
 
         if (hasScale)
         {
-            RenderSystem.popMatrix();
+            matrixStack.pop();
         }
     }
 
@@ -667,11 +667,11 @@ public class BookRendering implements IBookGraphics
         VisualPage pg = ch.pages.get(page);
 
         PointD offset = getPageOffset(currentDrawingPage);
-        RenderSystem.pushMatrix();
+        matrixStack.push();
         if (ConfigValues.flexibleScale)
-            RenderSystem.translated(offset.x, offset.y, 0);
+            matrixStack.translate(offset.x, offset.y, 0);
         else
-            RenderSystem.translated((int) offset.x, (int) offset.y, 0);
+            matrixStack.translate((int) offset.x, (int) offset.y, 0);
 
         if (DEBUG_DRAW_BOUNDS)
         {
@@ -688,7 +688,7 @@ public class BookRendering implements IBookGraphics
 
         addString(matrixStack, (pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
 
-        RenderSystem.popMatrix();
+        matrixStack.pop();
     }
 
     @Override
@@ -697,17 +697,19 @@ public class BookRendering implements IBookGraphics
         RenderSystem.enableDepthTest();
         RenderSystem.enableAlphaTest();
 
-        RenderSystem.pushMatrix();
-        RenderSystem.translated(left, top, z);
-        RenderSystem.scaled(scale, scale, scale);
+        matrixStack.push();
+        matrixStack.translate(left, top, z);
+        matrixStack.scale(scale, scale, scale);
 
+        RenderSystem.pushMatrix();
+        RenderSystem.multMatrix(matrixStack.getLast().getMatrix());
         RenderHelper.enableStandardItemLighting();
         gui.getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
         RenderHelper.disableStandardItemLighting();
-
         gui.getMinecraft().getItemRenderer().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
-
         RenderSystem.popMatrix();
+
+        matrixStack.pop();
 
         RenderSystem.disableLighting();
         RenderSystem.disableDepthTest();

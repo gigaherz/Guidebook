@@ -154,6 +154,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         RenderSystem.enableAlphaTest();
 
         RenderSystem.pushMatrix();
+        RenderSystem.multMatrix(matrixStack.getLast().getMatrix());
         {
             RenderSystem.enableRescaleNormal();
             enableBookLighting();
