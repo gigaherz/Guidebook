@@ -5,9 +5,9 @@ import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
 import gigaherz.guidebook.guidebook.util.Rect;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
 import org.w3c.dom.NamedNodeMap;
 
 import java.util.List;
@@ -19,6 +19,9 @@ public class ElementText extends ElementInline
     public boolean bold;
     public boolean italics;
     public boolean underline;
+    public boolean strikethrough;
+    public boolean obfuscated;
+    public ResourceLocation font;
 
     public float scale;
 
@@ -30,6 +33,9 @@ public class ElementText extends ElementInline
         bold = style.bold;
         italics = style.italics;
         underline = style.underline;
+        strikethrough = style.strikethrough;
+        obfuscated = style.obfuscated;
+        font = style.font;
         scale = style.scale;
     }
 
@@ -38,7 +44,10 @@ public class ElementText extends ElementInline
         return new StringTextComponent(text.getString()).func_240700_a_(style -> style
                 .func_240713_a_(bold)
                 .func_240722_b_(italics)
-                .setUnderlined(underline));
+                .setUnderlined(underline)
+                .setStrikethrough(strikethrough)
+                .setObfuscated(obfuscated)
+                .func_240719_a_(font));
     }
 
     protected ITextProperties getActualString()
@@ -91,11 +100,12 @@ public class ElementText extends ElementInline
     @Override
     public ElementInline copy()
     {
-        ElementText span = super.copy(new ElementText(text, false, false, new TextStyle(color, bold, italics, underline, scale)));
+        ElementText span = super.copy(new ElementText(text, false, false, new TextStyle(color, bold, italics, underline, strikethrough, obfuscated, font, scale)));
         span.color = color;
         span.bold = bold;
         span.italics = italics;
         span.underline = underline;
+        span.obfuscated = obfuscated;
         span.scale = scale;
         return span;
     }

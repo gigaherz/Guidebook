@@ -477,7 +477,7 @@ public class BookDocument implements IConditionSource
                 {
                     p.alignment = ElementParagraph.ALIGN_CENTER;
                     p.space = 4;
-                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true, 1.0f);
+                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f);
                 }
 
                 TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
@@ -641,7 +641,7 @@ public class BookDocument implements IConditionSource
 
             parsedElement = span;
         }
-        else if (nodeName.equals("link"))
+        else if (nodeName.equals("link") || nodeName.equals("a"))
         {
             ElementLink link = new ElementLink(isFirstElement, isLastElement);
 
