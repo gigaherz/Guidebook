@@ -1,9 +1,11 @@
 package gigaherz.guidebook.guidebook;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextProperties;
 
 import java.util.List;
 
@@ -37,27 +39,27 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addString(int left, int top, String s, int color, float scale);
+    int addString(MatrixStack matrixStack, int left, int top, ITextProperties s, int color, float scale);
 
-    boolean mouseClicked(int mouseButton);
+    boolean mouseClicked(int mouseX, int mouseY, int mouseButton);
 
-    boolean mouseHover(int mouseX, int mouseY);
+    boolean mouseHover(MatrixStack matrixStack, int mouseX, int mouseY);
 
-    void drawCurrentPages();
+    void drawCurrentPages(MatrixStack matrixStack);
 
     BookDocument getBook();
 
-    void drawItemStack(int left, int top, int z, ItemStack stack, int color, float scale);
+    void drawItemStack(MatrixStack matrixStack, int left, int top, int z, ItemStack stack, int color, float scale);
 
-    void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
+    void drawImage(MatrixStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
 
-    void drawTooltip(ItemStack stack, int x, int y);
+    void drawTooltip(MatrixStack matrixStack, ItemStack stack, int x, int y);
 
     Object owner();
 
-    Size measure(String text);
+    Size measure(ITextProperties text);
 
-    List<VisualElement> measure(String text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment);
+    List<VisualElement> measure(ITextProperties text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment);
 
     int getActualBookHeight();
 

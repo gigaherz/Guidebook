@@ -1,5 +1,7 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+
 public interface IAnimatedBookBackground
 {
     void startClosing();
@@ -8,5 +10,5 @@ public interface IAnimatedBookBackground
 
     boolean update();
 
-    void draw(float partialTicks, int bookHeight, float backgroundScale);
+    void draw(MatrixStack matrixStack, float partialTicks, int bookHeight, float backgroundScale);
 }

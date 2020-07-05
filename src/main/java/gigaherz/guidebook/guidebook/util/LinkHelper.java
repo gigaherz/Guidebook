@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.util;
 
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
@@ -67,10 +68,10 @@ public class LinkHelper
                 new TranslationTextComponent("text.copyToClipboard.line2"))
         {
             @Override
-            public void render(int mouseX, int mouseY, float partialTicks)
+            public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
             {
-                parent.render(-1, -1, partialTicks);
-                super.render(mouseX, mouseY, partialTicks);
+                parent.render(matrixStack,-1, -1, partialTicks);
+                super.render(matrixStack, mouseX, mouseY, partialTicks);
             }
         });
     }
@@ -82,14 +83,14 @@ public class LinkHelper
         mc.displayGuiScreen(new ChatScreen(textTarget)
         {
             @Override
-            public void render(int mouseX, int mouseY, float partialTicks)
+            public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
             {
-                parent.render(-1, -1, partialTicks);
+                parent.render(matrixStack,-1, -1, partialTicks);
                 String text = "Temporary chat window open, press ESCAPE to cancel.";
                 int textWidth = Math.max(font.getStringWidth(text) + 40, width / 2);
-                fill((width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
-                drawCenteredString(font, text, width / 2, (height - font.FONT_HEIGHT) / 2, 0xFFFFFFFF);
-                super.render(mouseX, mouseY, partialTicks);
+                fill(matrixStack,(width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
+                drawCenteredString(matrixStack,font, text, width / 2, (height - font.FONT_HEIGHT) / 2, 0xFFFFFFFF);
+                super.render(matrixStack,mouseX, mouseY, partialTicks);
             }
 
             @Override
@@ -146,7 +147,6 @@ public class LinkHelper
 
             if (mc.gameSettings.chatLinksPrompt)
             {
-                parent.clickedLink = uri;
                 mc.displayGuiScreen(new ConfirmOpenLinkScreen((result) -> {
                     if (result)
                     {
@@ -157,10 +157,10 @@ public class LinkHelper
                 }, textTarget, true)
                 {
                     @Override
-                    public void render(int mouseX, int mouseY, float partialTicks)
+                    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
                     {
-                        parent.render(-1, -1, partialTicks);
-                        super.render(mouseX, mouseY, partialTicks);
+                        parent.render(matrixStack,-1, -1, partialTicks);
+                        super.render(matrixStack,mouseX, mouseY, partialTicks);
                     }
                 });
             }

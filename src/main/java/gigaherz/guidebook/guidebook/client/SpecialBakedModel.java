@@ -30,7 +30,7 @@ public class SpecialBakedModel implements IBakedModel
     private final ItemOverrideList overrideList;
 
     public SpecialBakedModel(ModelBakery bakery, IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
-                             Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemCameraTransforms cameraTransforms,
+                             Function<RenderMaterial, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemCameraTransforms cameraTransforms,
                              @Nullable TextureAtlasSprite particle)
     {
         this.particle = particle;
@@ -100,9 +100,9 @@ public class SpecialBakedModel implements IBakedModel
     public static class Model implements IModelGeometry<Model>
     {
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
+        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
         {
-            Material particleLocation = owner.resolveTexture("particle");
+            RenderMaterial particleLocation = owner.resolveTexture("particle");
             TextureAtlasSprite part = spriteGetter.apply(particleLocation);
 
             return new SpecialBakedModel(
@@ -110,7 +110,7 @@ public class SpecialBakedModel implements IBakedModel
         }
 
         @Override
-        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
         {
             return Collections.emptyList();
         }

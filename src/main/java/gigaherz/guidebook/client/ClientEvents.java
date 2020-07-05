@@ -69,14 +69,14 @@ public class ClientEvents
         }
 
         @Override
-        public void render(ItemStack stack, MatrixStack matrixStack, IRenderTypeBuffer buffers, int combinedLight, int combinedOverlay)
+        public void func_239207_a_(ItemStack stack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer buffers, int combinedLight, int combinedOverlay)
         {
-            var model = Minecraft.getInstance().getModelManager().getModel(MODEL_HELPER);
-            var bookModel = model.getOverrides().getModelWithOverrides(model, stack, null, null);
+            IBakedModel model = Minecraft.getInstance().getModelManager().getModel(MODEL_HELPER);
+            IBakedModel bookModel = model.getOverrides().func_239290_a_(model, stack, null, null);
             if (bookModel == null)
                 bookModel = model;
 
-            var leftHand = (SpecialBakedModel.cameraTransformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
+            boolean leftHand = (SpecialBakedModel.cameraTransformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
                     || (SpecialBakedModel.cameraTransformType == ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND);
 
             matrixStack.push();
@@ -89,11 +89,11 @@ public class ClientEvents
             }
 
             IVertexBuilder buffer = buffers.getBuffer(CustomRenderTypes.ENTITY_TRANSLUCENT_UNSORTED_BLOCKATLAS);
-            for(var side : sides)
+            for(Direction side : sides)
             {
-                var rnd = new Random();
+                Random rnd = new Random();
                 rnd.setSeed(42);
-                for (var quad : bookModel.getQuads(null, side, rnd, EmptyModelData.INSTANCE))
+                for (BakedQuad quad : bookModel.getQuads(null, side, rnd, EmptyModelData.INSTANCE))
                 {
                     buffer.addQuad(matrixStack.getLast(), quad, 1.0f, 1.0f, 1.0f, combinedLight, combinedOverlay);
                 }
@@ -111,7 +111,7 @@ public class ClientEvents
         }
 
         public static RenderType entityTranslucentUnsorted(ResourceLocation texture, boolean doOverlay) {
-            var rendertype$state = RenderType.State.getBuilder()
+            RenderType.State rendertype$state = RenderType.State.getBuilder()
                     .texture(new RenderState.TextureState(texture, false, false))
                     .transparency(TRANSLUCENT_TRANSPARENCY)
                     .diffuseLighting(DIFFUSE_LIGHTING_ENABLED)

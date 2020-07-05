@@ -2,7 +2,8 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.HoverContext;
@@ -24,7 +25,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.text.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -462,7 +464,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public int addString(int left, int top, String s, int color, float scale)
+    public int addString(MatrixStack matrixStack, int left, int top, ITextProperties s, int color, float scale)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
@@ -478,24 +480,24 @@ public class BookRendering implements IBookGraphics
         // Does scaling need to be performed?
         if ((hasScale && ConfigValues.flexibleScale) || !(MathHelper.epsilonEquals(scale, 1.0f)))
         {
-            GlStateManager.pushMatrix();
+            matrixStack.push();
             {
-                GlStateManager.translated(left0, top0, 0);
-                GlStateManager.scaled(scale, scale, 1f);
-                fontRenderer.drawString(s, 0, 0, color);
+                matrixStack.translate(left0, top0, 0);
+                matrixStack.scale(scale, scale, 1f);
+                fontRenderer.func_238422_b_(matrixStack, s, 0, 0, color);
             }
-            GlStateManager.popMatrix();
+            matrixStack.pop();
         }
         else
         {
-            fontRenderer.drawString(s, left, top, color);
+            fontRenderer.func_238422_b_(matrixStack, s, left, top, color);
         }
 
         return fontRenderer.FONT_HEIGHT;
     }
 
     @Override
-    public boolean mouseClicked(int mouseButton)
+    public boolean mouseClicked(int mx, int my, int mouseButton)
     {
         Minecraft mc = Minecraft.getInstance();
         int width = mc.getMainWindow().getFramebufferWidth();
@@ -549,7 +551,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public boolean mouseHover(int mouseX, int mouseY)
+    public boolean mouseHover(MatrixStack matrixStack, int mouseX, int mouseY)
     {
         VisualChapter ch = getVisualChapter(currentChapter);
 
@@ -578,7 +580,7 @@ public class BookRendering implements IBookGraphics
 
             if (hovering != null)
             {
-                hovering.mouseOver(this, hoverContext);
+                hovering.mouseOver(this, hoverContext, matrixStack);
                 return true;
             }
         }
@@ -620,27 +622,27 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawCurrentPages()
+    public void drawCurrentPages(MatrixStack matrixStack)
     {
         if (hasScale)
         {
-            GlStateManager.pushMatrix();
-            GlStateManager.scaled(scalingFactor, scalingFactor, scalingFactor);
+            RenderSystem.pushMatrix();
+            RenderSystem.scaled(scalingFactor, scalingFactor, scalingFactor);
         }
 
         if (DEBUG_DRAW_BOUNDS)
         {
             int l = (int) ((scaledWidth - bookWidth) / 2);
             int t = (int) ((scaledHeight - bookHeight) / 2);
-            AbstractGui.fill(l, t, l + bookWidth, t + bookHeight, 0x2f000000);
+            AbstractGui.fill(matrixStack, l, t, l + bookWidth, t + bookHeight, 0x2f000000);
         }
 
-        drawPage(currentPair * 2);
-        drawPage(currentPair * 2 + 1);
+        drawPage(matrixStack, currentPair * 2);
+        drawPage(matrixStack, currentPair * 2 + 1);
 
         if (hasScale)
         {
-            GlStateManager.popMatrix();
+            RenderSystem.popMatrix();
         }
     }
 
@@ -653,7 +655,7 @@ public class BookRendering implements IBookGraphics
         return new PointD(leftPage ? left : right, top);
     }
 
-    private void drawPage(int page)
+    private void drawPage(MatrixStack matrixStack, int page)
     {
         VisualChapter ch = getVisualChapter(currentChapter);
         if (page >= ch.pages.size())
@@ -664,39 +666,39 @@ public class BookRendering implements IBookGraphics
         VisualPage pg = ch.pages.get(page);
 
         PointD offset = getPageOffset(currentDrawingPage);
-        GlStateManager.pushMatrix();
+        RenderSystem.pushMatrix();
         if (ConfigValues.flexibleScale)
-            GlStateManager.translated(offset.x, offset.y, 0);
+            RenderSystem.translated(offset.x, offset.y, 0);
         else
-            GlStateManager.translated((int) offset.x, (int) offset.y, 0);
+            RenderSystem.translated((int) offset.x, (int) offset.y, 0);
 
         if (DEBUG_DRAW_BOUNDS)
         {
-            AbstractGui.fill(0, 0, pageWidth, pageHeight, 0x3f000000);
+            AbstractGui.fill(matrixStack, 0, 0, pageWidth, pageHeight, 0x3f000000);
         }
 
         for (VisualElement e : pg.children)
         {
-            e.draw(this);
+            e.draw(this, matrixStack);
         }
 
-        String cnt = String.valueOf(ch.startPair * 2 + page + 1);
+        ITextProperties cnt = new StringTextComponent(String.valueOf(ch.startPair * 2 + page + 1));
         Size sz = measure(cnt);
 
-        addString((pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
+        addString(matrixStack, (pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
 
-        GlStateManager.popMatrix();
+        RenderSystem.popMatrix();
     }
 
     @Override
-    public void drawItemStack(int left, int top, int z, ItemStack stack, int color, float scale)
+    public void drawItemStack(MatrixStack matrixStack, int left, int top, int z, ItemStack stack, int color, float scale)
     {
-        GlStateManager.enableDepthTest();
-        GlStateManager.enableAlphaTest();
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableAlphaTest();
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translated(left, top, z);
-        GlStateManager.scaled(scale, scale, scale);
+        RenderSystem.pushMatrix();
+        RenderSystem.translated(left, top, z);
+        RenderSystem.scaled(scale, scale, scale);
 
         RenderHelper.enableStandardItemLighting();
         gui.getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(stack, 0, 0);
@@ -704,14 +706,14 @@ public class BookRendering implements IBookGraphics
 
         gui.getMinecraft().getItemRenderer().renderItemOverlayIntoGUI(gui.getFontRenderer(), stack, 0, 0, null);
 
-        GlStateManager.popMatrix();
+        RenderSystem.popMatrix();
 
-        GlStateManager.disableLighting();
-        GlStateManager.disableDepthTest();
+        RenderSystem.disableLighting();
+        RenderSystem.disableDepthTest();
     }
 
     @Override
-    public void drawImage(ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
+    public void drawImage(MatrixStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
     {
         int sw = tw != 0 ? tw : 256;
         int sh = th != 0 ? th : 256;
@@ -722,17 +724,21 @@ public class BookRendering implements IBookGraphics
         ResourceLocation locExpanded = new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
         gui.getRenderEngine().bindTexture(locExpanded);
 
-        GlStateManager.enableRescaleNormal();
-        GlStateManager.enableAlphaTest();
-        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableRescaleNormal();
+        RenderSystem.enableAlphaTest();
+        RenderSystem.alphaFunc(GL11.GL_GREATER, 0.1F);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-        drawFlexible(x, y, tx, ty, w, h, sw, sh, scale);
+        drawFlexible(matrixStack, x, y, tx, ty, w, h, sw, sh, scale);
     }
 
-    private static void drawFlexible(int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
+    private static void drawFlexible(MatrixStack matrixStack, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
+    {
+        drawFlexible(matrixStack.getLast().getMatrix(), x, y, tx, ty, w, h, tw, th, scale);
+    }
+    private static void drawFlexible(Matrix4f matrix, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
     {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
@@ -742,19 +748,19 @@ public class BookRendering implements IBookGraphics
         float tsw = 1.0f / tw;
         float tsh = 1.0f / th;
         bufferbuilder
-                .pos(x, y + hs, 0.0D)
+                .pos(matrix, x, y + hs, 0.0f)
                 .tex(tx * tsw, (ty + h) * tsh)
                 .endVertex();
         bufferbuilder
-                .pos(x + ws, y + hs, 0.0D)
+                .pos(matrix, x + ws, y + hs, 0.0f)
                 .tex((tx + w) * tsw, (ty + h) * tsh)
                 .endVertex();
         bufferbuilder
-                .pos(x + ws, y, 0.0D)
+                .pos(matrix, x + ws, y, 0.0f)
                 .tex((tx + w) * tsw, ty * tsh)
                 .endVertex();
         bufferbuilder
-                .pos(x, y, 0.0D)
+                .pos(matrix, x, y, 0.0f)
                 .tex(tx * tsw, ty * tsh)
                 .endVertex();
         tessellator.draw();
@@ -765,12 +771,12 @@ public class BookRendering implements IBookGraphics
         ResourceLocation locExpanded = new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
         gui.getRenderEngine().bindTexture(locExpanded);
 
-        GlStateManager.enableRescaleNormal();
-        GlStateManager.enableAlphaTest();
-        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableRescaleNormal();
+        RenderSystem.enableAlphaTest();
+        RenderSystem.alphaFunc(GL11.GL_GREATER, 0.1F);
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         drawCustomQuad(dx, dy, dw, dh, sx, sy, sw, sh, tw, th);
     }
@@ -804,28 +810,28 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawTooltip(ItemStack stack, int x, int y)
+    public void drawTooltip(MatrixStack matrixStack, ItemStack stack, int x, int y)
     {
-        gui.drawTooltip(stack, x, y);
+        gui.drawTooltip(matrixStack, stack, x, y);
     }
 
     @Override
-    public Size measure(String text)
+    public Size measure(ITextProperties text)
     {
         FontRenderer font = gui.getFontRenderer();
-        int width = font.getStringWidth(text);
+        int width = font.func_238414_a_(text);
         return new Size(width, font.FONT_HEIGHT);
     }
 
     @Override
-    public List<VisualElement> measure(String text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment)
+    public List<VisualElement> measure(ITextProperties text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment)
     {
         FontRenderer font = gui.getFontRenderer();
         List<VisualElement> sizes = Lists.newArrayList();
         TextMetrics.wrapFormattedStringToWidth(font, (s) -> {
-            int width2 = font.getStringWidth(s);
+            int width2 = font.func_238414_a_(s);
             sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
-        }, text, width / scale, firstLineWidth / scale, true);
+        }, text.getString(), width / scale, firstLineWidth / scale, true);
         return sizes;
     }
 
@@ -928,22 +934,22 @@ public class BookRendering implements IBookGraphics
             return k != i && l != -1 && l < k ? l : k;
         }
 
-        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<String> dest, String str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
+        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, String str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
         {
             int i = sizeStringToWidth(font, str, firstLine ? wrapWidthFirstLine : wrapWidth);
 
             if (str.length() <= i)
             {
-                dest.accept(str);
+                dest.accept(new StringTextComponent(str));
             }
             else
             {
                 String s = str.substring(0, i);
-                dest.accept(s);
-                dest.accept("\n"); // line break
+                dest.accept(new StringTextComponent(s));
+                //dest.accept(new StringTextComponent("\n")); // line break
                 char c0 = str.charAt(i);
                 boolean flag = c0 == ' ' || c0 == '\n';
-                String s1 = TextFormatting.getFormatString(s) + str.substring(i + (flag ? 1 : 0));
+                String s1 = str.substring(i + (flag ? 1 : 0));
                 wrapFormattedStringToWidth(font, dest, s1, wrapWidth, wrapWidthFirstLine, false);
             }
         }

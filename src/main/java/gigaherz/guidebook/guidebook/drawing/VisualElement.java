@@ -1,11 +1,14 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.client.BookRendering;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.util.text.ITextProperties;
+import net.minecraft.util.text.StringTextComponent;
 
 public abstract class VisualElement extends Rect
 {
@@ -29,15 +32,15 @@ public abstract class VisualElement extends Rect
         this.verticalAlign = verticalAlign;
     }
 
-    public void draw(IBookGraphics nav)
+    public void draw(IBookGraphics nav, MatrixStack matrixStack)
     {
         if (BookRendering.DEBUG_DRAW_BOUNDS)
         {
-            AbstractGui.fill(this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
+            AbstractGui.fill(matrixStack, this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
         }
     }
 
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
     {
     }
 
@@ -54,8 +57,8 @@ public abstract class VisualElement extends Rect
         return false;
     }
 
-    public String getText()
+    public ITextProperties getText()
     {
-        return "";
+        return new StringTextComponent("");
     }
 }

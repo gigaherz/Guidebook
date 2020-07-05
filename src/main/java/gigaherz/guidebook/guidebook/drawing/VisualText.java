@@ -1,20 +1,22 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.util.text.ITextProperties;
 
 public class VisualText extends VisualElement implements LinkHelper.ILinkable
 {
-    public String text;
+    public ITextProperties text;
     public int color;
     public float scale;
 
     public LinkContext linkContext = null;
 
-    public VisualText(String text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
+    public VisualText(ITextProperties text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
     {
         super(size, positionMode, baseline, verticalAlign);
         this.text = text;
@@ -22,17 +24,17 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void draw(IBookGraphics nav)
+    public void draw(IBookGraphics nav, MatrixStack matrixStack)
     {
-        super.draw(nav);
+        super.draw(nav, matrixStack);
         if (linkContext != null)
-            nav.addString(position.x, position.y, text, linkContext.isHovering ? linkContext.colorHover : color, scale);
+            nav.addString(matrixStack, position.x, position.y, text, linkContext.isHovering ? linkContext.colorHover : color, scale);
         else
-            nav.addString(position.x, position.y, text, color, scale);
+            nav.addString(matrixStack, position.x, position.y, text, color, scale);
     }
 
     @Override
-    public String getText()
+    public ITextProperties getText()
     {
         return text;
     }
@@ -44,7 +46,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
     {
         linkContext.isHovering = true;
     }

@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.lwjgl.glfw.GLFW;
 
@@ -199,37 +201,37 @@ public class GuiGuidebook extends Screen
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks)
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         double backgroundScale = book.getScalingFactor() / book.getBook().getFontSize();
         double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
 
-        renderBackground();
+        renderBackground(matrixStack);
 
-        background.draw(partialTicks, (int) bookHeight, (float) backgroundScale);
+        background.draw(matrixStack, partialTicks, (int) bookHeight, (float) backgroundScale);
 
         if (background.isFullyOpen())
         {
-            book.drawCurrentPages();
+            book.drawCurrentPages(matrixStack);
         }
 
-        super.render(mouseX, mouseY, partialTicks);
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
 
         if (background.isFullyOpen())
         {
-            book.mouseHover(mouseX, mouseY);
+            book.mouseHover(matrixStack, mouseX, mouseY);
         }
     }
 
-    public void drawTooltip(ItemStack stack, int x, int y)
+    public void drawTooltip(MatrixStack matrixStack, ItemStack stack, int x, int y)
     {
-        renderTooltip(stack, x, y);
+        renderTooltip(matrixStack, stack, x, y);
     }
 
     @Override
     public boolean mouseClicked(double x, double y, int mouseButton)
     {
-        if (book.mouseClicked(mouseButton))
+        if (book.mouseClicked((int)x, (int)y, mouseButton))
             return true;
 
         if (mouseButton == 3)
@@ -309,35 +311,31 @@ public class GuiGuidebook extends Screen
 
         public SpriteButton(int x, int y, int iconIndex, IPressable press)
         {
-            super(x, y, xSize[iconIndex], ySize[iconIndex], "", press);
+            super(x, y, xSize[iconIndex], ySize[iconIndex], new StringTextComponent(""), press);
             this.whichIcon = iconIndex;
         }
 
         @Override
-        public void render(int mouseX, int mouseY, float partialTicks)
+        public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
         {
-            if (this.visible)
+            boolean hover = mouseX >= this.x &&
+                            mouseY >= this.y &&
+                            mouseX < this.x + this.width &&
+                            mouseY < this.y + this.height;
+
+            GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            minecraft.getTextureManager().bindTexture(BOOK_GUI_TEXTURES);
+            int x = xPixel[whichIcon];
+            int y = yPixel[whichIcon];
+            int w = xSize[whichIcon];
+            int h = ySize[whichIcon];
+
+            if (hover)
             {
-                boolean hover =
-                        mouseX >= this.x &&
-                                mouseY >= this.y &&
-                                mouseX < this.x + this.width &&
-                                mouseY < this.y + this.height;
-
-                GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-                minecraft.getTextureManager().bindTexture(BOOK_GUI_TEXTURES);
-                int x = xPixel[whichIcon];
-                int y = yPixel[whichIcon];
-                int w = xSize[whichIcon];
-                int h = ySize[whichIcon];
-
-                if (hover)
-                {
-                    x += 25;
-                }
-
-                this.blit(this.x, this.y, x, y, w, h);
+                x += 25;
             }
+
+            this.blit(matrixStack, this.x, this.y, x, y, w, h);
         }
     }
 }

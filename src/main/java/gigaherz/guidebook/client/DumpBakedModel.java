@@ -32,7 +32,7 @@ public class DumpBakedModel
 
             writer.write(String.format("o %s\n", name));
 
-            for (var dir : DIRECTIONS)
+            for (Direction dir : DIRECTIONS)
             {
                 writer.write(String.format("g %s\n", dir));
 
@@ -42,10 +42,10 @@ public class DumpBakedModel
                     int[] data = quad.getVertexData();
                     int byteStart = 0;
                     int byteLen = fmt.getSize();
-                    var indices0 = Lists.<Integer>newArrayList();
-                    var indices1 = Lists.<Integer>newArrayList();
-                    var indices2 = Lists.<Integer>newArrayList();
-                    var indices3 = Lists.<Integer>newArrayList();
+                    List<Integer> indices0 = Lists.newArrayList();
+                    List<Integer> indices1 = Lists.newArrayList();
+                    List<Integer> indices2 = Lists.newArrayList();
+                    List<Integer> indices3 = Lists.newArrayList();
                     boolean hasTex = false;
                     for (VertexFormatElement element : fmt.getElements())
                     {

@@ -6,7 +6,7 @@ import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualImage;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.client.renderer.model.Material;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 
@@ -59,7 +59,7 @@ public class ElementImage extends ElementInline
     }
 
     @Override
-    public void findTextures(Set<Material> textures)
+    public void findTextures(Set<RenderMaterial> textures)
     {
         // No need to require them, since they are used dynamically and not stitched.
         //textures.add(textureLocation);

@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
@@ -32,13 +33,13 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav)
+    public void draw(IBookGraphics nav, MatrixStack matrixStack)
     {
-        super.draw(nav);
+        super.draw(nav, matrixStack);
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
-            nav.drawItemStack(position.x, position.y, z, stack, 0xFFFFFFFF, scale);
+            nav.drawItemStack(matrixStack, position.x, position.y, z, stack, 0xFFFFFFFF, scale);
         }
     }
 
@@ -49,12 +50,12 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
     {
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
-            nav.drawTooltip(stack, hoverContext.mouseX, hoverContext.mouseY);
+            nav.drawTooltip(matrixStack, stack, hoverContext.mouseX, hoverContext.mouseY);
         }
     }
 

@@ -5,6 +5,8 @@ import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
 import gigaherz.guidebook.guidebook.util.Rect;
+import net.minecraft.util.text.ITextProperties;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import org.w3c.dom.NamedNodeMap;
 
@@ -18,7 +20,7 @@ public class ElementText extends ElementInline
     public boolean italics;
     public boolean underline;
 
-    public float scale = 1.0f;
+    public float scale;
 
     public ElementText(String text, boolean isFirstElement, boolean isLastElement, TextStyle style)
     {
@@ -31,28 +33,31 @@ public class ElementText extends ElementInline
         scale = style.scale;
     }
 
-    private String getStringWithFormat()
+    private ITextProperties getStringWithFormat(ITextProperties text)
     {
-        String textWithFormat = getActualString();
-        if (bold) textWithFormat = TextFormatting.BOLD + textWithFormat;
-        if (italics) textWithFormat = TextFormatting.ITALIC + textWithFormat;
-        if (underline) textWithFormat = TextFormatting.UNDERLINE + textWithFormat;
-        return textWithFormat;
+        return new StringTextComponent(text.getString()).func_240700_a_(style -> style
+                .func_240713_a_(bold)
+                .func_240722_b_(italics)
+                .setUnderlined(underline));
     }
 
-    protected String getActualString()
+    protected ITextProperties getActualString()
     {
-        return text;
+        return new StringTextComponent(text);
     }
 
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        List<VisualElement> elements = nav.measure(getStringWithFormat(), width, firstLineWidth, scale, position, baseline, verticalAlignment);
+        List<VisualElement> elements = nav.measure(getActualString(), width, firstLineWidth, scale, position, baseline, verticalAlignment);
         for (VisualElement text : elements)
         {
             if (text instanceof VisualText)
-                ((VisualText) text).color = color;
+            {
+                VisualText visualText = (VisualText) text;
+                visualText.color = color;
+                visualText.text = getStringWithFormat(visualText.text);
+            }
         }
         return elements;
     }

@@ -1,5 +1,6 @@
 package gigaherz.guidebook.guidebook.drawing;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
@@ -35,10 +36,10 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void draw(IBookGraphics nav)
+    public void draw(IBookGraphics nav, MatrixStack matrixStack)
     {
-        super.draw(nav);
-        nav.drawImage(textureLocation, position.x, position.y, tx, ty, w, h, tw, th, scale);
+        super.draw(nav, matrixStack);
+        nav.drawImage(matrixStack, textureLocation, position.x, position.y, tx, ty, w, h, tw, th, scale);
     }
 
     //public int colorHover = 0xFF77cc66;
@@ -50,7 +51,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
     {
         if (linkContext != null)
         {

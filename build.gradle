@@ -15,6 +15,9 @@ apply plugin: 'eclipse'
 
 repositories {
     maven {
+        url 'https://dogforce-games.com/maven'
+    }
+    maven {
         url "https://maven.tterrag.com/"
     }
     maven {
@@ -27,29 +30,21 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.k-4u.nl"
     }
-    maven { url 'https://jitpack.io' }
     mavenLocal()
 }
 
-version = "3.0.5"
+version = "3.1.0"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Guidebook-1.15.2"
+archivesBaseName = "Guidebook-UNKNOWN"
 
-sourceCompatibility = 14
-targetCompatibility = 8
-
-compileJava {
-    sourceCompatibility = 14
-    targetCompatibility = 8
-
-    options.compilerArgs = [
-            "--release", "8" // Avoid using Java 12 APIs
-    ]
-    options.fork = true
+project.afterEvaluate {
+    archivesBaseName = "Guidebook-${project.MC_VERSION}"
 }
 
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = JavaVersion.VERSION_1_8
+
 minecraft {
-    mappings channel: 'snapshot', version: '20200517-1.15.1'
+    mappings channel: 'snapshot', version: '20200703-unofficial-1.16.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -59,7 +54,12 @@ minecraft {
 
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
-            property 'forge.logging.noansi', "false"
+
+            mods {
+                thismod {
+                    source sourceSets.main
+                }
+            }
         }
 
         server {
@@ -67,22 +67,18 @@ minecraft {
 
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
-            property 'forge.logging.noansi', "false"
 
-            singleInstance true
+            mods {
+                thismod {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
 
 dependencies {
-    minecraft('net.minecraftforge:forge:1.15.2-31.2.0') {
-        transitive=false
-    }
-
-    //compileOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25:api")
-    //runtimeOnly fg.deobf("mezz.jei:jei-1.13.2:5.0.0.25")
-
-    annotationProcessor 'com.github.bsideup:jabel:ed36f18'
+    minecraft 'net.minecraftforge:forge:1.16.1-32.0.47'
 }
 
 jar {

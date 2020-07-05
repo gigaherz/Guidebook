@@ -25,6 +25,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class BookRegistry
@@ -310,14 +311,13 @@ public class BookRegistry
         Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
         {
             @Override
-            public <T extends ResourcePackInfo> void addPackInfosToMap(Map<String, T> nameToPackMap, ResourcePackInfo.IFactory<T> packInfoFactory)
+            public <T extends ResourcePackInfo> void func_230230_a_(Consumer<T> packConsumer, ResourcePackInfo.IFactory<T> packInfoFactory)
             {
                 //noinspection unchecked
-                nameToPackMap.put(
-                        id,
-                        (T) new ClientResourcePackInfo(
-                                id, true,
-                                () -> pack, name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.BOTTOM, true, null, true)
+                packConsumer.accept(
+                        (T) new ClientResourcePackInfo(id, true, () -> pack,
+                                name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.BOTTOM,
+                                true, text -> text, null, true)
                 );
             }
         });

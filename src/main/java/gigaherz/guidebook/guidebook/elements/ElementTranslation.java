@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.ITextProperties;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class ElementTranslation extends ElementText
 {
@@ -10,8 +11,8 @@ public class ElementTranslation extends ElementText
     }
 
     @Override
-    protected String getActualString()
+    protected ITextProperties getActualString()
     {
-        return I18n.format(text);
+        return new TranslationTextComponent(text);
     }
 }

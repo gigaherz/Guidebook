@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import gigaherz.guidebook.guidebook.BookDocument;
@@ -14,6 +13,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -41,7 +41,7 @@ public class BookBakedModel implements IBakedModel
     private final ItemOverrideList overrideList;
 
     public BookBakedModel(IBakedModel baseModel, ModelBakery bakery, IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
-                          Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemCameraTransforms cameraTransforms,
+                          Function<RenderMaterial, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemCameraTransforms cameraTransforms,
                           Map<ResourceLocation, IBakedModel> bookModels, Map<ResourceLocation, IBakedModel> coverModels, @Nullable TextureAtlasSprite particle)
     {
         this.particle = particle;
@@ -51,7 +51,7 @@ public class BookBakedModel implements IBakedModel
         {
             @Nullable
             @Override
-            public IBakedModel getModelWithOverrides(IBakedModel model, ItemStack stack, @Nullable World worldIn, @Nullable LivingEntity entityIn)
+            public IBakedModel func_239290_a_(IBakedModel model, ItemStack stack, @Nullable ClientWorld worldIn, @Nullable LivingEntity entityIn)
             {
                 CompoundNBT tag = stack.getTag();
                 if (tag != null)
@@ -141,9 +141,9 @@ public class BookBakedModel implements IBakedModel
         }
 
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
+        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
         {
-            Material particleLocation = owner.resolveTexture("particle");
+            RenderMaterial particleLocation = owner.resolveTexture("particle");
             TextureAtlasSprite part = spriteGetter.apply(particleLocation);
 
             Map<ResourceLocation, IBakedModel> bakedBookModels = Maps.transformEntries(bookModels, (k, v) -> v.bakeModel(bakery, spriteGetter, modelTransform, k));
@@ -155,9 +155,9 @@ public class BookBakedModel implements IBakedModel
         }
 
         @Override
-        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
         {
-            Set<Material> textures = Sets.newHashSet();
+            Set<RenderMaterial> textures = Sets.newHashSet();
 
             textures.addAll(baseModel.getTextures(modelGetter, missingTextureErrors));
 
@@ -176,7 +176,7 @@ public class BookBakedModel implements IBakedModel
                     BlockModel mdl = new BlockModel(
                             new ResourceLocation(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
                             Collections.emptyList(),
-                            ImmutableMap.of("cover", Either.<Material, String>left(new Material(AtlasTexture.LOCATION_BLOCKS_TEXTURE, bookCover))),
+                            ImmutableMap.of("cover", Either.<RenderMaterial, String>left(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS_TEXTURE, bookCover))),
                             true, owner.isSideLit() ? BlockModel.GuiLight.SIDE : BlockModel.GuiLight.FRONT, ItemCameraTransforms.DEFAULT, Collections.emptyList());
                     mdl.parent = baseModel;
                     textures.addAll(mdl.getTextures(modelGetter, missingTextureErrors));

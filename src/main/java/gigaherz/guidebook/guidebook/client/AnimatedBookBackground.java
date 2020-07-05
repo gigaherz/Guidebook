@@ -87,7 +87,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
     }
 
     @Override
-    public void draw(float partialTicks, int bookHeight, float scalingFactor)
+    public void draw(MatrixStack matrixStack, float partialTicks, int bookHeight, float scalingFactor)
     {
         IBakedModel modelBookA, modelBookB;
 
@@ -190,7 +190,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
     private static void renderModel(IBakedModel model)
     {
-        var matrixStack = new MatrixStack();
+        MatrixStack matrixStack = new MatrixStack();
         matrixStack.push();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
@@ -205,7 +205,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
     private static void renderModelInterpolate(IBakedModel modelA, IBakedModel modelB, float blend)
     {
-        var matrixStack = new MatrixStack();
+        MatrixStack matrixStack = new MatrixStack();
         matrixStack.push();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder worldrenderer = tessellator.getBuffer();
@@ -238,7 +238,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
                 }
             }
 
-            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.func_187508_a(), quadA.shouldApplyDiffuseLighting());
+            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.func_187508_a(), quadA.func_239287_f_());
             worldrenderer.addVertexData(matrixStack.getLast(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
         }
         tessellator.draw();

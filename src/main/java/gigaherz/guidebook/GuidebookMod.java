@@ -1,5 +1,7 @@
 package gigaherz.guidebook;
 
+import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.ConfigSpec;
 import gigaherz.guidebook.client.ClientEvents;
 import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
@@ -12,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -62,7 +65,7 @@ public class GuidebookMod
         {
             //super.fill(items);
 
-            for (var resourceLocation : GuidebookMod.proxy.getBooksList())
+            for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
             {
                 items.add(guidebook.of(resourceLocation));
             }
@@ -75,7 +78,7 @@ public class GuidebookMod
 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> BookRegistry::injectCustomResourcePack);
 
-        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addGenericListener(Item.class, this::registerItems);
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::modConfig);
@@ -95,7 +98,7 @@ public class GuidebookMod
 
     private void modConfig(ModConfig.ModConfigEvent event)
     {
-        var config = event.getConfig();
+        ModConfig config = event.getConfig();
         if (config.getSpec() == ConfigValues.CLIENT_SPEC)
             ConfigValues.refreshClient();
         else if (config.getSpec() == ConfigValues.SERVER_SPEC)
@@ -121,12 +124,12 @@ public class GuidebookMod
 
     private void playerLogIn(PlayerEvent.PlayerLoggedInEvent event)
     {
-        var e = event.getPlayer();
+        PlayerEntity e = event.getPlayer();
         if (!e.world.isRemote)
         {
-            for (var g : ConfigValues.giveOnFirstJoin)
+            for (String g : ConfigValues.giveOnFirstJoin)
             {
-                var tag = String.format("%s:givenBook:%s", MODID, g);
+                String tag = String.format("%s:givenBook:%s", MODID, g);
                 if (!e.getTags().contains(tag))
                 {
                     ItemHandlerHelper.giveItemToPlayer(e, guidebook.of(new ResourceLocation(g)));
