@@ -58,14 +58,13 @@ public class ElementText extends ElementInline
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        List<VisualElement> elements = nav.measure(getActualString(), width, firstLineWidth, scale, position, baseline, verticalAlignment);
+        List<VisualElement> elements = nav.measure(getStringWithFormat(getActualString()), width, firstLineWidth, scale, position, baseline, verticalAlignment);
         for (VisualElement text : elements)
         {
             if (text instanceof VisualText)
             {
                 VisualText visualText = (VisualText) text;
                 visualText.color = color;
-                visualText.text = getStringWithFormat(visualText.text);
             }
         }
         return elements;

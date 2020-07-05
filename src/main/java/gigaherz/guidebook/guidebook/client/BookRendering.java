@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.text.*;
@@ -831,7 +832,7 @@ public class BookRendering implements IBookGraphics
         TextMetrics.wrapFormattedStringToWidth(font, (s) -> {
             int width2 = font.func_238414_a_(s);
             sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
-        }, text.getString(), width / scale, firstLineWidth / scale, true);
+        }, text, width / scale, firstLineWidth / scale, true);
         return sizes;
     }
 
@@ -865,94 +866,57 @@ public class BookRendering implements IBookGraphics
 
     private static class TextMetrics
     {
-        private static boolean isFormatColor(char colorChar)
+        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, ITextProperties str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
         {
-            return colorChar >= '0' && colorChar <= '9' || colorChar >= 'a' && colorChar <= 'f' || colorChar >= 'A' && colorChar <= 'F';
+            str.func_230439_a_((style, text) -> {
+                wrapFormattedStringToWidth(font, dest, text, style, wrapWidth, wrapWidthFirstLine, firstLine);
+                return ITextProperties.field_240650_b_;
+            }, Style.field_240709_b_);
         }
 
-        private static int sizeStringToWidth(FontRenderer font, String str, float wrapWidth)
+        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, String str, Style style, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
         {
-            int i = str.length();
-            int j = 0;
-            int k = 0;
-            int l = -1;
-
-            for (boolean flag = false; k < i; ++k)
-            {
-                char c0 = str.charAt(k);
-
-                switch (c0)
-                {
-                    case '\n':
-                        --k;
-                        break;
-                    case ' ':
-                        l = k;
-                    default:
-                        j += font.getStringWidth("" + c0);
-
-                        if (flag)
-                        {
-                            ++j;
-                        }
-
-                        break;
-                    case '\u00a7':
-
-                        if (k < i - 1)
-                        {
-                            ++k;
-                            char c1 = str.charAt(k);
-
-                            if (c1 != 'l' && c1 != 'L')
-                            {
-                                if (c1 == 'r' || c1 == 'R' || isFormatColor(c1))
-                                {
-                                    flag = false;
-                                }
-                            }
-                            else
-                            {
-                                flag = true;
-                            }
-                        }
-                }
-
-                if (c0 == '\n')
-                {
-                    ++k;
-                    l = k;
-                    break;
-                }
-
-                if (j > wrapWidth)
-                {
-                    break;
-                }
-            }
-
-            return k != i && l != -1 && l < k ? l : k;
-        }
-
-        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, String str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
-        {
-            int i = sizeStringToWidth(font, str, firstLine ? wrapWidthFirstLine : wrapWidth);
+            int i = sizeStringToWidth(font, str, style, firstLine ? wrapWidthFirstLine : wrapWidth);
 
             if (str.length() <= i)
             {
-                dest.accept(new StringTextComponent(str));
+                dest.accept(new StringTextComponent(str).func_240703_c_(style));
             }
             else
             {
                 String s = str.substring(0, i);
-                dest.accept(new StringTextComponent(s));
-                //dest.accept(new StringTextComponent("\n")); // line break
+                dest.accept(new StringTextComponent(s).func_240703_c_(style));
                 char c0 = str.charAt(i);
                 boolean flag = c0 == ' ' || c0 == '\n';
                 String s1 = str.substring(i + (flag ? 1 : 0));
-                wrapFormattedStringToWidth(font, dest, s1, wrapWidth, wrapWidthFirstLine, false);
+                wrapFormattedStringToWidth(font, dest, s1, style, wrapWidth, wrapWidthFirstLine, false);
             }
         }
+
+        private static int sizeStringToWidth(FontRenderer font, String str, Style style, float wrapWidth)
+        {
+            int w = font.func_238420_b_().func_238352_a_(str, (int)wrapWidth, style);
+
+            // If nothing fits or everything fits, no need to check for whitespace.
+            if (w == 0 || w == str.length()) return w;
+
+            if (isNonBreakWhitespace(str.charAt(w)))
+            {
+                return w;
+            }
+
+            while(w >= 0 && !isNonBreakWhitespace(str.charAt(w)))
+            {
+                w--;
+            }
+            return w+1;
+        }
+
+        private static boolean isNonBreakWhitespace(char c)
+        {
+            return Character.isWhitespace(c) && c != '\u00A0' && c != '\u202F' && c != '\uFeFF';
+        }
+
     }
 
     private class PageRef
