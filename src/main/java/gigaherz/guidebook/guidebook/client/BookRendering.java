@@ -873,7 +873,7 @@ public class BookRendering implements IBookGraphics
             str.func_230439_a_((style, text) -> {
                 wrapFormattedStringToWidth(font, dest, text, style, wrapWidth, wrapWidthFirstLine, firstLine);
                 return ITextProperties.field_240650_b_;
-            }, Style.field_240709_b_);
+            }, Style.EMPTY);
         }
 
         private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, String str, Style style, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
@@ -882,12 +882,12 @@ public class BookRendering implements IBookGraphics
 
             if (str.length() <= i)
             {
-                dest.accept(new StringTextComponent(str).func_240703_c_(style));
+                dest.accept(new StringTextComponent(str).mergeStyle(style));
             }
             else
             {
                 String s = str.substring(0, i);
-                dest.accept(new StringTextComponent(s).func_240703_c_(style));
+                dest.accept(new StringTextComponent(s).mergeStyle(style));
                 char c0 = str.charAt(i);
                 boolean flag = c0 == ' ' || c0 == '\n';
                 String s1 = str.substring(i + (flag ? 1 : 0));

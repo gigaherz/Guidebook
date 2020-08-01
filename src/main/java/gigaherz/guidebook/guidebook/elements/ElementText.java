@@ -41,13 +41,13 @@ public class ElementText extends ElementInline
 
     private ITextProperties getStringWithFormat(ITextProperties text)
     {
-        return new StringTextComponent(text.getString()).func_240700_a_(style -> style
-                .func_240713_a_(bold)
-                .func_240722_b_(italics)
+        return new StringTextComponent(text.getString()).modifyStyle(style -> style
+                .setBold(bold)
+                .setItalic(italics)
                 .setUnderlined(underline)
                 .setStrikethrough(strikethrough)
                 .setObfuscated(obfuscated)
-                .func_240719_a_(font));
+                .setFontId(font));
     }
 
     protected ITextProperties getActualString()

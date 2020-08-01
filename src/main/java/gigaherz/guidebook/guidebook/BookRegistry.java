@@ -333,17 +333,6 @@ public class BookRegistry
         return getLoadedBooks().values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 
-    public static void initServerResourceListener(MinecraftServer server)
-    {
-        /*server.getResourceManager().addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
-            if (resourcePredicate.test(BookResourceType.INSTANCE))
-            {
-                Collection<ResourceLocation> resources = resourceManager.getAllResourceLocations("gbooks", (filename) -> filename.endsWith(".xml"));
-
-            }
-        });*/
-    }
-
     public static void initClientResourceListener(IReloadableResourceManager clientResourceManager)
     {
         clientResourceManager.addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {

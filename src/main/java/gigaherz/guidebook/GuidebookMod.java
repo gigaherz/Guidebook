@@ -82,18 +82,12 @@ public class GuidebookMod
         modEventBus.addGenericListener(Item.class, this::registerItems);
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::modConfig);
-        modEventBus.addListener(this::serverStarting);
 
         MinecraftForge.EVENT_BUS.addListener(this::playerLogIn);
 
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
         modLoadingContext.registerConfig(ModConfig.Type.SERVER, ConfigValues.SERVER_SPEC);
         modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
-    }
-
-    private void serverStarting(FMLServerStartingEvent event)
-    {
-        BookRegistry.initServerResourceListener(event.getServer());
     }
 
     private void modConfig(ModConfig.ModConfigEvent event)

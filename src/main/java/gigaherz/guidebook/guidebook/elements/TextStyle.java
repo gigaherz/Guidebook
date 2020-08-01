@@ -6,9 +6,9 @@ import org.w3c.dom.NamedNodeMap;
 
 public class TextStyle
 {
-    public static final TextStyle DEFAULT = new TextStyle(0xFF000000, false, false, false, false, false, Style.field_240708_a_, 1.0f);
-    public static final TextStyle LINK = new TextStyle(0xFF7766cc, false, false, true, false, false, Style.field_240708_a_, 1.0f);
-    public static final TextStyle ERROR = new TextStyle(0xFFcc7766, false, false, true, false, false, Style.field_240708_a_, 1.0f);
+    public static final TextStyle DEFAULT = new TextStyle(0xFF000000, false, false, false, false, false, Style.DEFAULT_FONT, 1.0f);
+    public static final TextStyle LINK = new TextStyle(0xFF7766cc, false, false, true, false, false, Style.DEFAULT_FONT, 1.0f);
+    public static final TextStyle ERROR = new TextStyle(0xFFcc7766, false, false, true, false, false, Style.DEFAULT_FONT, 1.0f);
 
     public final int color;
     public final boolean bold;
