@@ -60,12 +60,12 @@ public class LinkHelper
             if (result)
             {
                 GLFW.glfwSetClipboardString(mc.getMainWindow().getHandle(), textTarget);
-                mc.ingameGUI.getChatGUI().printChatMessage(new TranslationTextComponent("text.copyToClipboard.success"));
+                mc.ingameGUI.getChatGUI().printChatMessage(new TranslationTextComponent("text.gbook.actions.copy_to_clipboard.success"));
             }
             mc.displayGuiScreen(parent);
         },
-                new TranslationTextComponent("text.copyToClipboard.line1"),
-                new TranslationTextComponent("text.copyToClipboard.line2"))
+                new TranslationTextComponent("text.gbook.actions.copy_to_clipboard.line1"),
+                new TranslationTextComponent("text.gbook.actions.copy_to_clipboard.line2"))
         {
             @Override
             public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)

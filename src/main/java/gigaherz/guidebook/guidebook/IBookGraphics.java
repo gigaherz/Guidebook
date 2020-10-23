@@ -5,7 +5,9 @@ import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.ITextProperties;
+import net.minecraft.world.World;
 
 import java.util.List;
 
@@ -39,7 +41,7 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addString(MatrixStack matrixStack, int left, int top, ITextProperties s, int color, float scale);
+    int addString(MatrixStack matrixStack, int left, int top, ITextComponent s, int color, float scale);
 
     boolean mouseClicked(int mouseX, int mouseY, int mouseButton);
 
@@ -66,4 +68,6 @@ public interface IBookGraphics
     int getActualBookWidth();
 
     void resetRendering(boolean contentsChanged);
+
+    World getWorld();
 }

@@ -14,7 +14,7 @@ public interface IModProxy
 
     default String getBookName(String book)
     {
-        return String.format("Guidebook - %s unknown", book);
+        return String.format("Placeholder(%s)", book);
     }
 
     // The book registry is only available in the client.

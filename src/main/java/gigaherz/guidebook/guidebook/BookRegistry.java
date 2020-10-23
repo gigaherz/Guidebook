@@ -8,11 +8,9 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.client.BookResourceType;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.ClientResourcePackInfo;
 import net.minecraft.client.resources.LanguageManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.*;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -311,13 +309,12 @@ public class BookRegistry
         Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
         {
             @Override
-            public <T extends ResourcePackInfo> void func_230230_a_(Consumer<T> packConsumer, ResourcePackInfo.IFactory<T> packInfoFactory)
+            public void findPacks(Consumer<ResourcePackInfo> infoConsumer, ResourcePackInfo.IFactory infoFactory)
             {
-                //noinspection unchecked
-                packConsumer.accept(
-                        (T) new ClientResourcePackInfo(id, true, () -> pack,
+                infoConsumer.accept(
+                        new ResourcePackInfo(id, true, () -> pack,
                                 name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.BOTTOM,
-                                true, text -> text, null, true)
+                                true, text -> text, true)
                 );
             }
         });

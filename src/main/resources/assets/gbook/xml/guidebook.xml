@@ -239,7 +239,7 @@
       <recipe type="crafting" key="minecraft:fire_charge"/>
     </section>
     <section>
-      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="505050">type="crafting"</p>
       <p space="12" indent="8" color="1E50A0">key="minecraft:red_terracotta"</p>
       <recipe type="crafting" key="minecraft:red_terracotta"/>
       <space height="12"/>
@@ -256,7 +256,7 @@
       <p>For example, searching for a shaped recipe which produces a gold ingot will result in two possible recipes: One that converts from nuggets to ingots; and another that converts from blocks to ingots. Using the recipe index allows book authors to specify only one of these:</p>
     </section>
     <section>
-      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="505050">type="crafting"</p>
       <p indent="8" color="1E50A0">index="0"</p>
       <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
       <space height="8"/>
@@ -268,7 +268,7 @@
       <space height="7"/>
       <divider/>
       <space height="5"/>
-      <p indent="8" color="505050">type="shaped"</p>
+      <p indent="8" color="505050">type="crafting"</p>
       <p indent="8" color="1E50A0">index="1"</p>
       <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
       <space height="8"/>

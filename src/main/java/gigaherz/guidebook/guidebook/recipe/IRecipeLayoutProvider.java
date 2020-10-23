@@ -3,6 +3,7 @@ package gigaherz.guidebook.guidebook.recipe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.Optional;
  * - CraftingRecipeProvider.ShapedRecipeProvider
  * - CraftingRecipeProvider.ShapelessRecipeProvider
  */
-public interface IRecipeProvider
+public interface IRecipeLayoutProvider
 {
     /**
      * Prepares display of the recipe for the target item (if multiple, the (recipeIndex + 1)th occurrence) by creating a ProvidedComponents construct that contains:
@@ -29,7 +30,8 @@ public interface IRecipeProvider
      * @param recipeIndex  The offset to use when searching for recipes
      * @return A valid ProvidedComponents object containing the above, and null if the recipe was not found
      */
-    Optional<ProvidedComponents> provideRecipeComponents(@Nonnull ItemStack targetOutput, int recipeIndex);
+    @Nonnull
+    RecipeLayout getRecipeLayout(@Nonnull World world, @Nonnull ItemStack targetOutput, int recipeIndex);
 
     /**
      * Prepares display of the recipe that matches the specified key by creating a ProvidedComponents construct that contains:
@@ -41,7 +43,8 @@ public interface IRecipeProvider
      * @param recipeKey The registry name for the recipe to be displayed that was specified via XML
      * @return A valid ProvidedComponents object containing the above, and null if the recipe was not found
      */
-    Optional<ProvidedComponents> provideRecipeComponents(@Nonnull ResourceLocation recipeKey);
+    @Nonnull
+    RecipeLayout getRecipeLayout(@Nonnull World world, @Nonnull ResourceLocation recipeKey);
 
     /**
      * A helper method designed to validate ItemStacks from recipes with metadata that is OreDictionary.WILDCARD_VALUE

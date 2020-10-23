@@ -91,7 +91,7 @@
             <title>Using the recipe tag</title>
             <minecraft:recipe type="gbook:crafting" key="minecraft:iron_pickaxe"/>
             <recipe type="gbook:crafting" key="minecraft:quartz_block"/>
-            <recipe type="shaped">
+            <recipe type="crafting">
                 <recipe.result>
                     <stack item="minecraft:comparator"/>
                 </recipe.result>

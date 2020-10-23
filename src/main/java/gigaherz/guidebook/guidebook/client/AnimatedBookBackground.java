@@ -239,7 +239,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
                 }
             }
 
-            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.func_187508_a(), quadA.func_239287_f_());
+            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.getSprite(), quadA.applyDiffuseLighting());
             worldrenderer.addVertexData(matrixStack.getLast(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
         }
         tessellator.draw();

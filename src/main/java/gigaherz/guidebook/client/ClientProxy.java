@@ -67,6 +67,6 @@ public class ClientProxy implements IModProxy
             if (name != null)
                 return name;
         }
-        return String.format("Guidebook - %s unknown", book);
+        return "Missing Book";
     }
 }

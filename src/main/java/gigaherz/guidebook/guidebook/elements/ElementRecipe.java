@@ -1,25 +1,25 @@
 package gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
-import com.mojang.datafixers.util.Either;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
-import gigaherz.guidebook.guidebook.recipe.IRecipeProvider;
-import gigaherz.guidebook.guidebook.recipe.ProvidedComponents;
-import gigaherz.guidebook.guidebook.recipe.RecipeProviders;
+import gigaherz.guidebook.guidebook.recipe.IRecipeLayoutProvider;
+import gigaherz.guidebook.guidebook.recipe.RecipeLayout;
+import gigaherz.guidebook.guidebook.recipe.RecipeLayoutProviders;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author joazlazer
@@ -28,50 +28,57 @@ import java.util.Optional;
  */
 public class ElementRecipe extends Element
 {
-    private ResourceLocation recipeProviderKey = new ResourceLocation("shaped");
+    private ResourceLocation recipeProviderKey = new ResourceLocation("crafting");
     private ResourceLocation recipeKey;
     private Element recipeOutput;
     private int recipeIndex = 0; // An index to use to specify a certain recipe when multiple ones exist for the target output item
     private int indent = 0;
 
-    private Optional<ProvidedComponents> retrieveRecipe(IRecipeProvider recipeProvider, ElementStack output)
+    @Nonnull
+    private RecipeLayout getRecipeLayout(@Nonnull World world, IRecipeLayoutProvider recipeProvider, ElementStack output)
     {
         if (output == null || output.stacks == null || output.stacks.size() == 0)
-            return null;
+            throw new IllegalArgumentException("Provided output stack is null or empty.");
 
         ItemStack targetOutput = output.stacks.get(0);
 
-        return recipeProvider.provideRecipeComponents(targetOutput, recipeIndex);
+        return recipeProvider.getRecipeLayout(world, targetOutput, recipeIndex);
     }
 
-    private Optional<ProvidedComponents> retrieveRecipe(IRecipeProvider recipeProvider, ResourceLocation recipeKey)
+    @Nonnull
+    private RecipeLayout getRecipeLayout(@Nonnull World world, IRecipeLayoutProvider recipeProvider, ResourceLocation recipeKey)
     {
-        return recipeProvider.provideRecipeComponents(recipeKey);
+        return recipeProvider.getRecipeLayout(world, recipeKey);
     }
 
     @Override
     public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect pageBounds)
     {
-        Either<IRecipeProvider, String> recipeProvider = RecipeProviders.getProvider(recipeProviderKey);
-        return recipeProvider.flatMap(p -> {
+        try {
+            RecipeLayout recipeLayout;
+
+            IRecipeLayoutProvider recipeProvider = RecipeLayoutProviders.getProvider(recipeProviderKey);
+
             if (recipeKey != null)
-                return retrieveRecipe(p, recipeKey)
-                        .map(Either::<ProvidedComponents, String>left)
-                        .orElseGet(() -> Either.right(String.format("Recipe not found for registry name: %s", recipeKey)));
+            {
+                recipeLayout = getRecipeLayout(nav.getWorld(), recipeProvider, recipeKey);
+            }
+            else if (recipeOutput instanceof ElementStack)
+            {
+                recipeLayout = getRecipeLayout(nav.getWorld(), recipeProvider, (ElementStack) recipeOutput);
+            }
+            else
+            {
+                if (recipeOutput != null)
+                    throw new IllegalArgumentException("Recipe output is not a stack element.");
+                else
+                    throw new IllegalArgumentException("Recipe name or output not provided, could not identify recipe.");
+            }
 
-            if (recipeOutput instanceof ElementStack)
-                return retrieveRecipe(p, (ElementStack) recipeOutput)
-                        .map(Either::<ProvidedComponents, String>left).orElseGet(() -> Either.right("Recipe not found for provided output item."));
-
-            if (recipeOutput != null)
-                return Either.right("Recipe output is not a stack element.");
-
-            return Either.right("Recipe name or output not provided, could not identify recipe.");
-        }).map(pc -> {
-            ElementImage background = pc.background;
-            VisualElement additionalRenderer = pc.delegate;
-            ElementStack[] ingredients = pc.recipeComponents;
-            int height = h != 0 ? h : pc.height;
+            ElementImage background = recipeLayout.background;
+            VisualElement additionalRenderer = recipeLayout.delegate;
+            ElementStack[] ingredients = recipeLayout.recipeComponents;
+            int height = h != 0 ? h : recipeLayout.height;
 
             Point adjustedPosition = applyPosition(bounds.position, bounds.position);
             Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
@@ -87,10 +94,12 @@ public class ElementRecipe extends Element
             if (position != POS_RELATIVE)
                 return bounds.position.y;
             return adjustedPosition.y + height;
-        }, str -> {
-            ElementSpan s = ElementSpan.of(str, TextStyle.ERROR);
+        }
+        catch(Exception e)
+        {
+            ElementSpan s = ElementSpan.of(e.getMessage(), TextStyle.ERROR);
             return s.reflow(list, nav, bounds, pageBounds);
-        });
+        }
     }
 
     @Override

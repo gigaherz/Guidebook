@@ -22,6 +22,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -48,14 +49,13 @@ public class ClientEvents
     public static class ModClientEvents
     {
         @SubscribeEvent
-        public static void clientSetup(FMLClientSetupEvent event)
+        public static void modelRegistry(ModelRegistryEvent event)
         {
             ModelLoaderRegistry.registerLoader(GuidebookMod.location("special_model"), new SpecialBakedModel.ModelLoader());
             ModelLoaderRegistry.registerLoader(GuidebookMod.location("book_model"), new BookBakedModel.ModelLoader());
 
             // Ensures that the OBJ models used by the book GUI background, and all referenced textures, are loaded
             ModelLoader.addSpecialModel(AnimatedBookBackground.BOOK_BACKGROUND);
-
             ModelLoader.addSpecialModel(MODEL_HELPER);
         }
     }
@@ -66,13 +66,16 @@ public class ClientEvents
 
         {
             sides.add(null);
+
+            String TEXT = "145981";
+            boolean hasEnglishLetters = TEXT.chars().noneMatch(c -> (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
         }
 
         @Override
         public void func_239207_a_(ItemStack stack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer buffers, int combinedLight, int combinedOverlay)
         {
             IBakedModel model = Minecraft.getInstance().getModelManager().getModel(MODEL_HELPER);
-            IBakedModel bookModel = model.getOverrides().func_239290_a_(model, stack, null, null);
+            IBakedModel bookModel = model.getOverrides().getOverrideModel(model, stack, null, null);
             if (bookModel == null)
                 bookModel = model;
 

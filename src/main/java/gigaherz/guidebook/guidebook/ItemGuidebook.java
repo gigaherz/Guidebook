@@ -12,9 +12,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
@@ -85,7 +83,9 @@ public class ItemGuidebook extends Item
             String book = getBookLocation(stack);
             if (!Strings.isNullOrEmpty(book))
             {
-                tooltip.add(new TranslationTextComponent("text.guidebook.tooltip.book", new StringTextComponent(book)));
+                tooltip.add(new TranslationTextComponent("text.gbook.tooltip.book",
+                        new StringTextComponent(book).mergeStyle(TextFormatting.ITALIC)
+                ).mergeStyle(TextFormatting.GRAY));
             }
         }
     }

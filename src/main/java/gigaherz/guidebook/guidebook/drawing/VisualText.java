@@ -6,17 +6,18 @@ import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.ITextProperties;
 
 public class VisualText extends VisualElement implements LinkHelper.ILinkable
 {
-    public ITextProperties text;
+    public ITextComponent text;
     public int color;
     public float scale;
 
     public LinkContext linkContext = null;
 
-    public VisualText(ITextProperties text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
+    public VisualText(ITextComponent text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
     {
         super(size, positionMode, baseline, verticalAlign);
         this.text = text;

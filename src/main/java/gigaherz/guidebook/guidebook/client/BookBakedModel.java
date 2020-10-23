@@ -51,7 +51,7 @@ public class BookBakedModel implements IBakedModel
         {
             @Nullable
             @Override
-            public IBakedModel func_239290_a_(IBakedModel model, ItemStack stack, @Nullable ClientWorld worldIn, @Nullable LivingEntity entityIn)
+            public IBakedModel getOverrideModel(IBakedModel model, ItemStack stack, @Nullable ClientWorld worldIn, @Nullable LivingEntity entityIn)
             {
                 CompoundNBT tag = stack.getTag();
                 if (tag != null)
@@ -99,7 +99,7 @@ public class BookBakedModel implements IBakedModel
     }
 
     @Override
-    public boolean func_230044_c_()
+    public boolean isSideLit()
     {
         return isSideLit;
     }

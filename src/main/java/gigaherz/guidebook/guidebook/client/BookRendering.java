@@ -24,16 +24,17 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.text.*;
+import net.minecraft.world.World;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class BookRendering implements IBookGraphics
@@ -99,6 +100,12 @@ public class BookRendering implements IBookGraphics
             currentChapter = 0;
             currentPair = 0;
         }
+    }
+
+    @Override
+    public World getWorld()
+    {
+        return Objects.requireNonNull(mc.world);
     }
 
     @Override
@@ -465,7 +472,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public int addString(MatrixStack matrixStack, int left, int top, ITextProperties s, int color, float scale)
+    public int addString(MatrixStack matrixStack, int left, int top, ITextComponent s, int color, float scale)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
@@ -485,13 +492,13 @@ public class BookRendering implements IBookGraphics
             {
                 matrixStack.translate(left0, top0, 0);
                 matrixStack.scale(scale, scale, 1f);
-                fontRenderer.func_238422_b_(matrixStack, s, 0, 0, color);
+                fontRenderer.func_243248_b(matrixStack, s, 0, 0, color);
             }
             matrixStack.pop();
         }
         else
         {
-            fontRenderer.func_238422_b_(matrixStack, s, left, top, color);
+            fontRenderer.func_243248_b(matrixStack, s, left, top, color);
         }
 
         return fontRenderer.FONT_HEIGHT;
@@ -683,7 +690,7 @@ public class BookRendering implements IBookGraphics
             e.draw(this, matrixStack);
         }
 
-        ITextProperties cnt = new StringTextComponent(String.valueOf(ch.startPair * 2 + page + 1));
+        ITextComponent cnt = new StringTextComponent(String.valueOf(ch.startPair * 2 + page + 1));
         Size sz = measure(cnt);
 
         addString(matrixStack, (pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
@@ -822,7 +829,7 @@ public class BookRendering implements IBookGraphics
     public Size measure(ITextProperties text)
     {
         FontRenderer font = gui.getFontRenderer();
-        int width = font.func_238414_a_(text);
+        int width = font.getStringPropertyWidth(text);
         return new Size(width, font.FONT_HEIGHT);
     }
 
@@ -832,7 +839,7 @@ public class BookRendering implements IBookGraphics
         FontRenderer font = gui.getFontRenderer();
         List<VisualElement> sizes = Lists.newArrayList();
         TextMetrics.wrapFormattedStringToWidth(font, (s) -> {
-            int width2 = font.func_238414_a_(s);
+            int width2 = font.getStringPropertyWidth(s);
             sizes.add(new VisualText(s, new Size((int) (width2 * scale), (int) (font.FONT_HEIGHT * scale)), position, baseline, verticalAlignment, scale));
         }, text, width / scale, firstLineWidth / scale, true);
         return sizes;
@@ -868,16 +875,19 @@ public class BookRendering implements IBookGraphics
 
     private static class TextMetrics
     {
-        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, ITextProperties str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
+        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextComponent> dest, ITextProperties str, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
         {
-            str.func_230439_a_((style, text) -> {
+            str.getComponentWithStyle((style, text) -> {
                 wrapFormattedStringToWidth(font, dest, text, style, wrapWidth, wrapWidthFirstLine, firstLine);
                 return ITextProperties.field_240650_b_;
             }, Style.EMPTY);
         }
 
-        private static void wrapFormattedStringToWidth(FontRenderer font, Consumer<ITextProperties> dest, String str, Style style, float wrapWidth, float wrapWidthFirstLine, boolean firstLine)
+        private static void wrapFormattedStringToWidth(final FontRenderer font, final Consumer<ITextComponent> dest, final String str, final Style style, final float wrapWidth, final float wrapWidthFirstLine, final boolean firstLine)
         {
+            if (str.length() == 0)
+                return;
+
             int i = sizeStringToWidth(font, str, style, firstLine ? wrapWidthFirstLine : wrapWidth);
 
             if (str.length() <= i)
@@ -886,18 +896,19 @@ public class BookRendering implements IBookGraphics
             }
             else
             {
-                String s = str.substring(0, i);
-                dest.accept(new StringTextComponent(s).mergeStyle(style));
-                char c0 = str.charAt(i);
-                boolean flag = c0 == ' ' || c0 == '\n';
-                String s1 = str.substring(i + (flag ? 1 : 0));
-                wrapFormattedStringToWidth(font, dest, s1, style, wrapWidth, wrapWidthFirstLine, false);
+                if (i < 1) i = 1;
+                String firstPart = str.substring(0, i);
+                dest.accept(new StringTextComponent(firstPart).mergeStyle(style));
+                char nextChar = str.charAt(i);
+                boolean isWhitespace = nextChar == ' ' || nextChar == '\n';
+                String secondPart = str.substring(i + (isWhitespace ? 1 : 0));
+                wrapFormattedStringToWidth(font, dest, secondPart, style, wrapWidth, wrapWidthFirstLine, false);
             }
         }
 
         private static int sizeStringToWidth(FontRenderer font, String str, Style style, float wrapWidth)
         {
-            int w = font.func_238420_b_().func_238352_a_(str, (int)wrapWidth, style);
+            int w = font.getCharacterManager().func_238352_a_(str, (int)wrapWidth, style);
 
             // If nothing fits or everything fits, no need to check for whitespace.
             if (w == 0 || w == str.length()) return w;

@@ -57,7 +57,7 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
         @Override
         public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
         {
-            IBakedModel childModel = model.bakeModel(bakery, model, spriteGetter, modelTransform, modelLocation, model.func_230176_c_().func_230178_a_());
+            IBakedModel childModel = model.bakeModel(bakery, model, spriteGetter, modelTransform, modelLocation, model.getGuiLight().isSideLit());
             return new BakedModel(childModel, overrides);
         }
 
@@ -107,9 +107,9 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
         }
 
         @Override
-        public boolean func_230044_c_()
+        public boolean isSideLit()
         {
-            return childModel.func_230044_c_();
+            return childModel.isSideLit();
         }
 
         @Override
