@@ -34,7 +34,7 @@ repositories {
     mavenLocal()
 }
 
-version = "3.2.0"
+version = "3.2.1"
 group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guidebook-UNKNOWN"
 
@@ -81,6 +81,9 @@ minecraft {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.3-34.0.9'
+
+    compileOnly fg.deobf("mezz.jei:jei-1.16.2:7.1.3.19:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.16.2:7.1.3.19")
 }
 
 jar {
@@ -113,7 +116,7 @@ publishing {
 
             pom.withXml {
                 asNode().dependencies.dependency.each { dep ->
-                    if(dep.groupId.last().value().last() in ["net.minecraftforge"]) {
+                    if(dep.groupId.last().value().last() in ["net.minecraftforge", "mezz.jei"]) {
                         assert dep.parent().remove(dep)
                     }
                 }

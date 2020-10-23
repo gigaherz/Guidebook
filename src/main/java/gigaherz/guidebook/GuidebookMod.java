@@ -4,7 +4,7 @@ import gigaherz.guidebook.client.ClientEvents;
 import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookRegistry;
-import gigaherz.guidebook.guidebook.ItemGuidebook;
+import gigaherz.guidebook.guidebook.GuidebookItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -41,7 +41,7 @@ public class GuidebookMod
 
     // Items
     @ObjectHolder("gbook:guidebook")
-    public static ItemGuidebook guidebook;
+    public static GuidebookItem guidebook;
 
     public static final Logger logger = LogManager.getLogger(MODID);
 
@@ -103,7 +103,7 @@ public class GuidebookMod
     private void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
-                new ItemGuidebook(new Item.Properties()
+                new GuidebookItem(new Item.Properties()
                         .maxStackSize(1)
                         .group(GuidebookMod.tabGuidebooks)
                         .setISTER(() -> ClientEvents::createBookItemRenderer)

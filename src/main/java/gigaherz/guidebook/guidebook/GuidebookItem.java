@@ -19,9 +19,9 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemGuidebook extends Item
+public class GuidebookItem extends Item
 {
-    public ItemGuidebook(Properties properties)
+    public GuidebookItem(Properties properties)
     {
         super(properties);
     }
@@ -100,5 +100,15 @@ public class ItemGuidebook extends Item
         }
 
         return super.getDisplayName(stack);
+    }
+
+    public static String getSubtype(ItemStack stack)
+    {
+        if (stack.getItem() instanceof GuidebookItem)
+        {
+            String bookLocation = ((GuidebookItem) stack.getItem()).getBookLocation(stack);
+            return bookLocation == null ? "" : bookLocation;
+        }
+        return "";
     }
 }
