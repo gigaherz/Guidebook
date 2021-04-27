@@ -30,6 +30,7 @@ public class ConfigValues
 
     public static int bookGUIScale = -1;
     public static boolean flexibleScale = false;
+    public static boolean flipScrollDirection = false;
     public static String[] giveOnFirstJoin = new String[0];
 
     public static class ServerConfig
@@ -51,6 +52,7 @@ public class ConfigValues
     {
         public final ForgeConfigSpec.IntValue bookGUIScale;
         public final ForgeConfigSpec.BooleanValue flexibleScale;
+        public final ForgeConfigSpec.BooleanValue flipScrollDirection;
 
         ClientConfig(ForgeConfigSpec.Builder builder)
         {
@@ -64,6 +66,9 @@ public class ConfigValues
                     .comment("Keep at false to use integral scaling, which makes the font pixels evently scaled. If set to true, the books will fill the screen space, even if the font becomes wonky.")
                     .translation("text.guidebook.config.flexible_scale")
                     .define("flexible_scale", false);
+            flipScrollDirection = builder
+                    .comment("If TRUE, flips the scroll direction to the opposite of what the system reports.")
+                    .define("flip_scroll_direction", false);
             builder.pop();
         }
     }
@@ -72,6 +77,7 @@ public class ConfigValues
     {
         bookGUIScale = CLIENT.bookGUIScale.get();
         flexibleScale = CLIENT.flexibleScale.get();
+        flipScrollDirection = CLIENT.flipScrollDirection.get();
     }
 
     public static void refreshServer()

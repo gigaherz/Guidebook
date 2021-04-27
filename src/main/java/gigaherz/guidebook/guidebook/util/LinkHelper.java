@@ -1,5 +1,7 @@
 package gigaherz.guidebook.guidebook.util;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import gigaherz.guidebook.GuidebookMod;
@@ -10,6 +12,7 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -17,8 +20,13 @@ import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class LinkHelper
 {
@@ -127,6 +135,13 @@ public class LinkHelper
 
         if (!mc.gameSettings.chatLinks)
         {
+            List<ItemStack> stacks = Lists.newArrayList();
+            for (int i=0;i<54;i++)
+            {
+                stacks.add(ItemStack.EMPTY);
+            }
+            Stream.generate(() -> ItemStack.EMPTY).limit(54).forEach(stacks::add);
+            stacks = IntStream.range(0,54).mapToObj(i -> ItemStack.EMPTY).collect(Collectors.toList());
             return;
         }
 

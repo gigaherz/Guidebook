@@ -1,6 +1,6 @@
 package gigaherz.guidebook;
 
-import gigaherz.guidebook.client.ClientEvents;
+import gigaherz.guidebook.client.ClientHandlers;
 import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookRegistry;
@@ -11,7 +11,9 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.LanguageMap;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -21,7 +23,6 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ObjectHolder;
@@ -35,6 +36,7 @@ public class GuidebookMod
 
     public static GuidebookMod instance;
 
+    @Deprecated
     public static final IModProxy proxy = DistExecutor.unsafeRunForDist(() -> () -> new ClientProxy(), () -> () -> new IModProxy()
     {
     });
@@ -58,7 +60,7 @@ public class GuidebookMod
         {
             //super.fill(items);
 
-            for (ResourceLocation resourceLocation : GuidebookMod.proxy.getBooksList())
+            for (ResourceLocation resourceLocation : BookRegistry.getBooksList())
             {
                 items.add(guidebook.of(resourceLocation));
             }
@@ -75,7 +77,6 @@ public class GuidebookMod
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addGenericListener(Item.class, this::registerItems);
-        modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::modConfig);
 
         MinecraftForge.EVENT_BUS.addListener(this::playerLogIn);
@@ -94,19 +95,13 @@ public class GuidebookMod
             ConfigValues.refreshServer();
     }
 
-
-    private void clientSetup(FMLClientSetupEvent event)
-    {
-        ClientProxy.initialize();
-    }
-
     private void registerItems(RegistryEvent.Register<Item> event)
     {
         event.getRegistry().registerAll(
                 new GuidebookItem(new Item.Properties()
                         .maxStackSize(1)
                         .group(GuidebookMod.tabGuidebooks)
-                        .setISTER(() -> ClientEvents::createBookItemRenderer)
+                        .setISTER(() -> ClientHandlers::createBookItemRenderer)
                 ).setRegistryName("guidebook")
         );
     }

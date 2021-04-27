@@ -2,6 +2,7 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
+import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
@@ -163,6 +164,26 @@ public class GuiGuidebook extends Screen
         return super.keyPressed(keyCode, p_keyPressed_2_, p_keyPressed_3_);
     }
 
+    private double deltaAcc = 0;
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    {
+        if (super.mouseScrolled(mouseX, mouseY, delta))
+            return true;
+
+        deltaAcc += delta * (ConfigValues.flipScrollDirection ? -1 : 1);
+        while (deltaAcc >= 1.0) {
+            deltaAcc -= 1.0;
+            if (book.canGoPrevPage()) book.prevPage();
+        }
+        while (deltaAcc <= -1.0) {
+            deltaAcc += 1.0;
+            if (book.canGoNextPage()) book.nextPage();
+        }
+        return true;
+    }
+
     private void repositionButtons()
     {
         setupConditionsAndPosition();
@@ -316,7 +337,7 @@ public class GuiGuidebook extends Screen
         }
 
         @Override
-        public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+        public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
         {
             boolean hover = mouseX >= this.x &&
                             mouseY >= this.y &&

@@ -1,13 +1,15 @@
 package gigaherz.guidebook.client;
 
-import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.guidebook.BookRegistry;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 public class BookRegistryEvent extends Event
 {
     public void register(ResourceLocation bookLocation)
     {
-        GuidebookMod.proxy.registerBook(bookLocation);
+        BookRegistry.registerBook(bookLocation);
     }
 }

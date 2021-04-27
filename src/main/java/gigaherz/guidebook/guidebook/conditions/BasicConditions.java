@@ -1,8 +1,10 @@
 package gigaherz.guidebook.guidebook.conditions;
 
 import com.google.common.base.Strings;
+import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookParsingException;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Node;
 
@@ -14,8 +16,9 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
     {
         ConditionManager.register("true", (doc, node) -> new True());
         ConditionManager.register("false", (doc, node) -> new False());
-        //ConditionManager.register("mod-loaded", (doc, node) -> new ModLoaded(parseModId(node)));
+        ConditionManager.register("mod-loaded", (doc, node) -> new ModLoaded(parseModId(node)));
         ConditionManager.register("item-exists", (doc, node) -> new ItemExists(parseItemName(node)));
+        ConditionManager.register("condition", (doc, node) -> new Ref(parseConditionId(node)));
     }
 
     public static class True extends BasicConditions
@@ -36,6 +39,25 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         }
     }
 
+    public static class Ref extends BasicConditions
+    {
+        private final String ref;
+        private Predicate<ConditionContext> condition;
+
+        public Ref(String ref)
+        {
+            this.ref = ref;
+        }
+
+        @Override
+        public boolean test(ConditionContext conditionContext)
+        {
+            if (condition == null)
+                condition = conditionContext.getBook().getCondition(ref);
+            return condition.test(conditionContext);
+        }
+    }
+
     public static class ModLoaded extends BasicConditions
     {
         private final String modId;
@@ -48,8 +70,7 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            // TODO
-            return true; //Loader.isModLoaded(modId);
+            return ModList.get().isLoaded(modId);
         }
     }
 
@@ -67,6 +88,18 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         {
             return ForgeRegistries.ITEMS.containsKey(item);
         }
+    }
+
+    private static String parseConditionId(Node xmlNode)
+    {
+        Node attr = xmlNode.getAttributes().getNamedItem("condition");
+        if (attr == null)
+            throw new BookParsingException("Missing required XML attribute 'condition'.");
+
+        String cond = attr.getTextContent();
+        if (Strings.isNullOrEmpty(cond))
+            throw new BookParsingException("Missing required XML attribute 'condition'.");
+        return cond;
     }
 
     private static String parseModId(Node xmlNode)

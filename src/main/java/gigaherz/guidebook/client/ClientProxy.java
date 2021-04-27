@@ -14,6 +14,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import java.util.Collection;
 
+@Deprecated
 public class ClientProxy implements IModProxy
 {
     public ClientProxy()
@@ -21,21 +22,12 @@ public class ClientProxy implements IModProxy
         //BookRegistry.injectCustomResourcePack();
     }
 
+    @Deprecated
     public static void initialize()
     {
-        BasicConditions.register();
-        CompositeCondition.register();
-        AdvancementCondition.register();
-
-        // TODO: if (ModList.get.isLoaded("gamestages"))
-        //GameStageCondition.register();
-        MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
-
-        // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
-
-        BookRegistry.initClientResourceListener((IReloadableResourceManager) Minecraft.getInstance().getResourceManager());
     }
 
+    @Deprecated
     @Override
     public void registerBook(ResourceLocation bookLocation)
     {
@@ -45,28 +37,18 @@ public class ClientProxy implements IModProxy
     @Override
     public Collection<ResourceLocation> getBooksList()
     {
-        return BookRegistry.getLoadedBooks().keySet();
+        return BookRegistry.getBooksList();
     }
 
     @Override
     public void displayBook(String book)
     {
-        ResourceLocation loc = new ResourceLocation(book);
-        BookDocument br = BookRegistry.get(loc);
-        if (br != null && br.chapterCount() > 0)
-            Minecraft.getInstance().displayGuiScreen(new GuiGuidebook(loc));
+        ClientAPI.displayBook(book);
     }
 
     @Override
     public String getBookName(String book)
     {
-        BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
-        if (bookDocument != null)
-        {
-            String name = bookDocument.getName();
-            if (name != null)
-                return name;
-        }
-        return "Missing Book";
+        return ClientAPI.getBookName(book);
     }
 }

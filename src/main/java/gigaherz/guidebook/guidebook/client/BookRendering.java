@@ -492,13 +492,13 @@ public class BookRendering implements IBookGraphics
             {
                 matrixStack.translate(left0, top0, 0);
                 matrixStack.scale(scale, scale, 1f);
-                fontRenderer.func_243248_b(matrixStack, s, 0, 0, color);
+                fontRenderer.drawText(matrixStack, s, 0, 0, color);
             }
             matrixStack.pop();
         }
         else
         {
-            fontRenderer.func_243248_b(matrixStack, s, left, top, color);
+            fontRenderer.drawText(matrixStack, s, left, top, color);
         }
 
         return fontRenderer.FONT_HEIGHT;

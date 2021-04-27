@@ -2,6 +2,8 @@ package gigaherz.guidebook.guidebook;
 
 import com.google.common.base.Strings;
 import gigaherz.guidebook.GuidebookMod;
+import gigaherz.guidebook.client.ClientAPI;
+import gigaherz.guidebook.client.ClientHandlers;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -14,7 +16,10 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.*;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.thread.EffectiveSide;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -48,7 +53,8 @@ public class GuidebookItem extends Item
         if (nbt == null || !nbt.contains("Book", Constants.NBT.TAG_STRING))
             return ActionResult.resultFail(stack);
 
-        GuidebookMod.proxy.displayBook(nbt.getString("Book"));
+        if (FMLEnvironment.dist == Dist.CLIENT)
+            ClientAPI.displayBook(nbt.getString("Book"));
 
         return ActionResult.resultSuccess(stack);
     }
@@ -96,7 +102,8 @@ public class GuidebookItem extends Item
         String book = getBookLocation(stack);
         if (!Strings.isNullOrEmpty(book))
         {
-            return new StringTextComponent(GuidebookMod.proxy.getBookName(book));
+            if (FMLEnvironment.dist == Dist.CLIENT && EffectiveSide.get().isClient())
+                return new StringTextComponent(ClientAPI.getBookName(book));
         }
 
         return super.getDisplayName(stack);

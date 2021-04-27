@@ -45,8 +45,8 @@ public class BookRegistry
     public static void registerBook(ResourceLocation loc)
     {
         // TODO
-        //if (Loader.instance().hasReachedState(INITIALIZATION))
-        //    throw new IllegalStateException("Books must be registered before init, preferably in the BookRegistryEvent.");
+        if (booksLoaded)
+            throw new IllegalStateException("Books must be registered before resource loading start, preferably in the BookRegistryEvent.");
         REGISTRY.add(loc);
     }
 
@@ -338,5 +338,10 @@ public class BookRegistry
                 booksLoaded = false;
             }
         });
+    }
+
+    public static Collection<ResourceLocation> getBooksList()
+    {
+        return getLoadedBooks().keySet();
     }
 }
