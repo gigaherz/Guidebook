@@ -9,12 +9,12 @@ import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualStack;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -71,7 +71,7 @@ public class ElementStack extends ElementInline
     public void parse(IConditionSource book, NamedNodeMap attributes)
     {
         int stackSize = 1;
-        CompoundNBT tag = new CompoundNBT();
+        CompoundTag tag = new CompoundTag();
 
         super.parse(book, attributes);
 
@@ -88,7 +88,7 @@ public class ElementStack extends ElementInline
         {
             try
             {
-                tag = JsonToNBT.getTagFromJson(attr.getTextContent());
+                tag = TagParser.parseTag(attr.getTextContent());
             }
             catch (CommandSyntaxException e)
             {

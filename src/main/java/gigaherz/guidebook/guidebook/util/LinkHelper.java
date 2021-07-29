@@ -1,21 +1,19 @@
 package gigaherz.guidebook.guidebook.util;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
@@ -64,19 +62,19 @@ public class LinkHelper
     {
         Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
-        mc.displayGuiScreen(new ConfirmScreen((result) -> {
+        mc.setScreen(new ConfirmScreen((result) -> {
             if (result)
             {
-                GLFW.glfwSetClipboardString(mc.getMainWindow().getHandle(), textTarget);
-                mc.ingameGUI.getChatGUI().printChatMessage(new TranslationTextComponent("text.gbook.actions.copy_to_clipboard.success"));
+                GLFW.glfwSetClipboardString(mc.getWindow().getWindow(), textTarget);
+                mc.gui.getChat().addMessage(new TranslatableComponent("text.gbook.actions.copy_to_clipboard.success"));
             }
-            mc.displayGuiScreen(parent);
+            mc.setScreen(parent);
         },
-                new TranslationTextComponent("text.gbook.actions.copy_to_clipboard.line1"),
-                new TranslationTextComponent("text.gbook.actions.copy_to_clipboard.line2"))
+                new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line1"),
+                new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line2"))
         {
             @Override
-            public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+            public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
             {
                 parent.render(matrixStack,-1, -1, partialTicks);
                 super.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -88,16 +86,16 @@ public class LinkHelper
     {
         Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
-        mc.displayGuiScreen(new ChatScreen(textTarget)
+        mc.setScreen(new ChatScreen(textTarget)
         {
             @Override
-            public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+            public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
             {
                 parent.render(matrixStack,-1, -1, partialTicks);
                 String text = "Temporary chat window open, press ESCAPE to cancel.";
-                int textWidth = Math.max(font.getStringWidth(text) + 40, width / 2);
+                int textWidth = Math.max(font.width(text) + 40, width / 2);
                 fill(matrixStack,(width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
-                drawCenteredString(matrixStack,font, text, width / 2, (height - font.FONT_HEIGHT) / 2, 0xFFFFFFFF);
+                drawCenteredString(matrixStack,font, text, width / 2, (height - font.lineHeight) / 2, 0xFFFFFFFF);
                 super.render(matrixStack,mouseX, mouseY, partialTicks);
             }
 
@@ -106,20 +104,20 @@ public class LinkHelper
             {
                 if (keyCode == GLFW.GLFW_KEY_ESCAPE)
                 {
-                    mc.displayGuiScreen(parent);
+                    mc.setScreen(parent);
                     return true;
                 }
 
                 if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
                 {
-                    String s = this.inputField.getText().trim();
+                    String s = this.input.getValue().trim();
 
                     if (!s.isEmpty())
                     {
                         this.sendMessage(s);
                     }
 
-                    this.minecraft.displayGuiScreen(parent);
+                    this.minecraft.setScreen(parent);
                     return true;
                 }
 
@@ -133,7 +131,7 @@ public class LinkHelper
         Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
 
-        if (!mc.gameSettings.chatLinks)
+        if (!mc.options.chatLinks)
         {
             List<ItemStack> stacks = Lists.newArrayList();
             for (int i=0;i<54;i++)
@@ -160,19 +158,19 @@ public class LinkHelper
                 throw new URISyntaxException(textTarget, "Unsupported protocol: " + s.toLowerCase(Locale.ROOT));
             }
 
-            if (mc.gameSettings.chatLinksPrompt)
+            if (mc.options.chatLinksPrompt)
             {
-                mc.displayGuiScreen(new ConfirmOpenLinkScreen((result) -> {
+                mc.setScreen(new ConfirmLinkScreen((result) -> {
                     if (result)
                     {
                         openWebLink(uri);
                     }
 
-                    mc.displayGuiScreen(parent);
+                    mc.setScreen(parent);
                 }, textTarget, true)
                 {
                     @Override
-                    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+                    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
                     {
                         parent.render(matrixStack,-1, -1, partialTicks);
                         super.render(matrixStack,mouseX, mouseY, partialTicks);
@@ -192,6 +190,6 @@ public class LinkHelper
 
     private static void openWebLink(URI url)
     {
-        Util.getOSType().openURI(url);
+        Util.getPlatform().openUri(url);
     }
 }

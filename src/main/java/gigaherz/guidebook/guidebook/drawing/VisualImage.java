@@ -1,12 +1,12 @@
 package gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class VisualImage extends VisualElement implements LinkHelper.ILinkable
 {
@@ -36,7 +36,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void draw(IBookGraphics nav, MatrixStack matrixStack)
+    public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         super.draw(nav, matrixStack);
         nav.drawImage(matrixStack, textureLocation, position.x, position.y, tx, ty, w, h, tw, th, scale);
@@ -51,7 +51,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
     {
         if (linkContext != null)
         {

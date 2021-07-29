@@ -11,9 +11,9 @@ import gigaherz.guidebook.guidebook.recipe.RecipeLayout;
 import gigaherz.guidebook.guidebook.recipe.RecipeLayoutProviders;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -35,7 +35,7 @@ public class ElementRecipe extends Element
     private int indent = 0;
 
     @Nonnull
-    private RecipeLayout getRecipeLayout(@Nonnull World world, IRecipeLayoutProvider recipeProvider, ElementStack output)
+    private RecipeLayout getRecipeLayout(@Nonnull Level world, IRecipeLayoutProvider recipeProvider, ElementStack output)
     {
         if (output == null || output.stacks == null || output.stacks.size() == 0)
             throw new IllegalArgumentException("Provided output stack is null or empty.");
@@ -46,7 +46,7 @@ public class ElementRecipe extends Element
     }
 
     @Nonnull
-    private RecipeLayout getRecipeLayout(@Nonnull World world, IRecipeLayoutProvider recipeProvider, ResourceLocation recipeKey)
+    private RecipeLayout getRecipeLayout(@Nonnull Level world, IRecipeLayoutProvider recipeProvider, ResourceLocation recipeKey)
     {
         return recipeProvider.getRecipeLayout(world, recipeKey);
     }

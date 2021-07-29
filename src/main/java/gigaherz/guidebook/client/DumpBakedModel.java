@@ -1,12 +1,12 @@
 package gigaherz.guidebook.client;
 
 import com.google.common.collect.Lists;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.util.Direction;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import net.minecraft.core.Direction;
 import net.minecraftforge.client.model.data.EmptyModelData;
 
 import java.io.*;
@@ -19,7 +19,7 @@ public class DumpBakedModel
             null, Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH, Direction.UP, Direction.DOWN
     };
 
-    public static void dumpToOBJ(File file, String name, IBakedModel model)
+    public static void dumpToOBJ(File file, String name, BakedModel model)
     {
         try (OutputStream stream = new FileOutputStream(file);
              OutputStreamWriter writer = new OutputStreamWriter(stream))
@@ -38,10 +38,10 @@ public class DumpBakedModel
 
                 for (BakedQuad quad : model.getQuads(null, dir, rand, EmptyModelData.INSTANCE))
                 {
-                    VertexFormat fmt = DefaultVertexFormats.BLOCK;
-                    int[] data = quad.getVertexData();
+                    VertexFormat fmt = DefaultVertexFormat.BLOCK;
+                    int[] data = quad.getVertices();
                     int byteStart = 0;
-                    int byteLen = fmt.getSize();
+                    int byteLen = fmt.getVertexSize();
                     List<Integer> indices0 = Lists.newArrayList();
                     List<Integer> indices1 = Lists.newArrayList();
                     List<Integer> indices2 = Lists.newArrayList();
@@ -81,7 +81,7 @@ public class DumpBakedModel
                                     indices3.add(++lastNorm);
                                     break;
                                 default:
-                                    prefix = element.getUsage().getDisplayName().replace(" ", "");
+                                    prefix = element.getUsage().getName().replace(" ", "");
                                     break;
                             }
                             prefix = element.getIndex() > 0 ? (prefix + element.getIndex()) : prefix;

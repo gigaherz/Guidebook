@@ -4,14 +4,14 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.elements.ElementImage;
 import gigaherz.guidebook.guidebook.elements.ElementStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.AbstractCookingRecipe;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 
 import javax.annotation.Nonnull;
@@ -42,10 +42,10 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
 
     @Nonnull
     @Override
-    public RecipeLayout getRecipeLayout(@Nonnull World world, @Nonnull ItemStack targetOutput, int recipeIndex)
+    public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ItemStack targetOutput, int recipeIndex)
     {
-        IRecipe<?> recipe = world.getRecipeManager().getRecipes().stream()
-                .filter(r -> !r.isDynamic() && ItemStack.areItemsEqualIgnoreDurability(targetOutput, r.getRecipeOutput()))
+        Recipe<?> recipe = world.getRecipeManager().getRecipes().stream()
+                .filter(r -> !r.isSpecial() && ItemStack.isSameIgnoreDurability(targetOutput, r.getResultItem()))
                 .skip(recipeIndex)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for provided output item: %s", targetOutput)));
@@ -54,14 +54,14 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
 
     @Nonnull
     @Override
-    public RecipeLayout getRecipeLayout(@Nonnull World world, @Nonnull ResourceLocation recipeKey)
+    public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ResourceLocation recipeKey)
     {
-        IRecipe<?> recipe = world.getRecipeManager().getRecipe(recipeKey)
+        Recipe<?> recipe = world.getRecipeManager().byKey(recipeKey)
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for registry name: %s", recipeKey)));
         return getRecipeLayout(recipe);
     }
 
-    private RecipeLayout getRecipeLayout(@Nonnull IRecipe<?> recipe)
+    private RecipeLayout getRecipeLayout(@Nonnull Recipe<?> recipe)
     {
         int gridWidth;
         int recipeGraphic;
@@ -82,8 +82,8 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
             else
             {
                 int ingredients = recipe.getIngredients().size();
-                gridWidth = MathHelper.ceil(Math.sqrt(ingredients));
-                gridHeight = MathHelper.ceil(ingredients / (double) gridWidth);
+                gridWidth = Mth.ceil(Math.sqrt(ingredients));
+                gridHeight = Mth.ceil(ingredients / (double) gridWidth);
             }
 
             switch (Math.max(gridWidth, gridHeight))
@@ -108,7 +108,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         for (int i = 0; i < ingredients.size(); ++i)
         {
             ElementStack inputSlot = new ElementStack(false, false);
-            ItemStack[] matching = ingredients.get(i).getMatchingStacks();
+            ItemStack[] matching = ingredients.get(i).getItems();
             if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
             // Copy each stack
@@ -127,7 +127,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         // Set up output slot element
         ElementStack outputSlot = new ElementStack(false, false);
         stackComponents.add(outputSlot);
-        List<ItemStack> stackList = IRecipeLayoutProvider.copyAndExpand(recipe.getRecipeOutput());
+        List<ItemStack> stackList = IRecipeLayoutProvider.copyAndExpand(recipe.getResultItem());
         outputSlot.stacks.addAll(stackList);
         outputSlot.x = OUTPUT_SLOT_X[recipeGraphic] + LEFT_OFFSET;
         outputSlot.y = OUTPUT_SLOT_Y[recipeGraphic];

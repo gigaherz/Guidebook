@@ -4,7 +4,7 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.client.GuiGuidebook;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class ClientAPI
 {
@@ -13,7 +13,7 @@ public class ClientAPI
         ResourceLocation loc = new ResourceLocation(book);
         BookDocument br = BookRegistry.get(loc);
         if (br != null && br.chapterCount() > 0)
-            Minecraft.getInstance().displayGuiScreen(new GuiGuidebook(loc));
+            Minecraft.getInstance().setScreen(new GuiGuidebook(loc));
     }
 
     public static String getBookName(String book)

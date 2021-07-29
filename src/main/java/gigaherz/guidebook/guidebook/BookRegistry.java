@@ -8,14 +8,13 @@ import gigaherz.guidebook.GuidebookMod;
 import gigaherz.guidebook.guidebook.client.BookResourceType;
 import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.LanguageManager;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.resources.language.LanguageManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.*;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.resource.ISelectiveResourceReloadListener;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
@@ -25,6 +24,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import net.minecraft.server.packs.FolderPackResources;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackCompatibility;
+import net.minecraft.server.packs.repository.RepositorySource;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class BookRegistry
 {
@@ -68,7 +77,7 @@ public class BookRegistry
         return loc == null ? null : get(new ResourceLocation(loc));
     }
 
-    public static void parseAllBooks(IResourceManager manager)
+    public static void parseAllBooks(ResourceManager manager)
     {
         booksLoaded = true;
 
@@ -78,13 +87,13 @@ public class BookRegistry
 
         Set<ResourceLocation> toLoad = Sets.newHashSet(REGISTRY);
 
-        for (String domain : manager.getResourceNamespaces())
+        for (String domain : manager.getNamespaces())
         {
             try
             {
-                List<IResource> resources = manager.getAllResources(new ResourceLocation(domain, "books.json"));
+                List<Resource> resources = manager.getResources(new ResourceLocation(domain, "books.json"));
 
-                for (IResource res : resources)
+                for (Resource res : resources)
                 {
                     loadBooksData(toLoad, res);
                 }
@@ -103,7 +112,7 @@ public class BookRegistry
 
         LanguageManager lm = Minecraft.getInstance().getLanguageManager();
 
-        String lang = ObfuscationReflectionHelper.getPrivateValue(LanguageManager.class, lm, "field_135048_c");
+        String lang = ObfuscationReflectionHelper.getPrivateValue(LanguageManager.class, lm, "currentCode");
         if (lang == null) lang = "en_us";
         for (ResourceLocation loc : toLoad)
         {
@@ -120,7 +129,7 @@ public class BookRegistry
     {
     }.getType();
 
-    private static void loadBooksData(Set<ResourceLocation> toLoad, IResource resource) throws IOException
+    private static void loadBooksData(Set<ResourceLocation> toLoad, Resource resource) throws IOException
     {
         try (InputStream stream = resource.getInputStream())
         {
@@ -130,7 +139,7 @@ public class BookRegistry
     }
 
     @Nullable
-    private static BookDocument parseBook(IResourceManager manager, ResourceLocation location, String lang)
+    private static BookDocument parseBook(ResourceManager manager, ResourceLocation location, String lang)
     {
         BookDocument bookDocument = new BookDocument(location);
         try
@@ -150,7 +159,7 @@ public class BookRegistry
             String localizedPath = pathWithoutExtension + "." + lang + extension;
             ResourceLocation localizedLoc = new ResourceLocation(domain, localizedPath);
 
-            IResource bookResource;
+            Resource bookResource;
             try
             {
                 bookResource = manager.getResource(localizedLoc);
@@ -221,7 +230,7 @@ public class BookRegistry
     @Nullable
     public static File getBooksFolder()
     {
-        File booksFolder = new File(new File(Minecraft.getInstance().gameDir, "config"), "books");
+        File booksFolder = new File(new File(Minecraft.getInstance().gameDirectory, "config"), "books");
 
         if (!booksFolder.exists())
         {
@@ -255,7 +264,7 @@ public class BookRegistry
         if (mc == null)
             return;
 
-        File resourcesFolder = new File(new File(new File(mc.gameDir, "config"), "books"), "resources");
+        File resourcesFolder = new File(new File(new File(mc.gameDirectory, "config"), "books"), "resources");
 
         if (!resourcesFolder.exists())
         {
@@ -271,14 +280,14 @@ public class BookRegistry
         }
 
         final String id = "guidebook_config_folder_resources";
-        final ITextComponent name = new StringTextComponent("Guidebook Config Folder Virtual Resource Pack");
-        final ITextComponent description = new StringTextComponent("Provides book resources placed in the config/books/resources folder");
-        final IResourcePack pack = new FolderPack(resourcesFolder)
+        final Component name = new TextComponent("Guidebook Config Folder Virtual Resource Pack");
+        final Component description = new TextComponent("Provides book resources placed in the config/books/resources folder");
+        final PackResources pack = new FolderPackResources(resourcesFolder)
         {
             String prefix = "assets/" + GuidebookMod.MODID + "/";
 
             @Override
-            protected InputStream getInputStream(String name) throws IOException
+            protected InputStream getResource(String name) throws IOException
             {
                 if ("pack.mcmeta".equals(name))
                 {
@@ -286,34 +295,34 @@ public class BookRegistry
                 }
                 if (!name.startsWith(prefix))
                     throw new FileNotFoundException(name);
-                return super.getInputStream(name.substring(prefix.length()));
+                return super.getResource(name.substring(prefix.length()));
             }
 
             @Override
-            protected boolean resourceExists(String name)
+            protected boolean hasResource(String name)
             {
                 if ("pack.mcmeta".equals(name))
                     return true;
                 if (!name.startsWith(prefix))
                     return false;
-                return super.resourceExists(name.substring(prefix.length()));
+                return super.hasResource(name.substring(prefix.length()));
             }
 
             @Override
-            public Set<String> getResourceNamespaces(ResourcePackType type)
+            public Set<String> getNamespaces(PackType type)
             {
                 return Collections.singleton(GuidebookMod.MODID);
             }
         };
 
-        Minecraft.getInstance().getResourcePackList().addPackFinder(new IPackFinder()
+        Minecraft.getInstance().getResourcePackRepository().addPackFinder(new RepositorySource()
         {
             @Override
-            public void findPacks(Consumer<ResourcePackInfo> infoConsumer, ResourcePackInfo.IFactory infoFactory)
+            public void loadPacks(Consumer<Pack> infoConsumer, Pack.PackConstructor infoFactory)
             {
                 infoConsumer.accept(
-                        new ResourcePackInfo(id, true, () -> pack,
-                                name, description, PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.BOTTOM,
+                        new Pack(id, true, () -> pack,
+                                name, description, PackCompatibility.COMPATIBLE, Pack.Position.BOTTOM,
                                 true, text -> text, true)
                 );
             }
@@ -330,14 +339,11 @@ public class BookRegistry
         return getLoadedBooks().values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 
-    public static void initClientResourceListener(IReloadableResourceManager clientResourceManager)
+    public static void initClientResourceListener(ReloadableResourceManager clientResourceManager)
     {
-        clientResourceManager.addReloadListener((ISelectiveResourceReloadListener) (resourceManager, resourcePredicate) -> {
-            if (resourcePredicate.test(BookResourceType.INSTANCE))
-            {
-                booksLoaded = false;
-            }
-        });
+        clientResourceManager.registerReloadListener((ResourceManagerReloadListener)((resourceManager) -> {
+            booksLoaded = false;
+        }));
     }
 
     public static Collection<ResourceLocation> getBooksList()

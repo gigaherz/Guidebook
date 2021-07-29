@@ -18,12 +18,12 @@ import gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -150,10 +150,10 @@ public class BookDocument implements IConditionSource
         return chapters.size();
     }
 
-    public void findTextures(Set<RenderMaterial> textures)
+    public void findTextures(Set<Material> textures)
     {
         if (bookCover != null)
-            textures.add(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS_TEXTURE, bookCover));
+            textures.add(new Material(TextureAtlas.LOCATION_BLOCKS, bookCover));
 
         for (ChapterData chapter : chapters)
         {

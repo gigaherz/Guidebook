@@ -5,9 +5,9 @@ import gigaherz.guidebook.guidebook.BookParsingException;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientAdvancementManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.client.multiplayer.ClientAdvancements;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
@@ -22,10 +22,10 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
     @Nullable
     static AdvancementProgress getAdvancementProgress(ResourceLocation advancement)
     {
-        ClientAdvancementManager mgr = Minecraft.getInstance().player.connection.getAdvancementManager();
-        Advancement adv = mgr.getAdvancementList().getAdvancement(advancement);
+        ClientAdvancements mgr = Minecraft.getInstance().player.connection.getAdvancements();
+        Advancement adv = mgr.getAdvancements().get(advancement);
         Map<Advancement, AdvancementProgress> advancementToProgress =
-                ObfuscationReflectionHelper.getPrivateValue(ClientAdvancementManager.class, mgr, "field_192803_d");
+                ObfuscationReflectionHelper.getPrivateValue(ClientAdvancements.class, mgr, "progress");
         return advancementToProgress.get(adv);
     }
 

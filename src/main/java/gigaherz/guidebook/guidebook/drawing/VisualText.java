@@ -1,23 +1,23 @@
 package gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.elements.LinkContext;
 import gigaherz.guidebook.guidebook.util.LinkHelper;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 
 public class VisualText extends VisualElement implements LinkHelper.ILinkable
 {
-    public ITextComponent text;
+    public Component text;
     public int color;
     public float scale;
 
     public LinkContext linkContext = null;
 
-    public VisualText(ITextComponent text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
+    public VisualText(Component text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
     {
         super(size, positionMode, baseline, verticalAlign);
         this.text = text;
@@ -25,7 +25,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void draw(IBookGraphics nav, MatrixStack matrixStack)
+    public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         super.draw(nav, matrixStack);
         if (linkContext != null)
@@ -35,7 +35,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public ITextProperties getText()
+    public FormattedText getText()
     {
         return text;
     }
@@ -47,7 +47,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
     {
         linkContext.isHovering = true;
     }

@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Style;
 import org.w3c.dom.NamedNodeMap;
 
 public class TextStyle

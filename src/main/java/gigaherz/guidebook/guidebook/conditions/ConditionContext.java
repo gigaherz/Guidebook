@@ -1,21 +1,21 @@
 package gigaherz.guidebook.guidebook.conditions;
 
 import gigaherz.guidebook.guidebook.BookDocument;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.player.LocalPlayer;
 
 import java.util.function.Predicate;
 
 public class ConditionContext
 {
-    private ClientPlayerEntity player;
+    private LocalPlayer player;
     private BookDocument book;
 
-    public ClientPlayerEntity getPlayer()
+    public LocalPlayer getPlayer()
     {
         return player;
     }
 
-    public void setPlayer(ClientPlayerEntity player)
+    public void setPlayer(LocalPlayer player)
     {
         this.player = player;
     }

@@ -1,17 +1,15 @@
 package gigaherz.guidebook;
 
 import gigaherz.guidebook.client.ClientHandlers;
-import gigaherz.guidebook.client.ClientProxy;
 import gigaherz.guidebook.common.IModProxy;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.GuidebookItem;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.LanguageMap;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,6 +21,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ObjectHolder;
@@ -36,27 +35,22 @@ public class GuidebookMod
 
     public static GuidebookMod instance;
 
-    @Deprecated
-    public static final IModProxy proxy = DistExecutor.unsafeRunForDist(() -> () -> new ClientProxy(), () -> () -> new IModProxy()
-    {
-    });
-
     // Items
     @ObjectHolder("gbook:guidebook")
     public static GuidebookItem guidebook;
 
     public static final Logger logger = LogManager.getLogger(MODID);
 
-    public static final ItemGroup tabGuidebooks = new ItemGroup(MODID)
+    public static final CreativeModeTab tabGuidebooks = new CreativeModeTab(MODID)
     {
         @Override
-        public ItemStack createIcon()
+        public ItemStack makeIcon()
         {
             return new ItemStack(guidebook);
         }
 
         @Override
-        public void fill(NonNullList<ItemStack> items)
+        public void fillItemList(NonNullList<ItemStack> items)
         {
             //super.fill(items);
 
@@ -71,10 +65,6 @@ public class GuidebookMod
     {
         instance = this;
 
-        DeferredWorkQueue.runLater(() -> {
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> BookRegistry::injectCustomResourcePack);
-        });
-
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addGenericListener(Item.class, this::registerItems);
         modEventBus.addListener(this::modConfig);
@@ -86,7 +76,7 @@ public class GuidebookMod
         modLoadingContext.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
     }
 
-    private void modConfig(ModConfig.ModConfigEvent event)
+    private void modConfig(ModConfigEvent event)
     {
         ModConfig config = event.getConfig();
         if (config.getSpec() == ConfigValues.CLIENT_SPEC)
@@ -99,17 +89,16 @@ public class GuidebookMod
     {
         event.getRegistry().registerAll(
                 new GuidebookItem(new Item.Properties()
-                        .maxStackSize(1)
-                        .group(GuidebookMod.tabGuidebooks)
-                        .setISTER(() -> ClientHandlers::createBookItemRenderer)
+                        .stacksTo(1)
+                        .tab(GuidebookMod.tabGuidebooks)
                 ).setRegistryName("guidebook")
         );
     }
 
     private void playerLogIn(PlayerEvent.PlayerLoggedInEvent event)
     {
-        PlayerEntity e = event.getPlayer();
-        if (!e.world.isRemote)
+        Player e = event.getPlayer();
+        if (!e.level.isClientSide)
         {
             for (String g : ConfigValues.giveOnFirstJoin)
             {

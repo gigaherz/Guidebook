@@ -5,9 +5,9 @@ import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.drawing.VisualText;
 import gigaherz.guidebook.guidebook.util.Rect;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.TextComponent;
 import org.w3c.dom.NamedNodeMap;
 
 import java.util.List;
@@ -39,20 +39,20 @@ public class ElementText extends ElementInline
         scale = style.scale;
     }
 
-    private ITextProperties getStringWithFormat(ITextProperties text)
+    private FormattedText getStringWithFormat(FormattedText text)
     {
-        return new StringTextComponent(text.getString()).modifyStyle(style -> style
-                .setBold(bold)
-                .setItalic(italics)
+        return new TextComponent(text.getString()).withStyle(style -> style
+                .withBold(bold)
+                .withItalic(italics)
                 .setUnderlined(underline)
                 .setStrikethrough(strikethrough)
                 .setObfuscated(obfuscated)
-                .setFontId(font));
+                .withFont(font));
     }
 
-    protected ITextProperties getActualString()
+    protected FormattedText getActualString()
     {
-        return new StringTextComponent(text);
+        return new TextComponent(text);
     }
 
     @Override

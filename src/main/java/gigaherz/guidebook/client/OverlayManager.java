@@ -1,14 +1,14 @@
 package gigaherz.guidebook.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.MultiBufferSource;
 
 public class OverlayManager
 {
     @FunctionalInterface
     public interface IDrawable
     {
-        void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, float partialTicks);
+        void render(PoseStack matrixStack, MultiBufferSource buffer, float partialTicks);
     }
 
     public interface IOverlayRenderer extends IDrawable
@@ -38,7 +38,7 @@ public class OverlayManager
         }
 
         @Override
-        public void render(MatrixStack matrixStack, IRenderTypeBuffer buffer, float partialTicks)
+        public void render(PoseStack matrixStack, MultiBufferSource buffer, float partialTicks)
         {
             drawable.render(matrixStack, buffer, partialTicks);
         }

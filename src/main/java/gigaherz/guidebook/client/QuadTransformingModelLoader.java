@@ -5,13 +5,12 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.*;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.core.Direction;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.data.IDynamicBakedModel;
@@ -23,6 +22,15 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
+
 public class QuadTransformingModelLoader implements IModelLoader<QuadTransformingModelLoader.Model>
 {
     private final Function<BakedQuad, BakedQuad> transformer;
@@ -33,7 +41,7 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
     }
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager)
+    public void onResourceManagerReload(ResourceManager resourceManager)
     {
         // No need to do anything for this loader.
     }
@@ -41,7 +49,7 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
     @Override
     public Model read(JsonDeserializationContext deserializationContext, JsonObject modelContents)
     {
-        BlockModel model = deserializationContext.deserialize(JSONUtils.getJsonObject(modelContents, "model"), BlockModel.class);
+        BlockModel model = deserializationContext.deserialize(GsonHelper.getAsJsonObject(modelContents, "model"), BlockModel.class);
         return new Model(model);
     }
 
@@ -55,26 +63,26 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
         }
 
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
+        public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation)
         {
-            IBakedModel childModel = model.bakeModel(bakery, model, spriteGetter, modelTransform, modelLocation, model.getGuiLight().isSideLit());
-            return new BakedModel(childModel, overrides);
+            BakedModel childModel = model.bake(bakery, model, spriteGetter, modelTransform, modelLocation, model.getGuiLight().lightLikeBlock());
+            return new Baked(childModel, overrides);
         }
 
         @Override
-        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
         {
-            return model.getTextures(modelGetter, missingTextureErrors);
+            return model.getMaterials(modelGetter, missingTextureErrors);
         }
     }
 
-    public class BakedModel implements IDynamicBakedModel
+    public class Baked implements IDynamicBakedModel
     {
         private final Map<BakedQuad, BakedQuad> processedQuadCache = Maps.newHashMap();
-        private final IBakedModel childModel;
-        private final ItemOverrideList overrides;
+        private final BakedModel childModel;
+        private final ItemOverrides overrides;
 
-        public BakedModel(IBakedModel childModel, ItemOverrideList overrides)
+        public Baked(BakedModel childModel, ItemOverrides overrides)
         {
             this.childModel = childModel;
             this.overrides = overrides;
@@ -95,9 +103,9 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
         }
 
         @Override
-        public boolean isAmbientOcclusion()
+        public boolean useAmbientOcclusion()
         {
-            return childModel.isAmbientOcclusion();
+            return childModel.useAmbientOcclusion();
         }
 
         @Override
@@ -107,25 +115,25 @@ public class QuadTransformingModelLoader implements IModelLoader<QuadTransformin
         }
 
         @Override
-        public boolean isSideLit()
+        public boolean usesBlockLight()
         {
-            return childModel.isSideLit();
+            return childModel.usesBlockLight();
         }
 
         @Override
-        public boolean isBuiltInRenderer()
+        public boolean isCustomRenderer()
         {
-            return childModel.isBuiltInRenderer();
+            return childModel.isCustomRenderer();
         }
 
         @Override
-        public TextureAtlasSprite getParticleTexture()
+        public TextureAtlasSprite getParticleIcon()
         {
-            return childModel.getParticleTexture();
+            return childModel.getParticleIcon();
         }
 
         @Override
-        public ItemOverrideList getOverrides()
+        public ItemOverrides getOverrides()
         {
             return overrides;
         }

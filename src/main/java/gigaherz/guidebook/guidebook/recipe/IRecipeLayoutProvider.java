@@ -1,9 +1,9 @@
 package gigaherz.guidebook.guidebook.recipe;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -31,7 +31,7 @@ public interface IRecipeLayoutProvider
      * @return A valid ProvidedComponents object containing the above, and null if the recipe was not found
      */
     @Nonnull
-    RecipeLayout getRecipeLayout(@Nonnull World world, @Nonnull ItemStack targetOutput, int recipeIndex);
+    RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ItemStack targetOutput, int recipeIndex);
 
     /**
      * Prepares display of the recipe that matches the specified key by creating a ProvidedComponents construct that contains:
@@ -44,7 +44,7 @@ public interface IRecipeLayoutProvider
      * @return A valid ProvidedComponents object containing the above, and null if the recipe was not found
      */
     @Nonnull
-    RecipeLayout getRecipeLayout(@Nonnull World world, @Nonnull ResourceLocation recipeKey);
+    RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ResourceLocation recipeKey);
 
     /**
      * A helper method designed to validate ItemStacks from recipes with metadata that is OreDictionary.WILDCARD_VALUE
@@ -61,8 +61,8 @@ public interface IRecipeLayoutProvider
         ItemStack base = stack.copy();
         stacks.add(base);
 
-        if (base.isDamageable())
-            base.setDamage(0);
+        if (base.isDamageableItem())
+            base.setDamageValue(0);
         return stacks;
     }
 }

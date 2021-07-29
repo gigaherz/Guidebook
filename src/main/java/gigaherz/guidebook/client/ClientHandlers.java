@@ -1,19 +1,16 @@
 package gigaherz.guidebook.client;
 
 import gigaherz.guidebook.GuidebookMod;
-import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.client.AnimatedBookBackground;
 import gigaherz.guidebook.guidebook.client.BookBakedModel;
-import gigaherz.guidebook.guidebook.client.GuiGuidebook;
 import gigaherz.guidebook.guidebook.client.SpecialBakedModel;
 import gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
-import net.minecraft.resources.IReloadableResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
@@ -22,6 +19,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 
 public class ClientHandlers
 {
@@ -35,17 +33,18 @@ public class ClientHandlers
 
         // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
 
-        BookRegistry.initClientResourceListener((IReloadableResourceManager) Minecraft.getInstance().getResourceManager());
-    }
-
-    public static ItemStackTileEntityRenderer createBookItemRenderer()
-    {
-        return new BookItemRenderer();
+        BookRegistry.initClientResourceListener((ReloadableResourceManager) Minecraft.getInstance().getResourceManager());
     }
 
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModClientEvents
     {
+        @SubscribeEvent
+        public static void construct(FMLConstructModEvent event)
+        {
+            BookRegistry.injectCustomResourcePack();
+        }
+
         @SubscribeEvent
         public static void clientInit(ParticleFactoryRegisterEvent event)
         {

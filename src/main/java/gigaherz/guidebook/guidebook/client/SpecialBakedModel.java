@@ -2,41 +2,48 @@ package gigaherz.guidebook.guidebook.client;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import gigaherz.guidebook.guidebook.BookRegistry;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.model.*;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.resource.IResourceType;
-import net.minecraftforge.resource.SelectiveReloadStateHandler;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class SpecialBakedModel implements IBakedModel
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
+
+public class SpecialBakedModel implements BakedModel
 {
     private final boolean isSideLit;
-    private final ItemCameraTransforms cameraTransforms;
+    private final ItemTransforms cameraTransforms;
     private final TextureAtlasSprite particle;
-    private final ItemOverrideList overrideList;
+    private final ItemOverrides overrideList;
 
-    public SpecialBakedModel(ModelBakery bakery, IUnbakedModel unbakedModel, Function<ResourceLocation, IUnbakedModel> modelGetter,
-                             Function<RenderMaterial, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemCameraTransforms cameraTransforms,
+    public SpecialBakedModel(ModelBakery bakery, UnbakedModel unbakedModel, Function<ResourceLocation, UnbakedModel> modelGetter,
+                             Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemTransforms cameraTransforms,
                              @Nullable TextureAtlasSprite particle)
     {
         this.particle = particle;
         this.isSideLit = isSideLit;
         this.cameraTransforms = cameraTransforms;
-        this.overrideList = new ItemOverrideList(bakery, unbakedModel, modelGetter, spriteGetter, Collections.emptyList());
+        this.overrideList = new ItemOverrides(bakery, unbakedModel, modelGetter, spriteGetter, Collections.emptyList());
     }
 
     @Override
@@ -46,7 +53,7 @@ public class SpecialBakedModel implements IBakedModel
     }
 
     @Override
-    public boolean isAmbientOcclusion()
+    public boolean useAmbientOcclusion()
     {
         return true;
     }
@@ -58,40 +65,40 @@ public class SpecialBakedModel implements IBakedModel
     }
 
     @Override
-    public boolean isSideLit()
+    public boolean usesBlockLight()
     {
         return isSideLit;
     }
 
     @Override
-    public boolean isBuiltInRenderer()
+    public boolean isCustomRenderer()
     {
         return true;
     }
 
     @Override
-    public TextureAtlasSprite getParticleTexture()
+    public TextureAtlasSprite getParticleIcon()
     {
         return particle;
     }
 
     @Deprecated
     @Override
-    public ItemCameraTransforms getItemCameraTransforms()
+    public ItemTransforms getTransforms()
     {
         return cameraTransforms;
     }
 
     @Override
-    public ItemOverrideList getOverrides()
+    public ItemOverrides getOverrides()
     {
         return overrideList;
     }
 
-    public static ItemCameraTransforms.TransformType cameraTransformType;
+    public static ItemTransforms.TransformType cameraTransformType;
 
     @Override
-    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack mat)
+    public BakedModel handlePerspective(ItemTransforms.TransformType cameraTransformType, PoseStack mat)
     {
         SpecialBakedModel.cameraTransformType = cameraTransformType;
         return this;
@@ -100,17 +107,17 @@ public class SpecialBakedModel implements IBakedModel
     public static class Model implements IModelGeometry<Model>
     {
         @Override
-        public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
+        public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation)
         {
-            RenderMaterial particleLocation = owner.resolveTexture("particle");
+            Material particleLocation = owner.resolveTexture("particle");
             TextureAtlasSprite part = spriteGetter.apply(particleLocation);
 
             return new SpecialBakedModel(
-                    bakery, owner.getOwnerModel(), bakery::getUnbakedModel, spriteGetter, owner.isSideLit(), owner.getCameraTransforms(), part);
+                    bakery, owner.getOwnerModel(), bakery::getModel, spriteGetter, owner.isSideLit(), owner.getCameraTransforms(), part);
         }
 
         @Override
-        public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+        public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
         {
             return Collections.emptyList();
         }
@@ -119,17 +126,9 @@ public class SpecialBakedModel implements IBakedModel
     public static class ModelLoader implements IModelLoader<Model>
     {
         @Override
-        public void onResourceManagerReload(IResourceManager resourceManager)
+        public void onResourceManagerReload(ResourceManager resourceManager)
         {
-            // For compatibility, call the selective version from the non-selective function
-            onResourceManagerReload(resourceManager, SelectiveReloadStateHandler.INSTANCE.get());
-        }
-
-        @Override
-        public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate)
-        {
-            if (resourcePredicate.test(BookResourceType.INSTANCE))
-                BookRegistry.parseAllBooks(resourceManager);
+            BookRegistry.parseAllBooks(resourceManager);
         }
 
         @Override

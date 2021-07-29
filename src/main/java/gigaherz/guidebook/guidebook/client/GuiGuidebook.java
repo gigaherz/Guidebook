@@ -1,6 +1,7 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import gigaherz.guidebook.ConfigValues;
 import gigaherz.guidebook.GuidebookMod;
@@ -8,17 +9,20 @@ import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookRegistry;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.ItemModelMesher;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.lwjgl.glfw.GLFW;
+
+import net.minecraft.client.gui.components.Button.OnPress;
 
 public class GuiGuidebook extends Screen
 {
@@ -34,7 +38,7 @@ public class GuiGuidebook extends Screen
     private Button buttonBack;
     private Button buttonHome;
 
-    private ItemModelMesher mesher = Minecraft.getInstance().getItemRenderer().getItemModelMesher();
+    private ItemModelShaper mesher = Minecraft.getInstance().getItemRenderer().getItemModelShaper();
     private TextureManager renderEngine = Minecraft.getInstance().textureManager;
 
     private BookRendering book;
@@ -43,7 +47,7 @@ public class GuiGuidebook extends Screen
 
     public GuiGuidebook(ResourceLocation book)
     {
-        super(new TranslationTextComponent("text.gbook.book.title"));
+        super(new TranslatableComponent("text.gbook.book.title"));
         bookLocation = book;
     }
 
@@ -63,7 +67,7 @@ public class GuiGuidebook extends Screen
         {
             initialized = true;
 
-            ClientPlayerEntity player = Minecraft.getInstance().player;
+            LocalPlayer player = Minecraft.getInstance().player;
             ConditionContext conditionContext = new ConditionContext();
             conditionContext.setPlayer(player);
 
@@ -91,22 +95,22 @@ public class GuiGuidebook extends Screen
             int right = left + BookRendering.DEFAULT_BOOK_WIDTH;
             int top = (this.height - BookRendering.DEFAULT_BOOK_HEIGHT) / 2 - 9;
             int bottom = top + BookRendering.DEFAULT_BOOK_HEIGHT;
-            this.addButton(this.buttonHome = new SpriteButton(left - 10, top - 8, 6, this::onHomeClicked));
-            this.addButton(this.buttonBack = new SpriteButton(left + 8, top - 5, 2, this::onBackClicked));
-            this.addButton(this.buttonClose = new SpriteButton(right - 6, top - 6, 3, this::onCloseClicked));
+            this.addRenderableWidget(this.buttonHome = new SpriteButton(left - 10, top - 8, 6, this::onHomeClicked));
+            this.addRenderableWidget(this.buttonBack = new SpriteButton(left + 8, top - 5, 2, this::onBackClicked));
+            this.addRenderableWidget(this.buttonClose = new SpriteButton(right - 6, top - 6, 3, this::onCloseClicked));
             if (useNaturalArrows)
             {
-                this.addButton(this.buttonPreviousPage = new SpriteButton(left + 24, bottom - 13, 1, this::onPrevPageClicked));
-                this.addButton(this.buttonNextPage = new SpriteButton(right - 42, bottom - 13, 0, this::onNextPageClicked));
-                this.addButton(this.buttonPreviousChapter = new SpriteButton(left + 2, bottom - 13, 5, this::onPrevChapterClicked));
-                this.addButton(this.buttonNextChapter = new SpriteButton(right - 23, bottom - 13, 4, this::onNextChapterClicked));
+                this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(left + 24, bottom - 13, 1, this::onPrevPageClicked));
+                this.addRenderableWidget(this.buttonNextPage = new SpriteButton(right - 42, bottom - 13, 0, this::onNextPageClicked));
+                this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(left + 2, bottom - 13, 5, this::onPrevChapterClicked));
+                this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(right - 23, bottom - 13, 4, this::onNextChapterClicked));
             }
             else
             {
-                this.addButton(this.buttonPreviousPage = new SpriteButton(left + 24, bottom - 13, 0, this::onPrevPageClicked));
-                this.addButton(this.buttonNextPage = new SpriteButton(right - 42, bottom - 13, 1, this::onNextPageClicked));
-                this.addButton(this.buttonPreviousChapter = new SpriteButton(left + 2, bottom - 13, 4, this::onPrevChapterClicked));
-                this.addButton(this.buttonNextChapter = new SpriteButton(right - 23, bottom - 13, 5, this::onNextChapterClicked));
+                this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(left + 24, bottom - 13, 0, this::onPrevPageClicked));
+                this.addRenderableWidget(this.buttonNextPage = new SpriteButton(right - 42, bottom - 13, 1, this::onNextPageClicked));
+                this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(left + 2, bottom - 13, 4, this::onPrevChapterClicked));
+                this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(right - 23, bottom - 13, 5, this::onNextChapterClicked));
             }
         }
 
@@ -117,8 +121,8 @@ public class GuiGuidebook extends Screen
 
     private void setupConditionsAndPosition()
     {
-        this.width = minecraft.getMainWindow().getScaledWidth();
-        this.height = minecraft.getMainWindow().getScaledHeight();
+        this.width = minecraft.getWindow().getGuiScaledWidth();
+        this.height = minecraft.getWindow().getGuiScaledHeight();
         if (book.refreshScalingFactor())
         {
             book.resetRendering(false);
@@ -142,7 +146,7 @@ public class GuiGuidebook extends Screen
         super.tick();
 
         if (background.update())
-            minecraft.displayGuiScreen(null);
+            minecraft.setScreen(null);
 
         updateButtonStates();
     }
@@ -222,7 +226,7 @@ public class GuiGuidebook extends Screen
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
         double backgroundScale = book.getScalingFactor() / book.getBook().getFontSize();
         double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
@@ -244,7 +248,7 @@ public class GuiGuidebook extends Screen
         }
     }
 
-    public void drawTooltip(MatrixStack matrixStack, ItemStack stack, int x, int y)
+    public void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y)
     {
         renderTooltip(matrixStack, stack, x, y);
     }
@@ -264,12 +268,12 @@ public class GuiGuidebook extends Screen
         return super.mouseClicked(x, y, mouseButton);
     }
 
-    public FontRenderer getFontRenderer()
+    public Font getFontRenderer()
     {
         return this.font;
     }
 
-    public ItemModelMesher getMesher()
+    public ItemModelShaper getMesher()
     {
         return mesher;
     }
@@ -330,22 +334,24 @@ public class GuiGuidebook extends Screen
     {
         private final int whichIcon;
 
-        public SpriteButton(int x, int y, int iconIndex, IPressable press)
+        public SpriteButton(int x, int y, int iconIndex, OnPress press)
         {
-            super(x, y, xSize[iconIndex], ySize[iconIndex], new StringTextComponent(""), press);
+            super(x, y, xSize[iconIndex], ySize[iconIndex], new TextComponent(""), press);
             this.whichIcon = iconIndex;
         }
 
         @Override
-        public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+        public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
         {
             boolean hover = mouseX >= this.x &&
                             mouseY >= this.y &&
                             mouseX < this.x + this.width &&
                             mouseY < this.y + this.height;
 
-            GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            minecraft.getTextureManager().bindTexture(BOOK_GUI_TEXTURES);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.setShaderTexture(0, BOOK_GUI_TEXTURES);
+
             int x = xPixel[whichIcon];
             int y = yPixel[whichIcon];
             int w = xSize[whichIcon];

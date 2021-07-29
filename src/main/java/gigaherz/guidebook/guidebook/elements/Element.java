@@ -7,8 +7,8 @@ import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Point;
 import gigaherz.guidebook.guidebook.util.Rect;
-import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -74,7 +74,7 @@ public abstract class Element
 
     public abstract int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect page);
 
-    public void findTextures(Set<RenderMaterial> textures)
+    public void findTextures(Set<Material> textures)
     {
     }
 

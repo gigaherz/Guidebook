@@ -1,14 +1,14 @@
 package gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.client.BookRendering;
 import gigaherz.guidebook.guidebook.util.Rect;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.TextComponent;
 
 public abstract class VisualElement extends Rect
 {
@@ -32,15 +32,15 @@ public abstract class VisualElement extends Rect
         this.verticalAlign = verticalAlign;
     }
 
-    public void draw(IBookGraphics nav, MatrixStack matrixStack)
+    public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         if (BookRendering.DEBUG_DRAW_BOUNDS)
         {
-            AbstractGui.fill(matrixStack, this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
+            GuiComponent.fill(matrixStack, this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
         }
     }
 
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
     {
     }
 
@@ -57,8 +57,8 @@ public abstract class VisualElement extends Rect
         return false;
     }
 
-    public ITextProperties getText()
+    public FormattedText getText()
     {
-        return new StringTextComponent("");
+        return new TextComponent("");
     }
 }

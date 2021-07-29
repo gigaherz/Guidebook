@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook.drawing;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.util.Size;
@@ -18,7 +18,7 @@ public class VisualPanel extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav, MatrixStack matrixStack)
+    public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         super.draw(nav, matrixStack);
         children.forEach(e -> e.draw(nav, matrixStack));
@@ -27,7 +27,7 @@ public class VisualPanel extends VisualElement
     private VisualElement lastMouseOver = null;
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
     {
         double x = hoverContext.mouseScaledX;
         double y = hoverContext.mouseScaledY;

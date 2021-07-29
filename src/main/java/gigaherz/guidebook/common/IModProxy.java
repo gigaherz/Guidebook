@@ -1,6 +1,6 @@
 package gigaherz.guidebook.common;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Collection;
 import java.util.Collections;

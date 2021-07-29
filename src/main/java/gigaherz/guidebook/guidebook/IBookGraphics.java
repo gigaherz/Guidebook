@@ -1,13 +1,13 @@
 package gigaherz.guidebook.guidebook;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.guidebook.drawing.VisualElement;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -41,27 +41,27 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addString(MatrixStack matrixStack, int left, int top, ITextComponent s, int color, float scale);
+    int addString(PoseStack matrixStack, int left, int top, Component s, int color, float scale);
 
     boolean mouseClicked(int mouseX, int mouseY, int mouseButton);
 
-    boolean mouseHover(MatrixStack matrixStack, int mouseX, int mouseY);
+    boolean mouseHover(PoseStack matrixStack, int mouseX, int mouseY);
 
-    void drawCurrentPages(MatrixStack matrixStack);
+    void drawCurrentPages(PoseStack matrixStack);
 
     BookDocument getBook();
 
-    void drawItemStack(MatrixStack matrixStack, int left, int top, int z, ItemStack stack, int color, float scale);
+    void drawItemStack(PoseStack matrixStack, int left, int top, int z, ItemStack stack, int color, float scale);
 
-    void drawImage(MatrixStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
+    void drawImage(PoseStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
 
-    void drawTooltip(MatrixStack matrixStack, ItemStack stack, int x, int y);
+    void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y);
 
     Object owner();
 
-    Size measure(ITextProperties text);
+    Size measure(FormattedText text);
 
-    List<VisualElement> measure(ITextProperties text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment);
+    List<VisualElement> measure(FormattedText text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment);
 
     int getActualBookHeight();
 
@@ -69,5 +69,5 @@ public interface IBookGraphics
 
     void resetRendering(boolean contentsChanged);
 
-    World getWorld();
+    Level getWorld();
 }

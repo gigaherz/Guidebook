@@ -3,7 +3,7 @@ package gigaherz.guidebook.guidebook.conditions;
 import com.google.common.base.Strings;
 import gigaherz.guidebook.guidebook.BookDocument;
 import gigaherz.guidebook.guidebook.BookParsingException;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Node;

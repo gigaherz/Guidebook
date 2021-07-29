@@ -1,7 +1,7 @@
 package gigaherz.guidebook.guidebook.elements;
 
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class ElementTranslation extends ElementText
 {
@@ -11,8 +11,8 @@ public class ElementTranslation extends ElementText
     }
 
     @Override
-    protected ITextProperties getActualString()
+    protected FormattedText getActualString()
     {
-        return new TranslationTextComponent(text);
+        return new TranslatableComponent(text);
     }
 }

@@ -1,12 +1,12 @@
 package gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import gigaherz.guidebook.guidebook.HoverContext;
 import gigaherz.guidebook.guidebook.IBookGraphics;
 import gigaherz.guidebook.guidebook.SectionRef;
 import gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.NonNullList;
 
 public class VisualStack extends VisualElement
 {
@@ -33,7 +33,7 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav, MatrixStack matrixStack)
+    public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         super.draw(nav, matrixStack);
         ItemStack stack = getCurrentStack();
@@ -50,7 +50,7 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, MatrixStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
     {
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)

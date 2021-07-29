@@ -1,18 +1,17 @@
 package gigaherz.guidebook.guidebook.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Quaternion;
 import gigaherz.guidebook.GuidebookMod;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import com.mojang.blaze3d.platform.Lighting;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.CompositeModel;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.lwjgl.opengl.GL11;
@@ -67,29 +66,10 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         return false;
     }
 
-    private static void enableBookLighting()
-    {
-        RenderSystem.enableLighting();
-        GlStateManager.enableLight(0);
-        GlStateManager.enableLight(1);
-        RenderSystem.colorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
-        RenderSystem.enableColorMaterial();
-        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_POSITION, GlStateManager.getBuffer(-5.0f, -5f, 1.0f, 0.0f));
-        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, GlStateManager.getBuffer(0.4F, 0.4F, 0.4F, 1.0F));
-        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_AMBIENT, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.light(GL11.GL_LIGHT0, GL11.GL_SPECULAR, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_POSITION, GlStateManager.getBuffer(5.0f, -6f, 5.0f, 0.0f));
-        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, GlStateManager.getBuffer(0.2F, 0.2F, 0.2F, 1.0F));
-        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_AMBIENT, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        GlStateManager.light(GL11.GL_LIGHT1, GL11.GL_SPECULAR, GlStateManager.getBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-        RenderSystem.shadeModel(GL11.GL_SMOOTH);
-        GlStateManager.lightModel(GL11.GL_LIGHT_MODEL_AMBIENT, GlStateManager.getBuffer(0.4F, 0.4F, 0.4F, 1.0F));
-    }
-
     @Override
-    public void draw(MatrixStack matrixStack, float partialTicks, int bookHeight, float scalingFactor)
+    public void draw(PoseStack matrixStack, float partialTicks, int bookHeight, float scalingFactor)
     {
-        IBakedModel modelBookA, modelBookB;
+        BakedModel modelBookA, modelBookB;
 
         if (closing)
             progress += partialTicks;
@@ -98,15 +78,15 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
         float angleX = progress * ANGLE_PER_TICK;
 
-        IBakedModel unbakedModel = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND);
+        BakedModel unbakedModel = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND);
         if (!(unbakedModel instanceof CompositeModel))
             return;
 
         CompositeModel parts = (CompositeModel) unbakedModel;
-        IBakedModel book00 = parts.getPart("0");
-        IBakedModel book30 = parts.getPart("30");
-        IBakedModel book60 = parts.getPart("60");
-        IBakedModel book90 = parts.getPart("90");
+        BakedModel book00 = parts.getPart("0");
+        BakedModel book30 = parts.getPart("30");
+        BakedModel book60 = parts.getPart("60");
+        BakedModel book90 = parts.getPart("90");
 
         float blend;
         if (angleX <= 0)
@@ -143,32 +123,22 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         }
 
         RenderSystem.clearDepth(1.0);
-        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT, Minecraft.IS_RUNNING_ON_MAC);
-
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        RenderSystem.color4f(1, 1, 1, 1);
+        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT, Minecraft.ON_OSX);
 
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         RenderSystem.disableCull();
-        RenderSystem.enableAlphaTest();
 
-        RenderSystem.pushMatrix();
-        RenderSystem.multMatrix(matrixStack.getLast().getMatrix());
+        Lighting.setupForEntityInInventory();
+
+        matrixStack.pushPose();
         {
-            RenderSystem.enableRescaleNormal();
-            enableBookLighting();
+            matrixStack.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
+            matrixStack.mulPose(Quaternion.fromXYZ(0, (float) Math.toRadians(180), 0));
+            matrixStack.mulPose(Quaternion.fromXYZ((float) Math.toRadians(-130), 0, 0));
+            matrixStack.scale(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
 
-            RenderSystem.translated(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
-            RenderSystem.rotatef(180, 0, 1, 0);
-            RenderSystem.rotatef(-130, 1, 0, 0);
-            RenderSystem.scaled(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
-
-            RenderSystem.rotatef(angleX * 1.1f, 0, 0, 1);
-
-            RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-            gui.getRenderEngine().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+            matrixStack.mulPose(Quaternion.fromXYZ(0,0, (float) Math.toRadians(angleX * 1.1f)));
 
             if (blend > 0 && modelBookB != null)
             {
@@ -179,42 +149,50 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
                 renderModel(modelBookA);
             }
 
-            RenderHelper.disableStandardItemLighting();
-            RenderSystem.disableRescaleNormal();
         }
-        RenderSystem.popMatrix();
+        matrixStack.popPose();
+
+        Lighting.setupForFlatItems();
 
         RenderSystem.enableCull();
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
     }
 
-    private static void renderModel(IBakedModel model)
+    private static void renderModel(BakedModel model)
     {
-        MatrixStack matrixStack = new MatrixStack();
-        matrixStack.push();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
+        RenderSystem.setShader(GameRenderer::getBlockShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+
+        PoseStack matrixStack = new PoseStack();
+        matrixStack.pushPose();
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder worldrenderer = tessellator.getBuilder();
         List<BakedQuad> quads = model.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
-        worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+        worldrenderer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
         for (BakedQuad quad : quads)
         {
-            worldrenderer.addVertexData(matrixStack.getLast(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
+            worldrenderer.putBulkData(matrixStack.last(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
         }
-        tessellator.draw();
+        tessellator.end();
     }
 
-    private static void renderModelInterpolate(IBakedModel modelA, IBakedModel modelB, float blend)
+    private static void renderModelInterpolate(BakedModel modelA, BakedModel modelB, float blend)
     {
-        MatrixStack matrixStack = new MatrixStack();
-        matrixStack.push();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
+        RenderSystem.setShader(GameRenderer::getBlockShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+
+        PoseStack matrixStack = new PoseStack();
+        matrixStack.pushPose();
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder worldrenderer = tessellator.getBuilder();
         List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
         List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
 
-        worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-        int length = DefaultVertexFormats.BLOCK.getSize();
+        worldrenderer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+        int length = DefaultVertexFormat.BLOCK.getVertexSize();
 
         int minSize = Math.min(generalQuadsA.size(), generalQuadsB.size());
 
@@ -223,8 +201,8 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
             BakedQuad quadA = generalQuadsA.get(i);
             BakedQuad quadB = generalQuadsB.get(i);
 
-            int[] dataA = quadA.getVertexData();
-            int[] dataB = quadB.getVertexData();
+            int[] dataA = quadA.getVertices();
+            int[] dataB = quadB.getVertices();
 
             int[] blended = Arrays.copyOf(dataA, dataA.length);
 
@@ -239,9 +217,9 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
                 }
             }
 
-            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getFace(), quadA.getSprite(), quadA.applyDiffuseLighting());
-            worldrenderer.addVertexData(matrixStack.getLast(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
+            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getDirection(), quadA.getSprite(), quadA.isShade());
+            worldrenderer.putBulkData(matrixStack.last(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0, 0, true);
         }
-        tessellator.draw();
+        tessellator.end();
     }
 }

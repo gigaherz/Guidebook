@@ -2,9 +2,9 @@ package gigaherz.guidebook.guidebook.recipe;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,7 +18,7 @@ public class RecipeLayoutProviders
 
     private static final Map<ResourceLocation, IRecipeLayoutProvider> registry = Maps.newHashMap();
 
-    public static void register(IRecipeType<?> type, VanillaRecipeLayoutProvider provider)
+    public static void register(RecipeType<?> type, VanillaRecipeLayoutProvider provider)
     {
         ResourceLocation id = Registry.RECIPE_TYPE.getKey(type);
         registry.put(id, provider);
@@ -31,12 +31,12 @@ public class RecipeLayoutProviders
 
     static
     {
-        register(IRecipeType.CRAFTING, VANILLA);
-        register(IRecipeType.SMELTING, VANILLA);
-        register(IRecipeType.CAMPFIRE_COOKING, VANILLA);
-        register(IRecipeType.BLASTING, VANILLA);
-        register(IRecipeType.SMOKING, VANILLA);
-        register(IRecipeType.STONECUTTING, VANILLA);
+        register(RecipeType.CRAFTING, VANILLA);
+        register(RecipeType.SMELTING, VANILLA);
+        register(RecipeType.CAMPFIRE_COOKING, VANILLA);
+        register(RecipeType.BLASTING, VANILLA);
+        register(RecipeType.SMOKING, VANILLA);
+        register(RecipeType.STONECUTTING, VANILLA);
         // backward compatibility
         registerAlias(new ResourceLocation("minecraft:shaped"), VANILLA);
         registerAlias(new ResourceLocation("minecraft:shapeless"), VANILLA);

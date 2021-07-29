@@ -4,13 +4,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.14', changing: true
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
-apply plugin: 'eclipse'
 
 repositories {
     maven {
@@ -33,17 +32,17 @@ repositories {
 }
 
 version = "3.2.1"
-group = "gigaherz.guidebook" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "dev.gigaherz.guidebook"
 archivesBaseName = "Guidebook-UNKNOWN"
 
 project.afterEvaluate {
     archivesBaseName = "Guidebook-${project.MC_VERSION}"
 }
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = JavaVersion.VERSION_1_8
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
 minecraft {
-    mappings channel: 'snapshot', version: '20210120-1.16.4'
+    mappings channel: 'official', version: '1.17.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -53,10 +52,10 @@ minecraft {
 
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
+            property 'legacyClassPath', '{minecraft_classpath}'
 
             mods {
                 thismod {
-                    setProject(project(":"))
                     source sourceSets.main
                 }
             }
@@ -78,10 +77,10 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.5-36.0.43'
+    minecraft 'net.minecraftforge:forge:1.17.1-37.0.16-forge-rendertypes-fix'
 
-    compileOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71:api")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71")
+    //compileOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71:api")
+    //runtimeOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71")
 }
 
 jar {

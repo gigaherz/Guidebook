@@ -7,8 +7,8 @@ import gigaherz.guidebook.guidebook.IConditionSource;
 import gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.IResource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -107,7 +107,7 @@ public class TemplateLibrary implements IConditionSource
                     }
                 }
 
-                IResource res = Minecraft.getInstance().getResourceManager().getResource(loc);
+                Resource res = Minecraft.getInstance().getResourceManager().getResource(loc);
                 try (InputStream stream = res.getInputStream())
                 {
                     lib.parseLibrary(stream);
