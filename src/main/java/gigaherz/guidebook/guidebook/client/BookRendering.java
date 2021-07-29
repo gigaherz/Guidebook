@@ -472,7 +472,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public int addString(MatrixStack matrixStack, int left, int top, ITextComponent s, int color, float scale)
+    public int addString(MatrixStack matrixStack, int left, int top, ITextComponent text, int color, float scale)
     {
         FontRenderer fontRenderer = gui.getFontRenderer();
 
@@ -492,13 +492,13 @@ public class BookRendering implements IBookGraphics
             {
                 matrixStack.translate(left0, top0, 0);
                 matrixStack.scale(scale, scale, 1f);
-                fontRenderer.drawText(matrixStack, s, 0, 0, color);
+                fontRenderer.drawText(matrixStack, text, 0, 0, color);
             }
             matrixStack.pop();
         }
         else
         {
-            fontRenderer.drawText(matrixStack, s, left, top, color);
+            fontRenderer.drawText(matrixStack, text, left, top, color);
         }
 
         return fontRenderer.FONT_HEIGHT;
