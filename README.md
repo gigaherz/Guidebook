@@ -7,13 +7,13 @@ Maven Dependency (Gradle)
 ```gradle
 repositories {
     maven {
-        url 'http://dogforce-games.com/maven'
+        url 'https://dogforce-games.com/maven'
     }
 }
 ```
 
 ```gradle
 dependencies {
-    deobfCompile "gigaherz.guidebook:Guidebook-1.13.2:2.9.0"
+    deobfCompile "dev.gigaherz.guidebook:Guidebook-1.17.1:3.3.0"
 }
 ```

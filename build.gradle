@@ -33,7 +33,7 @@ repositories {
 
 version = "3.3.0"
 group = "dev.gigaherz.guidebook"
-archivesBaseName = "Guidebook-UNKNOWN"
+archivesBaseName = "Guidebook-1.17.1"
 
 project.afterEvaluate {
     archivesBaseName = "Guidebook-${project.MC_VERSION}"
@@ -100,6 +100,10 @@ jar {
                 "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}"
         ])
     }
+}
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
 }
 
 tasks.publish.dependsOn build
