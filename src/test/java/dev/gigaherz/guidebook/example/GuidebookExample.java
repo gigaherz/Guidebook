@@ -1,6 +1,6 @@
 package dev.gigaherz.guidebook.example;
 
-import gigaherz.guidebook.guidebook.GuidebookItem;
+import dev.gigaherz.guidebook.guidebook.GuidebookItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;

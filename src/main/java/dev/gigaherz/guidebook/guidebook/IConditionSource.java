@@ -1,0 +1,10 @@
+package dev.gigaherz.guidebook.guidebook;
+
+import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
+
+import java.util.function.Predicate;
+
+public interface IConditionSource
+{
+    Predicate<ConditionContext> getCondition(String name);
+}
