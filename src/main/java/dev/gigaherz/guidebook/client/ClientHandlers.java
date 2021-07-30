@@ -46,8 +46,6 @@ public class ClientHandlers
         BookRegistry.initClientResourceListener((ReloadableResourceManager) Minecraft.getInstance().getResourceManager());
     }
 
-    public static ShaderInstance brightSolidShader;
-
     @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModClientEvents
     {
@@ -78,7 +76,7 @@ public class ClientHandlers
         public static void shaderRegistry(RegisterShadersEvent event) throws IOException
         {
             event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation("gbook:rendertype_bright_solid"), DefaultVertexFormat.NEW_ENTITY), shaderInstance -> {
-                brightSolidShader = shaderInstance;
+                CustomRenderTypes.brightSolidShader = shaderInstance;
             });
         }
     }
@@ -90,11 +88,14 @@ public class ClientHandlers
 
     private static class CustomRenderTypes extends RenderType
     {
+        private static ShaderInstance brightSolidShader;
+
         private static final ShaderStateShard RENDERTYPE_BRIGHT_SOLID_SHADER = new ShaderStateShard(() -> brightSolidShader);
 
-        public CustomRenderTypes(String p_173178_, VertexFormat p_173179_, VertexFormat.Mode p_173180_, int p_173181_, boolean p_173182_, boolean p_173183_, Runnable p_173184_, Runnable p_173185_)
+        private CustomRenderTypes(String s, VertexFormat v, VertexFormat.Mode m, int i, boolean b, boolean b2, Runnable r, Runnable r2)
         {
-            super(p_173178_, p_173179_, p_173180_, p_173181_, p_173182_, p_173183_, p_173184_, p_173185_);
+            super(s, v, m, i, b, b2, r, r2);
+            throw new IllegalStateException("This class is not meant to be constructed!");
         }
 
         public static Function<ResourceLocation, RenderType> BRIGHT_SOLID = Util.memoize(CustomRenderTypes::brightSolid);
