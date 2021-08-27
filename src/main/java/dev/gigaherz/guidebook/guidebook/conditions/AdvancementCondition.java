@@ -6,27 +6,25 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientAdvancements;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.function.Predicate;
 
 public abstract class AdvancementCondition implements Predicate<ConditionContext>
 {
     public final ResourceLocation advancement;
 
-    @SuppressWarnings("unchecked")
     @Nullable
     static AdvancementProgress getAdvancementProgress(ResourceLocation advancement)
     {
-        ClientAdvancements mgr = Minecraft.getInstance().player.connection.getAdvancements();
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return null;
+        ClientAdvancements mgr = player.connection.getAdvancements();
         Advancement adv = mgr.getAdvancements().get(advancement);
-        Map<Advancement, AdvancementProgress> advancementToProgress =
-                ObfuscationReflectionHelper.getPrivateValue(ClientAdvancements.class, mgr, "progress");
-        return advancementToProgress.get(adv);
+        return mgr.progress.get(adv);
     }
 
     protected AdvancementCondition(ResourceLocation advancement)

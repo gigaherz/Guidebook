@@ -22,7 +22,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
@@ -110,7 +109,7 @@ public class BookRegistry
 
         LanguageManager lm = Minecraft.getInstance().getLanguageManager();
 
-        String lang = ObfuscationReflectionHelper.getPrivateValue(LanguageManager.class, lm, "currentCode");
+        String lang = lm.currentCode;
         if (lang == null) lang = "en_us";
         for (ResourceLocation loc : toLoad)
         {

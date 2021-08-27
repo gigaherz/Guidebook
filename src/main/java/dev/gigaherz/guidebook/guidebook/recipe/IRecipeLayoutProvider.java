@@ -1,12 +1,10 @@
 package dev.gigaherz.guidebook.guidebook.recipe;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * @author joazlazer
@@ -44,5 +42,4 @@ public interface IRecipeLayoutProvider
      */
     @Nonnull
     RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ResourceLocation recipeKey);
-
 }

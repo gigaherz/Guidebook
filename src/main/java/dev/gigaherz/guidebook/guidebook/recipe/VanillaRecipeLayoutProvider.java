@@ -16,7 +16,6 @@ import net.minecraftforge.common.crafting.IShapedRecipe;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author joazlazer
