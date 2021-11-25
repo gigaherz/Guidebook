@@ -1,25 +1,25 @@
-modLoader="javafml" #mandatory
-loaderVersion="[37,)" #mandatory
-updateJSONURL="https://raw.githubusercontent.com/gigaherz/Guidebook/master/update.json" #optional
-issueTrackerURL="https://github.com/gigaherz/Guidebook/issues" #optional
-displayURL="https://github.com/gigaherz/Guidebook" #optional
-logoFile="logo.png" #optional
-credits="Thanks for this example mod goes to Java" #optional
-authors="gigaherz" #optional
+modLoader="javafml"
+loaderVersion="[37,)"
 license="BSD (3 clause)"
 
-[[mods]] #mandatory
-modId="gbook" #mandatory
-version="${file.jarVersion}" #mandatory
-displayName="Guidebook" #mandatory
+[[mods]]
+modId="gbook"
+version="${file.jarVersion}"
+displayName="Guidebook"
 description='''
 Books that guide
 '''
+updateJSONURL="https://raw.githubusercontent.com/gigaherz/Guidebook/master/update.json"
+issueTrackerURL="https://github.com/gigaherz/Guidebook/issues"
+displayURL="https://github.com/gigaherz/Guidebook"
+logoFile="logo.png"
+credits="Thanks for this example mod goes to Java"
+authors="gigaherz"
 
-[[dependencies.gbook]] #optional
-    modId="forge" #mandatory
-    mandatory=true #mandatory
-    versionRange="[37.0,)" #mandatory
+[[dependencies.gbook]]
+    modId="forge"
+    mandatory=true
+    versionRange="[37.0.82,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.gbook]]
