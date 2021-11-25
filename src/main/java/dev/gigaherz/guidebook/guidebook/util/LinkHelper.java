@@ -1,6 +1,5 @@
 package dev.gigaherz.guidebook.guidebook.util;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.GuidebookMod;
@@ -11,22 +10,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class LinkHelper
 {
+    private static final TranslatableComponent COPY_TO_CLIPBOARD_1 = new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line1");
+    private static final TranslatableComponent COPY_TO_CLIPBOARD_2 = new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line2");
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
 
     public interface ILinkable
@@ -40,15 +35,9 @@ public class LinkHelper
         {
             switch (context.textAction)
             {
-                case "openUrl":
-                    clickWeb(nav, context.textTarget);
-                    break;
-                case "copyText":
-                    clickCopyToClipboard(nav, context.textTarget);
-                    break;
-                case "copyToChat":
-                    clickCopyToChat(nav, context.textTarget);
-                    break;
+                case "openUrl" -> clickWeb(context.textTarget);
+                case "copyText" -> clickCopyToClipboard(context.textTarget);
+                case "copyToChat" -> clickCopyToChat(context.textTarget);
             }
         }
         if (context.target != null)
@@ -57,40 +46,27 @@ public class LinkHelper
         }
     }
 
-    public static void clickCopyToClipboard(IBookGraphics nav, String textTarget)
+    public static void clickCopyToClipboard(String textTarget)
     {
-        Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
-        mc.setScreen(new ConfirmScreen((result) -> {
+        mc.pushGuiLayer(new ConfirmScreen((result) -> {
             if (result)
             {
                 GLFW.glfwSetClipboardString(mc.getWindow().getWindow(), textTarget);
                 mc.gui.getChat().addMessage(new TranslatableComponent("text.gbook.actions.copy_to_clipboard.success"));
             }
-            mc.setScreen(parent);
-        },
-                new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line1"),
-                new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line2"))
-        {
-            @Override
-            public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
-            {
-                parent.render(matrixStack, -1, -1, partialTicks);
-                super.render(matrixStack, mouseX, mouseY, partialTicks);
-            }
-        });
+            mc.popGuiLayer();
+        }, COPY_TO_CLIPBOARD_1, COPY_TO_CLIPBOARD_2));
     }
 
-    public static void clickCopyToChat(IBookGraphics nav, String textTarget)
+    public static void clickCopyToChat(String textTarget)
     {
-        Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
-        mc.setScreen(new ChatScreen(textTarget)
+        mc.pushGuiLayer(new ChatScreen(textTarget)
         {
             @Override
             public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
             {
-                parent.render(matrixStack, -1, -1, partialTicks);
                 String text = "Temporary chat window open, press ESCAPE to cancel.";
                 int textWidth = Math.max(font.width(text) + 40, width / 2);
                 fill(matrixStack, (width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
@@ -103,7 +79,7 @@ public class LinkHelper
             {
                 if (keyCode == GLFW.GLFW_KEY_ESCAPE)
                 {
-                    mc.setScreen(parent);
+                    mc.popGuiLayer();
                     return true;
                 }
 
@@ -116,7 +92,7 @@ public class LinkHelper
                         this.sendMessage(s);
                     }
 
-                    this.minecraft.setScreen(parent);
+                    mc.popGuiLayer();
                     return true;
                 }
 
@@ -125,9 +101,8 @@ public class LinkHelper
         });
     }
 
-    public static void clickWeb(IBookGraphics nav, String textTarget)
+    public static void clickWeb(String textTarget)
     {
-        Screen parent = (Screen) nav.owner();
         Minecraft mc = Minecraft.getInstance();
 
         if (!mc.options.chatLinks)
@@ -150,29 +125,19 @@ public class LinkHelper
                 throw new URISyntaxException(textTarget, "Unsupported protocol: " + s.toLowerCase(Locale.ROOT));
             }
 
-            if (mc.options.chatLinksPrompt)
-            {
-                mc.setScreen(new ConfirmLinkScreen((result) -> {
-                    if (result)
-                    {
-                        openWebLink(uri);
-                    }
-
-                    mc.setScreen(parent);
-                }, textTarget, true)
-                {
-                    @Override
-                    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
-                    {
-                        parent.render(matrixStack, -1, -1, partialTicks);
-                        super.render(matrixStack, mouseX, mouseY, partialTicks);
-                    }
-                });
-            }
-            else
+            if (!mc.options.chatLinksPrompt)
             {
                 openWebLink(uri);
+                return;
             }
+
+            mc.pushGuiLayer(new ConfirmLinkScreen((result) -> {
+                if (result)
+                {
+                    openWebLink(uri);
+                }
+                mc.popGuiLayer();
+            }, textTarget, true));
         }
         catch (URISyntaxException urisyntaxexception)
         {
