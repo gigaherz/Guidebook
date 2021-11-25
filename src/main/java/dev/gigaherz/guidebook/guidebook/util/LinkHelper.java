@@ -132,13 +132,6 @@ public class LinkHelper
 
         if (!mc.options.chatLinks)
         {
-            List<ItemStack> stacks = Lists.newArrayList();
-            for (int i = 0; i < 54; i++)
-            {
-                stacks.add(ItemStack.EMPTY);
-            }
-            Stream.generate(() -> ItemStack.EMPTY).limit(54).forEach(stacks::add);
-            stacks = IntStream.range(0, 54).mapToObj(i -> ItemStack.EMPTY).collect(Collectors.toList());
             return;
         }
 

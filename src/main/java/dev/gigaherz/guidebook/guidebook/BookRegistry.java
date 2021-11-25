@@ -107,10 +107,8 @@ public class BookRegistry
 
         loadRawBookFiles();
 
-        LanguageManager lm = Minecraft.getInstance().getLanguageManager();
-
-        String lang = lm.currentCode;
-        if (lang == null) lang = "en_us";
+        var lang = Minecraft.getInstance().getLanguageManager().getSelected().getCode();
+        
         for (ResourceLocation loc : toLoad)
         {
             if (!LOADED_BOOKS.containsKey(loc))
