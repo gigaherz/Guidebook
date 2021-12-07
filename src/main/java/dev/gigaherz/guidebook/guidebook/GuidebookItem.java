@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -22,7 +23,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.IItemRenderProperties;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
@@ -57,7 +57,7 @@ public class GuidebookItem extends Item
             return InteractionResultHolder.success(stack);
 
         CompoundTag nbt = stack.getTag();
-        if (nbt == null || !nbt.contains("Book", Constants.NBT.TAG_STRING))
+        if (nbt == null || !nbt.contains("Book", Tag.TAG_STRING))
             return InteractionResultHolder.fail(stack);
 
         if (FMLEnvironment.dist == Dist.CLIENT)

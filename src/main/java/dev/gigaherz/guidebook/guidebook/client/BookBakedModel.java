@@ -25,6 +25,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
@@ -42,7 +43,7 @@ public class BookBakedModel implements BakedModel
 
     public BookBakedModel(BakedModel baseModel, ModelBakery bakery, UnbakedModel unbakedModel, Function<ResourceLocation, UnbakedModel> modelGetter,
                           Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemTransforms cameraTransforms,
-                          Map<ResourceLocation, BakedModel> bookModels, Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle)
+                          Map<ResourceLocation, BakedModel> bookModels, Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle, ItemOverrides originalOverrides)
     {
         this.particle = particle;
         this.isSideLit = isSideLit;
@@ -63,19 +64,24 @@ public class BookBakedModel implements BakedModel
                         ResourceLocation modelLocation = bookDocument.getModel();
                         if (modelLocation != null)
                         {
-                            return bookModels.get(modelLocation);
+                            BakedModel bakedModel = bookModels.get(modelLocation);
+                            return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
                         }
                         else
                         {
                             ResourceLocation cover = bookDocument.getCover();
 
                             if (cover != null)
-                                return coverModels.get(cover);
+                            {
+                                BakedModel bakedModel = coverModels.get(cover);
+                                return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
+                            }
                         }
                     }
                 }
 
-                return baseModel;
+                var fallbackModel =  baseModel.getOverrides().resolve(baseModel, stack, worldIn, entityIn, p_173469_);
+                return originalOverrides.resolve(fallbackModel, stack, worldIn, entityIn, p_173469_);
             }
         };
     }
@@ -151,7 +157,7 @@ public class BookBakedModel implements BakedModel
 
             return new BookBakedModel(
                     baseModel.bake(bakery, baseModel, spriteGetter, modelTransform, modelLocation, true),
-                    bakery, owner.getOwnerModel(), bakery::getModel, spriteGetter, owner.isSideLit(), owner.getCameraTransforms(), bakedBookModels, bakedCoverModels, part);
+                    bakery, owner.getOwnerModel(), bakery::getModel, spriteGetter, owner.isSideLit(), owner.getCameraTransforms(), bakedBookModels, bakedCoverModels, part, overrides);
         }
 
         @Override

@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[37,)"
+loaderVersion="[38,)"
 license="BSD (3 clause)"
 
 [[mods]]
@@ -19,12 +19,12 @@ authors="gigaherz"
 [[dependencies.gbook]]
     modId="forge"
     mandatory=true
-    versionRange="[37.0.82,)"
+    versionRange="[38.0.15,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.gbook]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.17.1,1.18)"
+    versionRange="[1.18,1.19)"
     ordering="NONE"
     side="BOTH"

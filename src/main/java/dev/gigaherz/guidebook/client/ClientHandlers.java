@@ -21,7 +21,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -68,8 +68,8 @@ public class ClientHandlers
             ModelLoaderRegistry.registerLoader(GuidebookMod.location("book_model"), new BookBakedModel.ModelLoader());
 
             // Ensures that the OBJ models used by the book GUI background, and all referenced textures, are loaded
-            ModelLoader.addSpecialModel(AnimatedBookBackground.BOOK_BACKGROUND);
-            ModelLoader.addSpecialModel(BookItemRenderer.MODEL_HELPER);
+            ForgeModelBakery.addSpecialModel(AnimatedBookBackground.BOOK_BACKGROUND);
+            ForgeModelBakery.addSpecialModel(BookItemRenderer.MODEL_HELPER);
         }
 
         @SubscribeEvent
