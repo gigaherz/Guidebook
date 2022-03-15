@@ -33,7 +33,7 @@ repositories {
 
 version = "3.4.0"
 group = "dev.gigaherz.guidebook"
-archivesBaseName = "Guidebook-1.17.1"
+archivesBaseName = "Guidebook-UNKNOWN"
 
 project.afterEvaluate {
     archivesBaseName = "Guidebook-${project.MC_VERSION}"
@@ -42,7 +42,7 @@ project.afterEvaluate {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'official', version: '1.18'
+    mappings channel: 'official', version: '1.18.2'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -77,7 +77,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18-38.0.15'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.0.15'
 
     //compileOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71:api")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71")
