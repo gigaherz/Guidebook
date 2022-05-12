@@ -1,8 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.conditions;
 
-/*
 import com.google.common.base.Strings;
-import BookParsingException;
+import dev.gigaherz.guidebook.guidebook.BookParsingException;
 import net.darkhax.gamestages.GameStageHelper;
 import org.w3c.dom.Node;
 
@@ -34,7 +33,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return !GameStageHelper.clientHasStage(conditionContext.getPlayer(), stageName);
+            return !GameStageHelper.hasStage(conditionContext.getPlayer(), stageName);
         }
     }
 
@@ -49,7 +48,7 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return GameStageHelper.clientHasStage(conditionContext.getPlayer(), stageName);
+            return GameStageHelper.hasStage(conditionContext.getPlayer(), stageName);
         }
     }
 
@@ -65,4 +64,3 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
         return stageName;
     }
 }
-*/

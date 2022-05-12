@@ -1,6 +1,7 @@
 modLoader="javafml"
 loaderVersion="[40,)"
 license="BSD (3 clause)"
+issueTrackerURL="https://github.com/gigaherz/Guidebook/issues"
 
 [[mods]]
 modId="gbook"
@@ -10,10 +11,8 @@ description='''
 Books that guide
 '''
 updateJSONURL="https://raw.githubusercontent.com/gigaherz/Guidebook/master/update.json"
-issueTrackerURL="https://github.com/gigaherz/Guidebook/issues"
 displayURL="https://github.com/gigaherz/Guidebook"
 logoFile="logo.png"
-credits="Thanks for this example mod goes to Java"
 authors="gigaherz"
 
 [[dependencies.gbook]]

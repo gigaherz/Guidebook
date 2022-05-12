@@ -11,7 +11,7 @@ public class ConditionManager
 {
     public static final Map<String, IDisplayConditionFactory> REGISTRY = Maps.newHashMap();
 
-    public static void register(String id, IDisplayConditionFactory factory)
+    public static synchronized void register(String id, IDisplayConditionFactory factory)
     {
         REGISTRY.put(id, factory);
     }

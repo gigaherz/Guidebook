@@ -28,10 +28,14 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.k-4u.nl"
     }
+    maven {
+        // game stages
+        url 'https://maven.blamejared.com'
+    }
     mavenLocal()
 }
 
-version = "3.4.0"
+version = "3.4.2"
 group = "dev.gigaherz.guidebook"
 archivesBaseName = "Guidebook-UNKNOWN"
 
@@ -77,10 +81,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.0.15'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.19'
 
     //compileOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71:api")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71")
+
+    implementation fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.18.2:8.0.1")
 }
 
 jar {
