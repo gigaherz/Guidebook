@@ -139,7 +139,8 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
             matrixStack.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
             matrixStack.mulPose(Quaternion.fromXYZ(0, (float) Math.toRadians(180), 0));
             matrixStack.mulPose(Quaternion.fromXYZ((float) Math.toRadians(-130), 0, 0));
-            matrixStack.scale(2.16f * scalingFactor, 2.16f * scalingFactor, 2.7f * scalingFactor);
+            float scaleValue = 2.6f;//2.16f;
+            matrixStack.scale(2.46f * scalingFactor, 2.0f * scalingFactor, 2.9f * scalingFactor);
 
             matrixStack.mulPose(Quaternion.fromXYZ(0, 0, (float) Math.toRadians(angleX * 1.1f)));
 

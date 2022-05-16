@@ -1,4 +1,4 @@
-<book title="Guidebook Manual" cover="gbook:covers/default" fontSize="0.4">
+<book title="Guidebook Manual" cover="gbook:covers/default" fontSize="1.0">
 
   <include ref="gbook:xml/standard.xml" />
 

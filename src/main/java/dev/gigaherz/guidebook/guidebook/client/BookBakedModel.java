@@ -152,8 +152,8 @@ public class BookBakedModel implements BakedModel
             Material particleLocation = owner.resolveTexture("particle");
             TextureAtlasSprite part = spriteGetter.apply(particleLocation);
 
-            Map<ResourceLocation, BakedModel> bakedBookModels = Maps.transformEntries(bookModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k));
-            Map<ResourceLocation, BakedModel> bakedCoverModels = Maps.transformEntries(coverModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k));
+            Map<ResourceLocation, BakedModel> bakedBookModels = ImmutableMap.copyOf(Maps.transformEntries(bookModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k)));
+            Map<ResourceLocation, BakedModel> bakedCoverModels = ImmutableMap.copyOf(Maps.transformEntries(coverModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k)));
 
             return new BookBakedModel(
                     baseModel.bake(bakery, baseModel, spriteGetter, modelTransform, modelLocation, true),

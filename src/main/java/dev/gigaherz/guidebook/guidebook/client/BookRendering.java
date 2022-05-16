@@ -39,13 +39,13 @@ import java.util.function.Consumer;
 
 public class BookRendering implements IBookGraphics
 {
-    public static final int DEFAULT_BOOK_WIDTH = 276;
-    public static final int DEFAULT_BOOK_HEIGHT = 198;
-    public static final int DEFAULT_INNER_MARGIN = 16;
+    public static final int DEFAULT_INNER_MARGIN = 12;
     public static final int DEFAULT_OUTER_MARGIN = 10;
-    public static final int DEFAULT_TOP_MARGIN = 10;
-    public static final int DEFAULT_BOTTOM_MARGIN = 18;
-    public static final int BOOK_SCALE_MARGIN = 20;
+    public static final int DEFAULT_TOP_MARGIN = 12;
+    public static final int DEFAULT_BOTTOM_MARGIN = 16;
+    public static final int DEFAULT_BOOK_WIDTH = 308 + DEFAULT_OUTER_MARGIN*2;
+    public static final int DEFAULT_BOOK_HEIGHT = 192 + DEFAULT_TOP_MARGIN + DEFAULT_BOTTOM_MARGIN;
+    public static final int BOOK_SCALE_MARGIN = 0;
 
     private final Minecraft mc = Minecraft.getInstance();
     private GuidebookScreen gui;

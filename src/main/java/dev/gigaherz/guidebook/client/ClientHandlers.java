@@ -10,6 +10,7 @@ import dev.gigaherz.guidebook.guidebook.client.SpecialBakedModel;
 import dev.gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import dev.gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import dev.gigaherz.guidebook.guidebook.conditions.CompositeCondition;
+import dev.gigaherz.guidebook.guidebook.conditions.GameStageCondition;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -25,6 +26,7 @@ import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 
@@ -38,6 +40,8 @@ public class ClientHandlers
         BasicConditions.register();
         CompositeCondition.register();
         AdvancementCondition.register();
+        if (ModList.get().isLoaded("gamestages"))
+            GameStageCondition.register();
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 

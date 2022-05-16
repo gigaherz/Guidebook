@@ -1,10 +1,12 @@
 buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url='https://repo.spongepowered.org/repository/maven-public/' }
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 
@@ -35,7 +37,7 @@ repositories {
     mavenLocal()
 }
 
-version = "3.4.2"
+version = "3.4.8"
 group = "dev.gigaherz.guidebook"
 archivesBaseName = "Guidebook-UNKNOWN"
 
@@ -56,7 +58,9 @@ minecraft {
 
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
-            property 'legacyClassPath', '{minecraft_classpath}'
+
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 thismod {
@@ -71,6 +75,10 @@ minecraft {
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
 
+
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
             mods {
                 thismod {
                     source sourceSets.main
@@ -83,10 +91,12 @@ minecraft {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.19'
 
-    //compileOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71:api")
-    //runtimeOnly fg.deobf("mezz.jei:jei-1.16.4:7.6.1.71")
+
+    compileOnly fg.deobf("mezz.jei:jei-1.18.2:9.5.5.174:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.5.5.174")
 
     implementation fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.18.2:8.0.1")
+    implementation fg.deobf( "net.darkhax.bookshelf:Bookshelf-Forge-1.18.2:13.0.13")
 }
 
 jar {
@@ -113,7 +123,7 @@ tasks.withType(GenerateModuleMetadata) {
 }
 
 project.afterEvaluate {
-    publish.dependsOn('reobfJar')
+    publish.dependsOn('build')
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -124,7 +134,8 @@ project.afterEvaluate {
 
                 pom.withXml {
                     asNode().dependencies.dependency.each { dep ->
-                        if (dep.groupId.last().value().last() in ["net.minecraftforge", "mezz.jei"]) {
+                        if (dep.groupId.last().value().last() in ["net.minecraftforge", "mezz.jei",
+                                                                  "net.darkhax.gamestages", "net.darkhax.bookshelf"]) {
                             assert dep.parent().remove(dep)
                         }
                     }
@@ -133,8 +144,21 @@ project.afterEvaluate {
         }
 
         repositories {
-            maven {
-                url "$projectDir/../CommonMaven"
+            if (findProperty("RELEASE") && System.env.giga_maven_host != null) {
+                System.out.println("Remote publish enabled on " + System.env.giga_maven_host)
+                maven {
+                    url System.env.giga_maven_host
+                    credentials {
+                        username System.env.giga_maven_user
+                        password System.env.giga_maven_password
+                    }
+                }
+            }
+            else {
+                System.out.println("Remote publish disabled.")
+                maven {
+                    url "$projectDir/../CommonMaven"
+                }
             }
         }
     }

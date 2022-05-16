@@ -77,7 +77,22 @@ public class ElementStack extends ElementInline
 
         scale = getAttribute(attributes, "scale", scale);
 
-        Node attr = attributes.getNamedItem("count");
+        Node attr = attributes.getNamedItem("item");
+        if (attr != null)
+        {
+            String itemName = attr.getTextContent();
+
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+
+            if (item != null)
+            {
+                ItemStack stack = new ItemStack(item, stackSize);
+                stack.setTag(tag);
+                stacks.add(stack);
+            }
+        }
+
+        attr = attributes.getNamedItem("count");
         if (attr != null)
         {
             stackSize = Ints.tryParse(attr.getTextContent());
@@ -96,18 +111,16 @@ public class ElementStack extends ElementInline
             }
         }
 
-        attr = attributes.getNamedItem("item");
+        attr = attributes.getNamedItem("name");
         if (attr != null)
         {
-            String itemName = attr.getTextContent();
-
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
-
-            if (item != null)
+            try
             {
-                ItemStack stack = new ItemStack(item, stackSize);
-                stack.setTag(tag);
-                stacks.add(stack);
+                tag = TagParser.parseTag(attr.getTextContent());
+            }
+            catch (CommandSyntaxException e)
+            {
+                GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
             }
         }
 
