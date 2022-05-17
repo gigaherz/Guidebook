@@ -31,6 +31,7 @@ public class ConfigValues
     public static int bookGUIScale = -1;
     public static boolean flexibleScale = false;
     public static boolean flipScrollDirection = false;
+    public static boolean useNaturalArrows = false;
     public static String[] giveOnFirstJoin = new String[0];
 
     public static class ServerConfig
@@ -53,6 +54,7 @@ public class ConfigValues
         public final ForgeConfigSpec.IntValue bookGUIScale;
         public final ForgeConfigSpec.BooleanValue flexibleScale;
         public final ForgeConfigSpec.BooleanValue flipScrollDirection;
+        public final ForgeConfigSpec.BooleanValue useNaturalArrows;
 
         ClientConfig(ForgeConfigSpec.Builder builder)
         {
@@ -69,6 +71,9 @@ public class ConfigValues
             flipScrollDirection = builder
                     .comment("If TRUE, flips the scroll direction to the opposite of what the system reports.")
                     .define("flip_scroll_direction", false);
+            useNaturalArrows = builder
+                    .comment("If TRUE, flips the buttons on the GUI to point how the page flips, and not what direction the book advances.")
+                    .define("use_natural_arrows", false);
             builder.pop();
         }
     }
@@ -78,6 +83,7 @@ public class ConfigValues
         bookGUIScale = CLIENT.bookGUIScale.get();
         flexibleScale = CLIENT.flexibleScale.get();
         flipScrollDirection = CLIENT.flipScrollDirection.get();
+        useNaturalArrows = CLIENT.useNaturalArrows.get();
     }
 
     public static void refreshServer()

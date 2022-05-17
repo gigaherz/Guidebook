@@ -22,4 +22,9 @@ public class Rect
         this.position = new Point(x, y);
         this.size = new Size(width, height);
     }
+
+    public Rect copy()
+    {
+        return new Rect(position.x, position.y, size.width, size.height);
+    }
 }

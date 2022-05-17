@@ -2,19 +2,23 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
+import javax.xml.parsers.DocumentBuilder;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -81,7 +85,7 @@ public abstract class Element
     public abstract Element copy();
 
     @Nullable
-    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
+    public Element applyTemplate(ParsingContext context, List<Element> sourceElements)
     {
         return copy();
     }
@@ -122,7 +126,7 @@ public abstract class Element
         return other;
     }
 
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
         x = getAttribute(attributes, "x", x);
         y = getAttribute(attributes, "y", y);
@@ -174,11 +178,11 @@ public abstract class Element
         attr = attributes.getNamedItem("condition");
         if (attr != null)
         {
-            condition = book.getCondition(attr.getTextContent());
+            condition = context.getCondition(attr.getTextContent());
         }
     }
 
-    public void parseChildNodes(IConditionSource book, Node element)
+    public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
     }
 

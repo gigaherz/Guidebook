@@ -3,7 +3,7 @@ package dev.gigaherz.guidebook.guidebook.templates;
 import com.google.common.collect.Maps;
 import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;
@@ -22,11 +22,11 @@ import java.io.*;
 import java.util.Map;
 import java.util.function.Predicate;
 
-public class TemplateLibrary implements IConditionSource
+public class TemplateLibrary
 {
     public final Map<String, TemplateDefinition> templates = Maps.newHashMap();
 
-    public void parseLibrary(InputStream stream) throws ParserConfigurationException, IOException, SAXException
+    public void parseLibrary(ParsingContext context, InputStream stream) throws ParserConfigurationException, IOException, SAXException
     {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -44,12 +44,31 @@ public class TemplateLibrary implements IConditionSource
             String nodeName = chapterItem.getNodeName();
             if (nodeName.equals("template"))
             {
-                parseTemplateDefinition(chapterItem);
+                parseTemplateDefinition(context, chapterItem);
             }
         }
     }
 
-    private void parseTemplateDefinition(Node templateItem)
+    public void parseLibrary(ParsingContext context, Document doc) throws ParserConfigurationException, IOException, SAXException
+    {
+        doc.getDocumentElement().normalize();
+
+        Node root = doc.getChildNodes().item(0);
+
+        NodeList chaptersList = root.getChildNodes();
+        for (int i = 0; i < chaptersList.getLength(); i++)
+        {
+            Node chapterItem = chaptersList.item(i);
+
+            String nodeName = chapterItem.getNodeName();
+            if (nodeName.equals("template"))
+            {
+                parseTemplateDefinition(context, chapterItem);
+            }
+        }
+    }
+
+    private void parseTemplateDefinition(ParsingContext parentContext, Node templateItem)
     {
         if (!templateItem.hasAttributes())
             return; // TODO: Throw error
@@ -63,7 +82,28 @@ public class TemplateLibrary implements IConditionSource
 
         templates.put(n.getTextContent(), page);
 
-        BookDocument.parseChildElements(this, templateItem, page.elements, templates, true, TextStyle.DEFAULT);
+        var context = new ParsingContext()
+        {
+            @Override
+            public Predicate<ConditionContext> getCondition(String name)
+            {
+                return null;
+            }
+
+            @Override
+            public boolean loadedFromConfigFolder()
+            {
+                return parentContext.loadedFromConfigFolder();
+            }
+
+            @Override
+            public DocumentBuilder xmlDocumentBuilder()
+            {
+                return parentContext.xmlDocumentBuilder();
+            }
+        };
+
+        BookDocument.parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;
@@ -76,7 +116,7 @@ public class TemplateLibrary implements IConditionSource
         LIBRARIES.clear();
     }
 
-    public static TemplateLibrary get(String path, boolean useConfigFolder)
+    public static TemplateLibrary get(ParsingContext context, String path, boolean useConfigFolder)
     {
         TemplateLibrary lib = LIBRARIES.get(path);
         if (lib == null)
@@ -96,7 +136,7 @@ public class TemplateLibrary implements IConditionSource
                     {
                         try (InputStream stream = new FileInputStream(file))
                         {
-                            lib.parseLibrary(stream);
+                            lib.parseLibrary(context, stream);
                             LIBRARIES.put(path, lib);
                             return lib;
                         }
@@ -110,7 +150,7 @@ public class TemplateLibrary implements IConditionSource
                 Resource res = Minecraft.getInstance().getResourceManager().getResource(loc);
                 try (InputStream stream = res.getInputStream())
                 {
-                    lib.parseLibrary(stream);
+                    lib.parseLibrary(context, stream);
                     LIBRARIES.put(path, lib);
                 }
             }
@@ -123,9 +163,23 @@ public class TemplateLibrary implements IConditionSource
         return lib;
     }
 
-    @Override
-    public Predicate<ConditionContext> getCondition(String name)
+    public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Document doc)
     {
-        return null;
+        TemplateLibrary lib = LIBRARIES.get(path.toString());
+        if (lib == null)
+        {
+            try
+            {
+                lib = new TemplateLibrary();
+                lib.parseLibrary(context, doc);
+                LIBRARIES.put(path.toString(), lib);
+            }
+            catch (IOException | ParserConfigurationException | SAXException e)
+            {
+                // TODO: Fail
+            }
+        }
+
+        return lib;
     }
 }

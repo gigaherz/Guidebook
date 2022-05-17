@@ -2,7 +2,7 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.util.Point;
@@ -186,9 +186,9 @@ public class ElementParagraph extends Element
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
-        super.parse(book, attributes);
+        super.parse(context, attributes);
 
         Node attr = attributes.getNamedItem("align");
         if (attr != null)
@@ -233,7 +233,7 @@ public class ElementParagraph extends Element
 
     @Nullable
     @Override
-    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
+    public Element applyTemplate(ParsingContext context, List<Element> sourceElements)
     {
         if (inlines.size() == 0)
             return null;
@@ -244,7 +244,7 @@ public class ElementParagraph extends Element
         paragraph.space = space;
         for (ElementInline element : inlines)
         {
-            Element t = element.applyTemplate(book, sourceElements);
+            Element t = element.applyTemplate(context, sourceElements);
             if (t instanceof ElementInline)
                 paragraph.inlines.add((ElementInline) t);
         }

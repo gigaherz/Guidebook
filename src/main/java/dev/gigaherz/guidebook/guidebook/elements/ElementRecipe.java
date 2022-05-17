@@ -4,11 +4,12 @@ import com.google.common.primitives.Ints;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.recipe.IRecipeLayoutProvider;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayout;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayoutProviders;
+import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.resources.ResourceLocation;
@@ -16,10 +17,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author joazlazer
@@ -104,7 +107,7 @@ public class ElementRecipe extends Element
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
         Node attr = attributes.getNamedItem("type");
         if (attr != null)
@@ -138,14 +141,13 @@ public class ElementRecipe extends Element
     /**
      * Parses each child node of the <recipe> tag in order to move two tree-layers down to find the <stack> tag
      *
-     * @param element The base <recipe> tag
      */
     @Override
-    public void parseChildNodes(IConditionSource book, Node element)
+    public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
-        for (int i = 0; i < element.getChildNodes().getLength(); ++i)
+        for (int i = 0; i < childNodes.getLength(); ++i)
         {
-            Node childNode = element.getChildNodes().item(i);
+            Node childNode = childNodes.item(i);
             String nodeName = childNode.getNodeName();
             if (nodeName.equals("recipe.result"))
             {
@@ -157,7 +159,7 @@ public class ElementRecipe extends Element
                         String stackNodeName = stackNode.getNodeName();
                         if (stackNodeName.equals("stack") || stackNodeName.equals("element"))
                         {
-                            recipeOutput = BookDocument.parseParagraphElement(book, stackNode, stackNodeName, false, false, TextStyle.DEFAULT);
+                            recipeOutput = BookDocument.parseParagraphElement(context, stackNode, stackNodeName, false, false, defaultStyle);
                         }
                     }
                 }
@@ -176,12 +178,12 @@ public class ElementRecipe extends Element
 
     @Nullable
     @Override
-    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
+    public Element applyTemplate(ParsingContext context, List<Element> sourceElements)
     {
         ElementRecipe elementRecipe = super.copy(new ElementRecipe());
         if (recipeOutput != null)
         {
-            elementRecipe.recipeOutput = recipeOutput.applyTemplate(book, sourceElements);
+            elementRecipe.recipeOutput = recipeOutput.applyTemplate(context, sourceElements);
         }
         elementRecipe.recipeIndex = recipeIndex;
         if (recipeKey != null)

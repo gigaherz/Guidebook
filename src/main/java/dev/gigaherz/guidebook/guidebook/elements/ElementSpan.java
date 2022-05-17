@@ -2,7 +2,7 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import org.w3c.dom.NamedNodeMap;
 
@@ -33,9 +33,9 @@ public class ElementSpan extends ElementInline
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
-        super.parse(book, attributes);
+        super.parse(context, attributes);
     }
 
     @Override

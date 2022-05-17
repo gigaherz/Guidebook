@@ -40,7 +40,6 @@ public class GuidebookScreen extends Screen
 
     private BookRendering book;
     private IAnimatedBookBackground background;
-    public static boolean useNaturalArrows = false;
 
     public GuidebookScreen(ResourceLocation book)
     {
@@ -88,10 +87,20 @@ public class GuidebookScreen extends Screen
         this.addRenderableWidget(this.buttonHome = new SpriteButton(0, 0, 6, this::onHomeClicked));
         this.addRenderableWidget(this.buttonBack = new SpriteButton(0, 0, 2, this::onBackClicked));
         this.addRenderableWidget(this.buttonClose = new SpriteButton(0, 0, 3, this::onCloseClicked));
-        this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 1, this::onPrevPageClicked));
-        this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 0, this::onNextPageClicked));
-        this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 5, this::onPrevChapterClicked));
-        this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 4, this::onNextChapterClicked));
+        if (ConfigValues.useNaturalArrows)
+        {
+            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 1, this::onPrevPageClicked));
+            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 0, this::onNextPageClicked));
+            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 5, this::onPrevChapterClicked));
+            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 4, this::onNextChapterClicked));
+        }
+        else
+        {
+            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 0, this::onPrevPageClicked));
+            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 1, this::onNextPageClicked));
+            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 4, this::onPrevChapterClicked));
+            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 5, this::onNextChapterClicked));
+        }
 
         updateButtonStates();
 
@@ -195,30 +204,15 @@ public class GuidebookScreen extends Screen
         buttonClose.x = rightRight - 16;
         buttonClose.y = topTop;
 
-        if (useNaturalArrows)
-        {
-            buttonPreviousPage.x = leftLeft + 22;
-            buttonPreviousPage.y = bottomBottom;
-            buttonPreviousChapter.x = leftLeft;
-            buttonPreviousChapter.y = bottomBottom;
+        buttonPreviousPage.x = leftLeft + 22;
+        buttonPreviousPage.y = bottomBottom;
+        buttonPreviousChapter.x = leftLeft;
+        buttonPreviousChapter.y = bottomBottom;
 
-            buttonNextPage.x = rightRight - 16 - 18 - 4;
-            buttonNextPage.y = bottomBottom;
-            buttonNextChapter.x = rightRight - 16 - 4;
-            buttonNextChapter.y = bottomBottom;
-        }
-        else
-        {
-            buttonNextPage.x = leftLeft + 22;
-            buttonNextPage.y = bottomBottom;
-            buttonNextChapter.x = leftLeft;
-            buttonNextChapter.y = bottomBottom;
-
-            buttonPreviousPage.x = rightRight - 16 - 18 - 6;
-            buttonPreviousPage.y = bottomBottom;
-            buttonPreviousChapter.x = rightRight - 16 - 6;
-            buttonPreviousChapter.y = bottomBottom;
-        }
+        buttonNextPage.x = rightRight - 16 - 18 - 4;
+        buttonNextPage.y = bottomBottom;
+        buttonNextChapter.x = rightRight - 16 - 4;
+        buttonNextChapter.y = bottomBottom;
     }
 
     @Override

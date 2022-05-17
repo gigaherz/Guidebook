@@ -18,10 +18,12 @@ import dev.gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -35,15 +37,12 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-public class BookDocument implements IConditionSource
+public class BookDocument
 {
     private static final float DEFAULT_FONT_SIZE = 1.0f;
 
@@ -193,6 +192,28 @@ public class BookDocument implements IConditionSource
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(stream);
 
+            var parsingContext = new ParsingContext()
+            {
+
+                @Override
+                public Predicate<ConditionContext> getCondition(String name)
+                {
+                    return this.getCondition(name);
+                }
+
+                @Override
+                public boolean loadedFromConfigFolder()
+                {
+                    return loadedFromConfigFolder;
+                }
+
+                @Override
+                public DocumentBuilder xmlDocumentBuilder()
+                {
+                    return dBuilder;
+                }
+            };
+
             doc.getDocumentElement().normalize();
 
             Node root = doc.getChildNodes().item(0);
@@ -247,43 +268,117 @@ public class BookDocument implements IConditionSource
                 }
             }
 
-            int chapterNumber = 0;
-            NodeList firstLevel = root.getChildNodes();
-            for (int i = 0; i < firstLevel.getLength(); i++)
-            {
-                Node firstLevelNode = firstLevel.item(i);
-
-                String nodeName = firstLevelNode.getNodeName();
-                if (nodeName.equals("template"))
-                {
-                    parseTemplateDefinition(firstLevelNode, templates);
-                }
-                else if (nodeName.equals("include"))
-                {
-                    NamedNodeMap attributes = firstLevelNode.getAttributes();
-                    Node n = attributes.getNamedItem("ref");
-                    TemplateLibrary tpl = TemplateLibrary.get(n.getTextContent(), loadedFromConfigFolder);
-                    templates.putAll(tpl.templates);
-                }
-                else if (nodeName.equals("chapter"))
-                {
-                    parseChapter(chapterNumber++, firstLevelNode);
-                }
-                else if (nodeName.equals("stack-links"))
-                {
-                    parseStackLinks(firstLevelNode);
-                }
-                else if (nodeName.equals("conditions"))
-                {
-                    parseConditions(firstLevelNode);
-                }
-            }
+            parseDocumentLevelElements(parsingContext, root.getChildNodes());
         }
         catch (IOException | ParserConfigurationException | SAXException e)
         {
             initializeWithLoadError(e.toString());
         }
         return true;
+    }
+
+    private static final Map<ResourceLocation, Document> includeCache = new HashMap<>();
+
+    private void parseDocumentLevelElements(ParsingContext context, NodeList firstLevel)
+    {
+        int chapterNumber = 0;
+        for (int i = 0; i < firstLevel.getLength(); i++)
+        {
+            Node firstLevelNode = firstLevel.item(i);
+
+            chapterNumber = parseDocumentLevelElement(context, chapterNumber, firstLevelNode);
+        }
+    }
+
+    private int parseDocumentLevelElement(ParsingContext context, int chapterNumber, Node firstLevelNode)
+    {
+        String nodeName = firstLevelNode.getNodeName();
+        if (nodeName.equals("template"))
+        {
+            parseTemplateDefinition(context,firstLevelNode, templates);
+        }
+        else if (nodeName.equals("include"))
+        {
+            int[] cn = new int[]{chapterNumber};
+            parseInclude(context, firstLevelNode, (resLoc, document) -> {
+                var includeRoot = document.getDocumentElement();
+                if (includeRoot.getTagName().equals("library"))
+                {
+                    TemplateLibrary tpl = TemplateLibrary.get(context, resLoc, document);
+                    templates.putAll(tpl.templates);
+                }
+                else
+                {
+                    cn[0] = parseDocumentLevelElement(context, cn[0], includeRoot);
+                }
+            });
+            chapterNumber = cn[0];
+        }
+        else if (nodeName.equals("chapter"))
+        {
+            parseChapter(context, chapterNumber++, firstLevelNode);
+        }
+        else if (nodeName.equals("stack-links"))
+        {
+            parseStackLinks(firstLevelNode);
+        }
+        else if (nodeName.equals("conditions"))
+        {
+            parseConditions(firstLevelNode);
+        }
+        return chapterNumber;
+    }
+
+    private static void parseInclude(ParsingContext context, Node firstLevelNode, BiConsumer<ResourceLocation, Document> includeAction)
+    {
+        NamedNodeMap attributes = firstLevelNode.getAttributes();
+        Node n = attributes.getNamedItem("ref");
+
+        ResourceLocation id = new ResourceLocation(n.getTextContent());
+        Document include = includeCache.computeIfAbsent(id, resLoc -> {
+
+            // Prevents loading includes from config folder if the book was found in resource packs.
+            if (context.loadedFromConfigFolder() && resLoc.getNamespace().equals("gbook"))
+            {
+                File booksFolder = BookRegistry.getBooksFolder();
+                File file = new File(booksFolder, resLoc.getPath());
+                if (file.exists() && file.isFile())
+                {
+                    try (InputStream stream = new FileInputStream(file))
+                    {
+                        return context.xmlDocumentBuilder().parse(stream);
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        // WUT? continue and try to load from resource pack
+                    }
+                    catch (IOException e)
+                    {
+                        throw new UncheckedIOException(e);
+                    }
+                    catch (SAXException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+
+            try (Resource res = Minecraft.getInstance().getResourceManager().getResource(resLoc);
+                 InputStream stream = res.getInputStream())
+            {
+                return context.xmlDocumentBuilder().parse(stream);
+            }
+            catch (IOException e)
+            {
+                throw new UncheckedIOException(e);
+            }
+            catch (SAXException e)
+            {
+                throw new RuntimeException(e);
+            }
+        });
+
+        includeAction.accept(id, include);
     }
 
     private void parseConditions(Node node)
@@ -348,7 +443,7 @@ public class BookDocument implements IConditionSource
         return displayCondition;
     }
 
-    private void parseTemplateDefinition(Node templateItem, Map<String, TemplateDefinition> templates)
+    private void parseTemplateDefinition(ParsingContext context, Node templateItem, Map<String, TemplateDefinition> templates)
     {
         if (!templateItem.hasAttributes())
             return; // TODO: Throw error
@@ -362,13 +457,13 @@ public class BookDocument implements IConditionSource
 
         templates.put(n.getTextContent(), page);
 
-        parseChildElements(this, templateItem, page.elements, templates, true, TextStyle.DEFAULT);
+        parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
 
         attributes.removeNamedItem("id");
         page.attributes = attributes;
     }
 
-    private void parseChapter(int chapterNumber, Node chapterItem)
+    private void parseChapter(ParsingContext context, int chapterNumber, Node chapterItem)
     {
         ChapterData chapter = new ChapterData(chapters.size());
         chapters.add(chapter);
@@ -396,32 +491,46 @@ public class BookDocument implements IConditionSource
         {
             Node pageItem = pagesList.item(j);
 
-            String nodeName = pageItem.getNodeName();
-
-            if (nodeName.equals("page"))
-            {
-                parsePage(chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
-            }
-            else if (nodeName.equals("section"))
-            {
-                parseSection(chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
-            }
+            sectionNumber = parseChapterElement(context, chapterNumber, chapter, sectionNumber, pageItem);
         }
     }
 
-    private void parsePage(ChapterData chapter, SectionRef ref, Node pageItem)
+    private int parseChapterElement(ParsingContext context, int chapterNumber, ChapterData chapter, int sectionNumber, Node pageItem)
+    {
+        String nodeName = pageItem.getNodeName();
+
+        if (nodeName.equals("page"))
+        {
+            parsePage(context, chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
+        }
+        else if (nodeName.equals("section"))
+        {
+            parseSection(context, chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
+        }
+        else if (nodeName.equals("include"))
+        {
+            int[] sn = new int[]{sectionNumber};
+            parseInclude(context, pageItem, (name,document) -> {
+                sn[0] = parseChapterElement(context, chapterNumber, chapter, sn[0], document.getDocumentElement());
+            });
+            sectionNumber = sn[0];
+        }
+        return sectionNumber;
+    }
+
+    private void parsePage(ParsingContext context, ChapterData chapter, SectionRef ref, Node pageItem)
     {
         PageData page = new PageData(ref);
-        parseSection(chapter, pageItem, page);
+        parseSection(context, chapter, pageItem, page);
     }
 
-    private void parseSection(ChapterData chapter, SectionRef ref, Node pageItem)
+    private void parseSection(ParsingContext context, ChapterData chapter, SectionRef ref, Node pageItem)
     {
         PageData page = new PageGroup(ref);
-        parseSection(chapter, pageItem, page);
+        parseSection(context, chapter, pageItem, page);
     }
 
-    private void parseSection(ChapterData chapter, Node pageItem, PageData page)
+    private void parseSection(ParsingContext context, ChapterData chapter, Node pageItem, PageData page)
     {
         int num = chapter.sections.size();
         chapter.sections.add(page);
@@ -444,12 +553,12 @@ public class BookDocument implements IConditionSource
             }
         }
 
-        parseChildElements(this, pageItem, page.elements, templates, true, TextStyle.DEFAULT);
+        parseChildElements(context, pageItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
     }
 
-    public static void parseChildElements(IConditionSource book, Node pageItem, List<Element> elements, Map<String, TemplateDefinition> templates, boolean generateParagraphs, TextStyle defaultStyle)
+    public static void parseChildElements(ParsingContext context, NodeList elementsList, List<Element> elements, Map<String, TemplateDefinition> templates,
+                                          boolean generateParagraphs, TextStyle defaultStyle)
     {
-        NodeList elementsList = pageItem.getChildNodes();
         for (int k = 0; k < elementsList.getLength(); k++)
         {
             boolean isFirstElement = k == 0;
@@ -457,166 +566,190 @@ public class BookDocument implements IConditionSource
 
             Node elementItem = elementsList.item(k);
 
-            Element parsedElement = null;
+            parsePageElement(context, elements, templates, generateParagraphs, defaultStyle, isFirstElement, isLastElement, elementItem);
+        }
+    }
 
-            String nodeName = elementItem.getNodeName();
-            ResourceLocation nodeLoc =
-                    elementItem.getNodeType() == Node.ELEMENT_NODE ?
-                            new ResourceLocation(nodeName) : new ResourceLocation("_");
+    private static void parsePageElement(ParsingContext context, List<Element> elements, Map<String, TemplateDefinition> templates, boolean generateParagraphs,
+                                         TextStyle defaultStyle, boolean isFirstElement, boolean isLastElement, Node elementItem)
+    {
+        Element parsedElement = null;
 
-            if (nodeName.equals("section-break"))
+        String nodeName = elementItem.getNodeName();
+        ResourceLocation nodeLoc =
+                elementItem.getNodeType() == Node.ELEMENT_NODE ?
+                        new ResourceLocation(nodeName) : new ResourceLocation("_");
+
+        if (nodeName.equals("section-break"))
+        {
+            parsedElement = new ElementBreak();
+        }
+        else if (nodeName.equals("include"))
+        {
+            parseInclude(context, elementItem, (name,document) -> {
+                parsePageElement(context, elements, templates, generateParagraphs, defaultStyle, isFirstElement, isLastElement, document.getDocumentElement());
+            });
+        }
+        else if (nodeName.equals("p") || nodeName.equals("title"))
+        {
+            ElementParagraph p = new ElementParagraph();
+
+            TextStyle tagDefaults = defaultStyle;
+            if (nodeName.equals("title"))
             {
-                parsedElement = new ElementBreak();
+                p.alignment = ElementParagraph.ALIGN_CENTER;
+                p.space = 4;
+                tagDefaults = new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f);
             }
-            else if (nodeName.equals("p") || nodeName.equals("title"))
+
+            TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
+
+            NodeList childList = elementItem.getChildNodes();
+            int l = childList.getLength();
+            for (int q = 0; q < l; q++)
+            {
+                Node childNode = childList.item(q);
+                ElementInline parsedChild = parseParagraphElement(context, childNode, childNode.getNodeName(), isFirstElement, isLastElement, paragraphDefautls);
+
+                if (parsedChild == null)
+                {
+                    GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
+                }
+                else
+                {
+                    p.inlines.add(parsedChild);
+                }
+            }
+
+            if (elementItem.hasAttributes())
+            {
+                p.parse(context, elementItem.getAttributes());
+            }
+
+            parsedElement = p;
+        }
+        else if (nodeName.equals("space")
+                || nodeName.equals("group")
+                || nodeName.equals("panel")
+                || nodeName.equals("div"))
+        {
+            ElementPanel p = new ElementPanel();
+
+            if (elementItem.hasAttributes())
+            {
+                p.parse(context, elementItem.getAttributes());
+            }
+
+            if (elementItem.hasChildNodes())
+            {
+                p.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
+            }
+
+            parsedElement = p;
+        }
+        else if (nodeName.equals("grid"))
+        {
+            ElementGrid g = new ElementGrid();
+
+            if (elementItem.hasAttributes())
+            {
+                g.parse(context, elementItem.getAttributes());
+            }
+
+            if (elementItem.hasChildNodes())
+            {
+                g.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
+            }
+
+            parsedElement = g;
+        }
+        else if (customElements.containsKey(nodeLoc))
+        {
+            ElementFactory factory = customElements.get(nodeLoc);
+
+            Element t = factory.newInstance();
+
+            if (elementItem.hasAttributes())
+            {
+                t.parse(context, elementItem.getAttributes());
+            }
+
+            if (elementItem.hasChildNodes())
+            {
+                t.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
+            }
+
+            parsedElement = t;
+        }
+        else if (templates.containsKey(nodeName))
+        {
+            TemplateDefinition tDef = templates.get(nodeName);
+
+            ElementPanel t = new ElementPanel();
+            t.parse(context, tDef.attributes);
+
+            if (elementItem.hasAttributes())
+            {
+                t.parse(context, elementItem.getAttributes());
+            }
+
+            List<Element> elementList = Lists.newArrayList();
+
+            parseChildElements(context, elementItem.getChildNodes(), elementList, templates, false, defaultStyle);
+
+            List<Element> effectiveList = tDef.applyTemplate(context, elementList);
+
+            t.innerElements.addAll(effectiveList);
+
+            parsedElement = t;
+        }
+        else if (elementItem.getNodeType() == Node.TEXT_NODE)
+        {
+            if (generateParagraphs)
+            {
+                String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
+                if (!Strings.isNullOrEmpty(textContent) && !textContent.matches("^[ \t\r\n]+$"))
+                    parsedElement = ElementSpan.of(textContent, defaultStyle);
+            }
+        }
+        else if (elementItem.getNodeType() == Node.COMMENT_NODE)
+        {
+            // Ignore.
+        }
+        else
+        {
+            parsedElement = parseParagraphElement(context, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
+
+            if (parsedElement == null)
+            {
+                GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
+            }
+        }
+
+        if (parsedElement != null)
+        {
+            if (!parsedElement.supportsPageLevel() && generateParagraphs && parsedElement instanceof ElementInline)
             {
                 ElementParagraph p = new ElementParagraph();
 
-                TextStyle tagDefaults = defaultStyle;
-                if (nodeName.equals("title"))
-                {
-                    p.alignment = ElementParagraph.ALIGN_CENTER;
-                    p.space = 4;
-                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f);
-                }
-
-                TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
-
-                NodeList childList = elementItem.getChildNodes();
-                int l = childList.getLength();
-                for (int q = 0; q < l; q++)
-                {
-                    Node childNode = childList.item(q);
-                    ElementInline parsedChild = parseParagraphElement(book, childNode, childNode.getNodeName(), isFirstElement, isLastElement, paragraphDefautls);
-
-                    if (parsedChild == null)
-                    {
-                        GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
-                    }
-                    else
-                    {
-                        p.inlines.add(parsedChild);
-                    }
-                }
-
                 if (elementItem.hasAttributes())
                 {
-                    p.parse(book, elementItem.getAttributes());
+                    p.parse(context, elementItem.getAttributes());
+                    parsedElement.parse(context, elementItem.getAttributes());
                 }
+
+                p.inlines.add((ElementInline) parsedElement);
 
                 parsedElement = p;
             }
-            else if (nodeName.equals("space")
-                    || nodeName.equals("group")
-                    || nodeName.equals("panel")
-                    || nodeName.equals("div"))
-            {
-                ElementPanel s = new ElementPanel();
 
-                if (elementItem.hasAttributes())
-                {
-                    s.parse(book, elementItem.getAttributes());
-                }
-
-                if (elementItem.hasChildNodes())
-                {
-                    List<Element> elementList = Lists.newArrayList();
-
-                    parseChildElements(book, elementItem, elementList, templates, true, defaultStyle);
-
-                    s.innerElements.addAll(elementList);
-                }
-
-                parsedElement = s;
-            }
-            else if (customElements.containsKey(nodeLoc))
-            {
-                ElementFactory factory = customElements.get(nodeLoc);
-
-                Element t = factory.newInstance();
-
-                if (elementItem.hasAttributes())
-                {
-                    t.parse(book, elementItem.getAttributes());
-                }
-
-                if (elementItem.hasChildNodes())
-                {
-                    t.parseChildNodes(book, elementItem);
-                }
-
-                parsedElement = t;
-            }
-            else if (templates.containsKey(nodeName))
-            {
-                TemplateDefinition tDef = templates.get(nodeName);
-
-                ElementPanel t = new ElementPanel();
-                t.parse(book, tDef.attributes);
-
-                if (elementItem.hasAttributes())
-                {
-                    t.parse(book, elementItem.getAttributes());
-                }
-
-                List<Element> elementList = Lists.newArrayList();
-
-                parseChildElements(book, elementItem, elementList, templates, false, defaultStyle);
-
-                List<Element> effectiveList = tDef.applyTemplate(book, elementList);
-
-                t.innerElements.addAll(effectiveList);
-
-                parsedElement = t;
-            }
-            else if (elementItem.getNodeType() == Node.TEXT_NODE)
-            {
-                if (generateParagraphs)
-                {
-                    String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
-                    if (!Strings.isNullOrEmpty(textContent) && !textContent.matches("^[ \t\r\n]+$"))
-                        parsedElement = ElementSpan.of(textContent, defaultStyle);
-                }
-            }
-            else if (elementItem.getNodeType() == Node.COMMENT_NODE)
-            {
-                // Ignore.
-            }
-            else
-            {
-                parsedElement = parseParagraphElement(book, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
-
-                if (parsedElement == null)
-                {
-                    GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
-                }
-            }
-
-            if (parsedElement != null)
-            {
-                if (!parsedElement.supportsPageLevel() && generateParagraphs && parsedElement instanceof ElementInline)
-                {
-                    ElementParagraph p = new ElementParagraph();
-
-                    if (elementItem.hasAttributes())
-                    {
-                        p.parse(book, elementItem.getAttributes());
-                        parsedElement.parse(book, elementItem.getAttributes());
-                    }
-
-                    p.inlines.add((ElementInline) parsedElement);
-
-                    parsedElement = p;
-                }
-
-                if (parsedElement.supportsPageLevel())
-                    elements.add(parsedElement);
-            }
+            if (parsedElement.supportsPageLevel())
+                elements.add(parsedElement);
         }
     }
 
     @Nullable
-    public static ElementInline parseParagraphElement(IConditionSource book, Node elementItem, String nodeName, boolean isFirstElement, boolean isLastElement, TextStyle defaultStyle)
+    public static ElementInline parseParagraphElement(ParsingContext context, Node elementItem, String nodeName, boolean isFirstElement, boolean isLastElement, TextStyle defaultStyle)
     {
         ElementInline parsedElement = null;
         if (nodeName.equals("span"))
@@ -625,7 +758,7 @@ public class BookDocument implements IConditionSource
 
             if (elementItem.hasAttributes())
             {
-                span.parse(book, elementItem.getAttributes());
+                span.parse(context, elementItem.getAttributes());
             }
 
             if (elementItem.hasChildNodes())
@@ -634,7 +767,7 @@ public class BookDocument implements IConditionSource
 
                 List<ElementInline> elementList = Lists.newArrayList();
 
-                parseRunElements(book, elementItem, elementList, spanDefaults);
+                parseRunElements(context, elementItem, elementList, spanDefaults);
 
                 span.inlines.addAll(elementList);
             }
@@ -647,7 +780,7 @@ public class BookDocument implements IConditionSource
 
             if (elementItem.hasAttributes())
             {
-                link.parse(book, elementItem.getAttributes());
+                link.parse(context, elementItem.getAttributes());
             }
 
             if (elementItem.hasChildNodes())
@@ -656,7 +789,7 @@ public class BookDocument implements IConditionSource
 
                 List<ElementInline> elementList = Lists.newArrayList();
 
-                parseRunElements(book, elementItem, elementList, spanDefaults);
+                parseRunElements(context, elementItem, elementList, spanDefaults);
 
                 link.inlines.addAll(elementList);
             }
@@ -669,7 +802,7 @@ public class BookDocument implements IConditionSource
 
             if (elementItem.hasAttributes())
             {
-                s.parse(book, elementItem.getAttributes());
+                s.parse(context, elementItem.getAttributes());
             }
 
             parsedElement = s;
@@ -680,7 +813,7 @@ public class BookDocument implements IConditionSource
 
             if (elementItem.hasAttributes())
             {
-                i.parse(book, elementItem.getAttributes());
+                i.parse(context, elementItem.getAttributes());
             }
 
             parsedElement = i;
@@ -691,7 +824,7 @@ public class BookDocument implements IConditionSource
 
             if (elementItem.hasAttributes())
             {
-                i.parse(book, elementItem.getAttributes());
+                i.parse(context, elementItem.getAttributes());
             }
 
             parsedElement = i;
@@ -705,7 +838,7 @@ public class BookDocument implements IConditionSource
         return parsedElement;
     }
 
-    public static void parseRunElements(IConditionSource book, Node pageItem, List<ElementInline> elements, TextStyle defaultStyle)
+    public static void parseRunElements(ParsingContext context, Node pageItem, List<ElementInline> elements, TextStyle defaultStyle)
     {
         NodeList elementsList = pageItem.getChildNodes();
         for (int k = 0; k < elementsList.getLength(); k++)
@@ -732,12 +865,12 @@ public class BookDocument implements IConditionSource
                 {
                     if (elementItem.hasAttributes())
                     {
-                        t.parse(book, elementItem.getAttributes());
+                        t.parse(context, elementItem.getAttributes());
                     }
 
                     if (elementItem.hasChildNodes())
                     {
-                        t.parseChildNodes(book, elementItem);
+                        t.parseChildNodes(context, elementItem.getChildNodes(), Collections.emptyMap(), defaultStyle);
                     }
 
                     parsedElement = (ElementInline) t;
@@ -755,7 +888,7 @@ public class BookDocument implements IConditionSource
             }
             else
             {
-                parsedElement = parseParagraphElement(book, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
+                parsedElement = parseParagraphElement(context, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
 
                 if (parsedElement == null)
                 {

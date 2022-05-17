@@ -2,20 +2,24 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
+import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
+import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.resources.model.Material;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,9 +47,9 @@ public class ElementPanel extends Element
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
-        super.parse(book, attributes);
+        super.parse(context, attributes);
 
         Node attr = attributes.getNamedItem("height");
         if (attr != null)
@@ -73,6 +77,12 @@ public class ElementPanel extends Element
                 mode = PanelMode.DEFAULT;
             }
         }
+    }
+
+    @Override
+    public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
+    {
+        BookDocument.parseChildElements(context, childNodes, innerElements, templates, true, defaultStyle);
     }
 
     @Override
@@ -177,7 +187,7 @@ public class ElementPanel extends Element
 
     @Nullable
     @Override
-    public Element applyTemplate(IConditionSource book, List<Element> sourceElements)
+    public Element applyTemplate(ParsingContext context, List<Element> sourceElements)
     {
         if (innerElements.size() == 0)
             return null;
@@ -187,7 +197,7 @@ public class ElementPanel extends Element
         panel.asPercent = asPercent;
         for (Element element : innerElements)
         {
-            Element t = element.applyTemplate(book, sourceElements);
+            Element t = element.applyTemplate(context, sourceElements);
             if (t != null)
                 panel.innerElements.add(t);
         }

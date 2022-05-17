@@ -4,7 +4,7 @@ import com.google.common.primitives.Ints;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualStack;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
@@ -68,12 +68,12 @@ public class ElementStack extends ElementInline
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
         int stackSize = 1;
         CompoundTag tag = new CompoundTag();
 
-        super.parse(book, attributes);
+        super.parse(context, attributes);
 
         scale = getAttribute(attributes, "scale", scale);
 

@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.IConditionSource;
+import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.SectionRef;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
@@ -35,9 +35,9 @@ public class ElementLink extends ElementSpan
     }
 
     @Override
-    public void parse(IConditionSource book, NamedNodeMap attributes)
+    public void parse(ParsingContext context, NamedNodeMap attributes)
     {
-        super.parse(book, attributes);
+        super.parse(context, attributes);
 
         Node attr = attributes.getNamedItem("ref");
         if (attr != null)
