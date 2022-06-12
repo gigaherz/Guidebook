@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraftforge.client.model.CompositeModel;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.lwjgl.opengl.GL11;
@@ -27,7 +28,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 {
     public static final ResourceLocation BOOK_BACKGROUND = GuidebookMod.location("gui/animated_book");
 
-    public static final Random RANDOM = new Random();
+    public static final RandomSource RANDOM = RandomSource.create();
 
     private static final int ANIMATE_TICKS = 8;
     private static final float ANIMATE_ANGLE = 90;

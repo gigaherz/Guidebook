@@ -15,8 +15,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
@@ -43,7 +43,7 @@ public class GuidebookScreen extends Screen
 
     public GuidebookScreen(ResourceLocation book)
     {
-        super(new TranslatableComponent("text.gbook.book.title"));
+        super(Component.translatable("text.gbook.book.title"));
         bookLocation = book;
     }
 
@@ -326,7 +326,7 @@ public class GuidebookScreen extends Screen
 
         public SpriteButton(int x, int y, int iconIndex, OnPress press)
         {
-            super(x, y, xSize[iconIndex], ySize[iconIndex], new TextComponent(""), press);
+            super(x, y, xSize[iconIndex], ySize[iconIndex], Component.literal(""), press);
             this.whichIcon = iconIndex;
         }
 

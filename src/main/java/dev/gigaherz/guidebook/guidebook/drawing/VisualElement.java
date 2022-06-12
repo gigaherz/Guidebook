@@ -8,7 +8,7 @@ import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public abstract class VisualElement extends Rect
 {
@@ -59,6 +59,6 @@ public abstract class VisualElement extends Rect
 
     public FormattedText getText()
     {
-        return new TextComponent("");
+        return Component.literal("");
     }
 }

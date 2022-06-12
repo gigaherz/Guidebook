@@ -9,7 +9,7 @@ import dev.gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.FolderPackResources;
 import net.minecraft.server.packs.PackResources;
@@ -88,7 +88,7 @@ public class BookRegistry
         {
             try
             {
-                List<Resource> resources = manager.getResources(new ResourceLocation(domain, "books.json"));
+                List<Resource> resources = manager.getResourceStack(new ResourceLocation(domain, "books.json"));
 
                 for (Resource res : resources)
                 {
@@ -126,7 +126,7 @@ public class BookRegistry
 
     private static void loadBooksData(Set<ResourceLocation> toLoad, Resource resource) throws IOException
     {
-        try (InputStream stream = resource.getInputStream())
+        try (InputStream stream = resource.open())
         {
             List<String> yourList = new Gson().fromJson(new InputStreamReader(stream), listType);
             toLoad.addAll(yourList.stream().map(ResourceLocation::new).collect(Collectors.toList()));
@@ -157,7 +157,7 @@ public class BookRegistry
             Resource bookResource;
             try
             {
-                bookResource = manager.getResource(localizedLoc);
+                bookResource = manager.getResourceOrThrow(localizedLoc);
             }
             catch (IOException e)
             {
@@ -166,9 +166,9 @@ public class BookRegistry
 
             if (bookResource == null)
             {
-                bookResource = manager.getResource(bookLocation);
+                bookResource = manager.getResourceOrThrow(bookLocation);
             }
-            try (InputStream stream = bookResource.getInputStream())
+            try (InputStream stream = bookResource.open())
             {
                 if (!bookDocument.parseBook(stream, false))
                     return null;
@@ -275,8 +275,8 @@ public class BookRegistry
         }
 
         final String id = "guidebook_config_folder_resources";
-        final Component name = new TextComponent("Guidebook Config Folder Virtual Resource Pack");
-        final Component description = new TextComponent("Provides book resources placed in the config/books/resources folder");
+        final Component name = Component.literal("Guidebook Config Folder Virtual Resource Pack");
+        final Component description = Component.literal("Provides book resources placed in the config/books/resources folder");
         final PackResources pack = new FolderPackResources(resourcesFolder)
         {
             String prefix = "assets/" + GuidebookMod.MODID + "/";

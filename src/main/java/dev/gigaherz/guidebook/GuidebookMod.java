@@ -3,13 +3,13 @@ package dev.gigaherz.guidebook;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.GuidebookItem;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -18,7 +18,9 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.RegisterEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +32,7 @@ public class GuidebookMod
     public static GuidebookMod instance;
 
     // Items
-    @ObjectHolder("gbook:guidebook")
+    @ObjectHolder(value = "gbook:guidebook", registryName = "item")
     public static GuidebookItem guidebook;
 
     public static final Logger logger = LogManager.getLogger(MODID);
@@ -60,7 +62,7 @@ public class GuidebookMod
         instance = this;
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addGenericListener(Item.class, this::registerItems);
+        modEventBus.addListener(this::registerItems);
         modEventBus.addListener(this::modConfig);
 
         MinecraftForge.EVENT_BUS.addListener(this::playerLogIn);
@@ -79,13 +81,10 @@ public class GuidebookMod
             ConfigValues.refreshServer();
     }
 
-    private void registerItems(RegistryEvent.Register<Item> event)
+    private void registerItems(RegisterEvent event)
     {
-        event.getRegistry().registerAll(
-                new GuidebookItem(new Item.Properties()
-                        .stacksTo(1)
-                        .tab(GuidebookMod.tabGuidebooks)
-                ).setRegistryName("guidebook")
+        event.register(Registry.ITEM_REGISTRY, helper ->
+                helper.register("guidebook", new GuidebookItem(new Item.Properties().stacksTo(1).tab(GuidebookMod.tabGuidebooks)))
         );
     }
 

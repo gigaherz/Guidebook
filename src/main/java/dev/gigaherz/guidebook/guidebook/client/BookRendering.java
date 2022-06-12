@@ -24,7 +24,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -130,7 +130,7 @@ public class BookRendering implements IBookGraphics
 
         int scaleFactor = 1;
         boolean flag = mc.isEnforceUnicode(); // FIXME
-        int i = ConfigValues.bookGUIScale < 0 ? mc.options.guiScale : ConfigValues.bookGUIScale;
+        int i = ConfigValues.bookGUIScale < 0 ? mc.options.guiScale().get() : ConfigValues.bookGUIScale;
 
         if (i == 0)
         {
@@ -690,7 +690,7 @@ public class BookRendering implements IBookGraphics
             e.draw(this, matrixStack);
         }
 
-        Component cnt = new TextComponent(String.valueOf(ch.startPair * 2 + page + 1));
+        Component cnt = Component.literal(String.valueOf(ch.startPair * 2 + page + 1));
         Size sz = measure(cnt);
 
         addString(matrixStack, (pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
@@ -851,13 +851,13 @@ public class BookRendering implements IBookGraphics
 
             if (str.length() <= i)
             {
-                dest.accept(new TextComponent(str).withStyle(style));
+                dest.accept(Component.literal(str).withStyle(style));
             }
             else
             {
                 if (i < 1) i = 1;
                 String firstPart = str.substring(0, i);
-                dest.accept(new TextComponent(firstPart).withStyle(style));
+                dest.accept(Component.literal(firstPart).withStyle(style));
                 char nextChar = str.charAt(i);
                 boolean isWhitespace = nextChar == ' ' || nextChar == '\n';
                 String secondPart = str.substring(i + (isWhitespace ? 1 : 0));

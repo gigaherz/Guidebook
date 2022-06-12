@@ -61,7 +61,7 @@ public class GbookCommand
     {
         if(args.length < 1 || !subCommands.contains(args[0]))
         {
-            sender.sendMessage(new TextComponentString(getUsage(sender)));
+            sender.sendMessage(Component.literalString(getUsage(sender)));
             return;
         }
 
@@ -84,7 +84,7 @@ public class GbookCommand
     private void executeReload(MinecraftServer server, ICommandSender sender, String[] args)
     {
         FMLClientHandler.instance().refreshResources(BookResourceType.INSTANCE);
-        sender.sendMessage(new TextComponentTranslation("cmd.gbook.guide.done"));
+        sender.sendMessage(Component.literalTranslation("cmd.gbook.guide.done"));
     }
 }
 */

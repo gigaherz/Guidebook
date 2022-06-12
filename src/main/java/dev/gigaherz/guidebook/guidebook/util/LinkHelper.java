@@ -10,7 +10,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
@@ -20,8 +21,8 @@ import java.util.Set;
 
 public class LinkHelper
 {
-    private static final TranslatableComponent COPY_TO_CLIPBOARD_1 = new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line1");
-    private static final TranslatableComponent COPY_TO_CLIPBOARD_2 = new TranslatableComponent("text.gbook.actions.copy_to_clipboard.line2");
+    private static final MutableComponent COPY_TO_CLIPBOARD_1 = Component.translatable("text.gbook.actions.copy_to_clipboard.line1");
+    private static final MutableComponent COPY_TO_CLIPBOARD_2 = Component.translatable("text.gbook.actions.copy_to_clipboard.line2");
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
 
     public interface ILinkable
@@ -53,7 +54,7 @@ public class LinkHelper
             if (result)
             {
                 GLFW.glfwSetClipboardString(mc.getWindow().getWindow(), textTarget);
-                mc.gui.getChat().addMessage(new TranslatableComponent("text.gbook.actions.copy_to_clipboard.success"));
+                mc.gui.getChat().addMessage(Component.translatable("text.gbook.actions.copy_to_clipboard.success"));
             }
             mc.popGuiLayer();
         }, COPY_TO_CLIPBOARD_1, COPY_TO_CLIPBOARD_2));
@@ -98,6 +99,15 @@ public class LinkHelper
 
                 return super.keyPressed(keyCode, p_keyPressed_2_, p_keyPressed_3_);
             }
+
+            private void sendMessage(String s1)
+            {
+                if (s1.startsWith("/")) {
+                    mc.player.command(s1.substring(1));
+                } else {
+                    mc.player.chat(s1);
+                }
+            }
         });
     }
 
@@ -105,7 +115,7 @@ public class LinkHelper
     {
         Minecraft mc = Minecraft.getInstance();
 
-        if (!mc.options.chatLinks)
+        if (!mc.options.chatLinks().get())
         {
             return;
         }
@@ -125,7 +135,7 @@ public class LinkHelper
                 throw new URISyntaxException(textTarget, "Unsupported protocol: " + s.toLowerCase(Locale.ROOT));
             }
 
-            if (!mc.options.chatLinksPrompt)
+            if (!mc.options.chatLinksPrompt().get())
             {
                 openWebLink(uri);
                 return;

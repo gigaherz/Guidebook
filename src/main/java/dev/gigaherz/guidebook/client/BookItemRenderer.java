@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.ForgeRenderTypes;
@@ -60,9 +61,9 @@ public class BookItemRenderer extends BlockEntityWithoutLevelRenderer
         }
 
         VertexConsumer buffer = buffers.getBuffer(ForgeRenderTypes.ITEM_UNSORTED_TRANSLUCENT.get());
+        RandomSource rnd = RandomSource.create();
         for (Direction side : sides)
         {
-            Random rnd = new Random();
             rnd.setSeed(42);
             for (BakedQuad quad : bookModel.getQuads(null, side, rnd, EmptyModelData.INSTANCE))
             {

@@ -147,8 +147,8 @@ public class TemplateLibrary
                     }
                 }
 
-                Resource res = Minecraft.getInstance().getResourceManager().getResource(loc);
-                try (InputStream stream = res.getInputStream())
+                Resource res = Minecraft.getInstance().getResourceManager().getResourceOrThrow(loc);
+                try (InputStream stream = res.open())
                 {
                     lib.parseLibrary(context, stream);
                     LIBRARIES.put(path, lib);

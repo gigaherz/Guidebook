@@ -14,7 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class GuidebookExample
 {
-    public static final RegistryObject<GuidebookItem> GUIDEBOOK_ITEM = RegistryObject.of(new ResourceLocation("gbook","guidebook"), ForgeRegistries.ITEMS);
+    public static final RegistryObject<GuidebookItem> GUIDEBOOK_ITEM = RegistryObject.create(new ResourceLocation("gbook","guidebook"), ForgeRegistries.ITEMS);
     public static final Lazy<ItemStack> MY_BOOK = Lazy.of(() -> GUIDEBOOK_ITEM.map(item -> {
         ItemStack stack = new ItemStack(item);
         CompoundTag tag = stack.getOrCreateTag();

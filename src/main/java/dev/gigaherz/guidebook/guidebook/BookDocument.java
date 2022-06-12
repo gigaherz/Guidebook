@@ -234,7 +234,11 @@ public class BookDocument
                 n = attributes.getNamedItem("model");
                 if (n != null)
                 {
-                    bookModel = new ModelResourceLocation(n.getTextContent());
+                    var text = n.getTextContent();
+                    if (text.contains("#"))
+                        bookModel = new ModelResourceLocation(text);
+                    else
+                        bookModel = new ResourceLocation(text);
                 }
                 n = attributes.getNamedItem("background");
                 if (n != null)
@@ -363,18 +367,25 @@ public class BookDocument
                 }
             }
 
-            try (Resource res = Minecraft.getInstance().getResourceManager().getResource(resLoc);
-                 InputStream stream = res.getInputStream())
+            try
             {
-                return context.xmlDocumentBuilder().parse(stream);
+                var res = Minecraft.getInstance().getResourceManager().getResourceOrThrow(resLoc);
+                try (InputStream stream = res.open())
+                {
+                    return context.xmlDocumentBuilder().parse(stream);
+                }
+                catch (IOException e)
+                {
+                    throw new UncheckedIOException(e);
+                }
+                catch (SAXException e)
+                {
+                    throw new RuntimeException(e);
+                }
             }
-            catch (IOException e)
+            catch (FileNotFoundException e)
             {
                 throw new UncheckedIOException(e);
-            }
-            catch (SAXException e)
-            {
-                throw new RuntimeException(e);
             }
         });
 

@@ -63,6 +63,22 @@ public abstract class Element
     public Predicate<ConditionContext> condition;
     public boolean conditionResult;
 
+    private static final Pattern WHITESPACE_ONLY = Pattern.compile("^\\s+$");
+    protected static boolean isContentNode(Node node)
+    {
+        if (node.getNodeType() == Node.ELEMENT_NODE)
+            return true;
+        if (node.getNodeType() == Node.COMMENT_NODE)
+            return false;
+        if (node.getNodeType() != Node.TEXT_NODE)
+            return true;
+
+        var str = node.getTextContent();
+        if (str== null || str.length() == 0) return false;
+
+        return !WHITESPACE_ONLY.matcher(str).matches();
+    }
+
     public boolean reevaluateConditions(ConditionContext ctx)
     {
         boolean oldValue = conditionResult;

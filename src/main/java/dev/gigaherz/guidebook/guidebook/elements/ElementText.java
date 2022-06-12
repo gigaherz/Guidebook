@@ -6,7 +6,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 
@@ -41,18 +41,18 @@ public class ElementText extends ElementInline
 
     private FormattedText getStringWithFormat(FormattedText text)
     {
-        return new TextComponent(text.getString()).withStyle(style -> style
+        return Component.literal(text.getString()).withStyle(style -> style
                 .withBold(bold)
                 .withItalic(italics)
-                .setUnderlined(underline)
-                .setStrikethrough(strikethrough)
-                .setObfuscated(obfuscated)
+                .withUnderlined(underline)
+                .withStrikethrough(strikethrough)
+                .withObfuscated(obfuscated)
                 .withFont(font));
     }
 
     protected FormattedText getActualString()
     {
-        return new TextComponent(text);
+        return Component.literal(text);
     }
 
     @Override

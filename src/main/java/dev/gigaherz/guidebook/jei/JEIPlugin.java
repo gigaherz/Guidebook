@@ -1,5 +1,5 @@
 package dev.gigaherz.guidebook.jei;
-
+/*
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.GuidebookItem;
 import mezz.jei.api.IModPlugin;
@@ -36,4 +36,4 @@ public class JEIPlugin implements IModPlugin
         });
     }
 
-}
+}*/

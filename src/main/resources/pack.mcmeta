@@ -1,6 +1,8 @@
 {
     "pack": {
         "description": "Guidebook Mod resources",
-        "pack_format": 8
+        "pack_format": 9,
+        "forge:assets_pack_format": 9,
+        "forge:data_pack_format": 10
     }
 }

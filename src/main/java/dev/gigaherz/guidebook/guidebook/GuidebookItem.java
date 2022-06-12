@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -96,8 +96,8 @@ public class GuidebookItem extends Item
             String book = getBookLocation(stack);
             if (!Strings.isNullOrEmpty(book))
             {
-                tooltip.add(new TranslatableComponent("text.gbook.tooltip.book",
-                        new TextComponent(book).withStyle(ChatFormatting.ITALIC)
+                tooltip.add(Component.translatable("text.gbook.tooltip.book",
+                        Component.literal(book).withStyle(ChatFormatting.ITALIC)
                 ).withStyle(ChatFormatting.GRAY));
             }
         }
@@ -110,7 +110,7 @@ public class GuidebookItem extends Item
         if (!Strings.isNullOrEmpty(book))
         {
             if (FMLEnvironment.dist == Dist.CLIENT && EffectiveSide.get().isClient())
-                return new TextComponent(ClientAPI.getBookName(book));
+                return Component.literal(ClientAPI.getBookName(book));
         }
 
         return super.getName(stack);
