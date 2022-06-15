@@ -25,9 +25,8 @@ public class ElementLink extends ElementSpan
     {
         List<VisualElement> texts = super.measure(nav, width, firstLineWidth);
         texts.forEach(e -> {
-            if (e instanceof LinkHelper.ILinkable)
+            if (e instanceof LinkHelper.ILinkable linkable)
             {
-                LinkHelper.ILinkable linkable = (LinkHelper.ILinkable) e;
                 linkable.setLinkContext(ctx);
             }
         });

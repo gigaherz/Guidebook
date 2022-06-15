@@ -19,13 +19,13 @@ import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -39,6 +39,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -56,7 +57,7 @@ public class BookDocument
     private ResourceLocation bookModel;
 
     final List<ChapterData> chapters = Lists.newArrayList();
-    private Map<Item, SectionRef> stackLinks = Maps.newHashMap();
+    private final Map<Item, SectionRef> stackLinks = Maps.newHashMap();
 
     final Map<String, Integer> chaptersByName = Maps.newHashMap();
     final Map<String, SectionRef> sectionsByName = Maps.newHashMap();
@@ -80,6 +81,11 @@ public class BookDocument
     static
     {
         registerCustomElement(new ResourceLocation("minecraft:recipe"), ElementRecipe::new);
+        registerCustomElement(new ResourceLocation("grid"), ElementGrid::new);
+        registerCustomElement(new ResourceLocation("space"), ElementPanel::new);
+        registerCustomElement(new ResourceLocation("group"), ElementPanel::new);
+        registerCustomElement(new ResourceLocation("panel"), ElementPanel::new);
+        registerCustomElement(new ResourceLocation("div"), ElementPanel::new);
     }
 
     public BookDocument(ResourceLocation bookLocation)
@@ -152,7 +158,7 @@ public class BookDocument
     public void findTextures(Set<Material> textures)
     {
         if (bookCover != null)
-            textures.add(new Material(TextureAtlas.LOCATION_BLOCKS, bookCover));
+            textures.add(new Material(InventoryMenu.BLOCK_ATLAS, bookCover));
 
         for (ChapterData chapter : chapters)
         {
@@ -178,6 +184,7 @@ public class BookDocument
         pg.elements.add(ElementParagraph.of(error, TextStyle.ERROR));
     }
 
+    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "UnstableApiUsage"})
     public boolean parseBook(InputStream stream, boolean loadedFromConfigFolder)
     {
         try
@@ -198,7 +205,7 @@ public class BookDocument
                 @Override
                 public Predicate<ConditionContext> getCondition(String name)
                 {
-                    return this.getCondition(name);
+                    return BookDocument.this.getCondition(name);
                 }
 
                 @Override
@@ -262,12 +269,11 @@ public class BookDocument
                 {
                     for (String s : n.getTextContent().split(","))
                     {
-                        // TODO
-                        /*if (!Loader.isModLoaded(s))
+                        if (!ModList.get().isLoaded(s))
                         {
                             initializeWithLoadError("Dependency not loaded: " + s);
                             return false;
-                        }*/
+                        }
                     }
                 }
             }
@@ -285,26 +291,22 @@ public class BookDocument
 
     private void parseDocumentLevelElements(ParsingContext context, NodeList firstLevel)
     {
-        int chapterNumber = 0;
+        AtomicInteger chapterNumber = new AtomicInteger(0);
         for (int i = 0; i < firstLevel.getLength(); i++)
         {
             Node firstLevelNode = firstLevel.item(i);
 
-            chapterNumber = parseDocumentLevelElement(context, chapterNumber, firstLevelNode);
+            parseDocumentLevelElement(context, chapterNumber, firstLevelNode);
         }
     }
 
-    private int parseDocumentLevelElement(ParsingContext context, int chapterNumber, Node firstLevelNode)
+    private void parseDocumentLevelElement(ParsingContext context, AtomicInteger chapterNumber, Node firstLevelNode)
     {
         String nodeName = firstLevelNode.getNodeName();
-        if (nodeName.equals("template"))
+        switch (nodeName)
         {
-            parseTemplateDefinition(context,firstLevelNode, templates);
-        }
-        else if (nodeName.equals("include"))
-        {
-            int[] cn = new int[]{chapterNumber};
-            parseInclude(context, firstLevelNode, (resLoc, document) -> {
+            case "template" -> parseTemplateDefinition(context, firstLevelNode, templates);
+            case "include" -> parseInclude(context, firstLevelNode, (resLoc, document) -> {
                 var includeRoot = document.getDocumentElement();
                 if (includeRoot.getTagName().equals("library"))
                 {
@@ -313,24 +315,13 @@ public class BookDocument
                 }
                 else
                 {
-                    cn[0] = parseDocumentLevelElement(context, cn[0], includeRoot);
+                    parseDocumentLevelElement(context, chapterNumber, includeRoot);
                 }
             });
-            chapterNumber = cn[0];
+            case "chapter" -> parseChapter(context, chapterNumber.getAndIncrement(), firstLevelNode);
+            case "stack-links" -> parseStackLinks(firstLevelNode);
+            case "conditions" -> parseConditions(firstLevelNode);
         }
-        else if (nodeName.equals("chapter"))
-        {
-            parseChapter(context, chapterNumber++, firstLevelNode);
-        }
-        else if (nodeName.equals("stack-links"))
-        {
-            parseStackLinks(firstLevelNode);
-        }
-        else if (nodeName.equals("conditions"))
-        {
-            parseConditions(firstLevelNode);
-        }
-        return chapterNumber;
     }
 
     private static void parseInclude(ParsingContext context, Node firstLevelNode, BiConsumer<ResourceLocation, Document> includeAction)
@@ -402,8 +393,6 @@ public class BookDocument
                 continue;
 
             NamedNodeMap attributes = condition.getAttributes();
-            if (attributes == null)
-                continue;
 
             Node conditionName = attributes.getNamedItem("name");
             String name = conditionName != null ? conditionName.getTextContent() : null;
@@ -496,37 +485,24 @@ public class BookDocument
             }
         }
 
-        int sectionNumber = 0;
+        AtomicInteger sectionNumber = new AtomicInteger(0);
         NodeList pagesList = chapterItem.getChildNodes();
         for (int j = 0; j < pagesList.getLength(); j++)
         {
             Node pageItem = pagesList.item(j);
 
-            sectionNumber = parseChapterElement(context, chapterNumber, chapter, sectionNumber, pageItem);
+            parseChapterElement(context, chapterNumber, chapter, sectionNumber, pageItem);
         }
     }
 
-    private int parseChapterElement(ParsingContext context, int chapterNumber, ChapterData chapter, int sectionNumber, Node pageItem)
+    private void parseChapterElement(ParsingContext context, int chapterNumber, ChapterData chapter, AtomicInteger sectionNumber, Node pageItem)
     {
-        String nodeName = pageItem.getNodeName();
-
-        if (nodeName.equals("page"))
+        switch (pageItem.getNodeName())
         {
-            parsePage(context, chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
+            case "page" -> parsePage(context, chapter, new SectionRef(chapterNumber, sectionNumber.getAndIncrement()), pageItem);
+            case "section" -> parseSection(context, chapter, new SectionRef(chapterNumber, sectionNumber.getAndIncrement()), pageItem);
+            case "include" -> parseInclude(context, pageItem, (name, document) -> parseChapterElement(context, chapterNumber, chapter, sectionNumber, document.getDocumentElement()));
         }
-        else if (nodeName.equals("section"))
-        {
-            parseSection(context, chapter, new SectionRef(chapterNumber, sectionNumber++), pageItem);
-        }
-        else if (nodeName.equals("include"))
-        {
-            int[] sn = new int[]{sectionNumber};
-            parseInclude(context, pageItem, (name,document) -> {
-                sn[0] = parseChapterElement(context, chapterNumber, chapter, sn[0], document.getDocumentElement());
-            });
-            sectionNumber = sn[0];
-        }
-        return sectionNumber;
     }
 
     private void parsePage(ParsingContext context, ChapterData chapter, SectionRef ref, Node pageItem)
@@ -591,262 +567,226 @@ public class BookDocument
                 elementItem.getNodeType() == Node.ELEMENT_NODE ?
                         new ResourceLocation(nodeName) : new ResourceLocation("_");
 
-        if (nodeName.equals("section-break"))
+        switch (nodeName)
         {
-            parsedElement = new ElementBreak();
-        }
-        else if (nodeName.equals("include"))
-        {
-            parseInclude(context, elementItem, (name,document) -> {
-                parsePageElement(context, elements, templates, generateParagraphs, defaultStyle, isFirstElement, isLastElement, document.getDocumentElement());
-            });
-        }
-        else if (nodeName.equals("p") || nodeName.equals("title"))
-        {
-            ElementParagraph p = new ElementParagraph();
-
-            TextStyle tagDefaults = defaultStyle;
-            if (nodeName.equals("title"))
-            {
-                p.alignment = ElementParagraph.ALIGN_CENTER;
-                p.space = 4;
-                tagDefaults = new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f);
-            }
-
-            TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
-
-            NodeList childList = elementItem.getChildNodes();
-            int l = childList.getLength();
-            for (int q = 0; q < l; q++)
-            {
-                Node childNode = childList.item(q);
-                ElementInline parsedChild = parseParagraphElement(context, childNode, childNode.getNodeName(), isFirstElement, isLastElement, paragraphDefautls);
-
-                if (parsedChild == null)
-                {
-                    GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
-                }
-                else
-                {
-                    p.inlines.add(parsedChild);
-                }
-            }
-
-            if (elementItem.hasAttributes())
-            {
-                p.parse(context, elementItem.getAttributes());
-            }
-
-            parsedElement = p;
-        }
-        else if (nodeName.equals("space")
-                || nodeName.equals("group")
-                || nodeName.equals("panel")
-                || nodeName.equals("div"))
-        {
-            ElementPanel p = new ElementPanel();
-
-            if (elementItem.hasAttributes())
-            {
-                p.parse(context, elementItem.getAttributes());
-            }
-
-            if (elementItem.hasChildNodes())
-            {
-                p.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
-            }
-
-            parsedElement = p;
-        }
-        else if (nodeName.equals("grid"))
-        {
-            ElementGrid g = new ElementGrid();
-
-            if (elementItem.hasAttributes())
-            {
-                g.parse(context, elementItem.getAttributes());
-            }
-
-            if (elementItem.hasChildNodes())
-            {
-                g.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
-            }
-
-            parsedElement = g;
-        }
-        else if (customElements.containsKey(nodeLoc))
-        {
-            ElementFactory factory = customElements.get(nodeLoc);
-
-            Element t = factory.newInstance();
-
-            if (elementItem.hasAttributes())
-            {
-                t.parse(context, elementItem.getAttributes());
-            }
-
-            if (elementItem.hasChildNodes())
-            {
-                t.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
-            }
-
-            parsedElement = t;
-        }
-        else if (templates.containsKey(nodeName))
-        {
-            TemplateDefinition tDef = templates.get(nodeName);
-
-            ElementPanel t = new ElementPanel();
-            t.parse(context, tDef.attributes);
-
-            if (elementItem.hasAttributes())
-            {
-                t.parse(context, elementItem.getAttributes());
-            }
-
-            List<Element> elementList = Lists.newArrayList();
-
-            parseChildElements(context, elementItem.getChildNodes(), elementList, templates, false, defaultStyle);
-
-            List<Element> effectiveList = tDef.applyTemplate(context, elementList);
-
-            t.innerElements.addAll(effectiveList);
-
-            parsedElement = t;
-        }
-        else if (elementItem.getNodeType() == Node.TEXT_NODE)
-        {
-            if (generateParagraphs)
-            {
-                String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
-                if (!Strings.isNullOrEmpty(textContent) && !textContent.matches("^[ \t\r\n]+$"))
-                    parsedElement = ElementSpan.of(textContent, defaultStyle);
-            }
-        }
-        else if (elementItem.getNodeType() == Node.COMMENT_NODE)
-        {
-            // Ignore.
-        }
-        else
-        {
-            parsedElement = parseParagraphElement(context, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
-
-            if (parsedElement == null)
-            {
-                GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
-            }
-        }
-
-        if (parsedElement != null)
-        {
-            if (!parsedElement.supportsPageLevel() && generateParagraphs && parsedElement instanceof ElementInline)
-            {
+            case "section-break" -> parsedElement = new ElementBreak();
+            case "include" -> parseInclude(context, elementItem, (name,document) ->
+                parsePageElement(context, elements, templates, generateParagraphs, defaultStyle, isFirstElement, isLastElement, document.getDocumentElement())
+            );
+            case "p", "title" -> {
                 ElementParagraph p = new ElementParagraph();
+
+                TextStyle tagDefaults = defaultStyle;
+                if (nodeName.equals("title"))
+                {
+                    p.alignment = ElementParagraph.ALIGN_CENTER;
+                    p.space = 4;
+                    tagDefaults = new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f);
+                }
+
+                TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
+
+                NodeList childList = elementItem.getChildNodes();
+                for (int q = 0; q < childList.getLength(); q++)
+                {
+                    Node childNode = childList.item(q);
+                    ElementInline parsedChild = parseParagraphElement(context, childNode, childNode.getNodeName(), isFirstElement, isLastElement, paragraphDefautls);
+
+                    if (parsedChild == null)
+                    {
+                        GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
+                    }
+                    else
+                    {
+                        p.inlines.add(parsedChild);
+                    }
+                }
 
                 if (elementItem.hasAttributes())
                 {
                     p.parse(context, elementItem.getAttributes());
-                    parsedElement.parse(context, elementItem.getAttributes());
                 }
-
-                p.inlines.add((ElementInline) parsedElement);
 
                 parsedElement = p;
             }
+            default -> {
+                if (customElements.containsKey(nodeLoc))
+                {
+                    ElementFactory factory = customElements.get(nodeLoc);
 
-            if (parsedElement.supportsPageLevel())
-                elements.add(parsedElement);
+                    Element t = factory.newInstance();
+
+                    if (elementItem.hasAttributes())
+                    {
+                        t.parse(context, elementItem.getAttributes());
+                    }
+
+                    if (elementItem.hasChildNodes())
+                    {
+                        t.parseChildNodes(context, elementItem.getChildNodes(), templates, defaultStyle);
+                    }
+
+                    parsedElement = t;
+                }
+                else if (templates.containsKey(nodeName))
+                {
+                    TemplateDefinition tDef = templates.get(nodeName);
+
+                    ElementPanel t = new ElementPanel();
+                    t.parse(context, tDef.attributes);
+
+                    if (elementItem.hasAttributes())
+                    {
+                        t.parse(context, elementItem.getAttributes());
+                    }
+
+                    List<Element> elementList = Lists.newArrayList();
+
+                    parseChildElements(context, elementItem.getChildNodes(), elementList, templates, false, defaultStyle);
+
+                    List<Element> effectiveList = tDef.applyTemplate(context, elementList);
+
+                    t.innerElements.addAll(effectiveList);
+
+                    parsedElement = t;
+                }
+                else if (elementItem.getNodeType() == Node.TEXT_NODE)
+                {
+                    if (generateParagraphs)
+                    {
+                        String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
+                        if (!Strings.isNullOrEmpty(textContent) && !textContent.matches("^[ \t\r\n]+$"))
+                            parsedElement = ElementSpan.of(textContent, defaultStyle);
+                    }
+                }
+                else if (elementItem.getNodeType() != Node.COMMENT_NODE)
+                {
+                    parsedElement = parseParagraphElement(context, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
+
+                    if (parsedElement == null)
+                    {
+                        GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
+                    }
+                }
+            }
         }
+
+        if (parsedElement == null) return;
+
+        if (!parsedElement.supportsPageLevel() && generateParagraphs && parsedElement instanceof ElementInline)
+        {
+            ElementParagraph p = new ElementParagraph();
+
+            if (elementItem.hasAttributes())
+            {
+                p.parse(context, elementItem.getAttributes());
+                parsedElement.parse(context, elementItem.getAttributes());
+            }
+
+            p.inlines.add((ElementInline) parsedElement);
+
+            parsedElement = p;
+        }
+
+        if (parsedElement.supportsPageLevel())
+            elements.add(parsedElement);
     }
 
     @Nullable
     public static ElementInline parseParagraphElement(ParsingContext context, Node elementItem, String nodeName, boolean isFirstElement, boolean isLastElement, TextStyle defaultStyle)
     {
-        ElementInline parsedElement = null;
-        if (nodeName.equals("span"))
+        return switch (nodeName)
         {
-            ElementSpan span = new ElementSpan(isFirstElement, isLastElement);
-
-            if (elementItem.hasAttributes())
+            case "span" ->
             {
-                span.parse(context, elementItem.getAttributes());
-            }
+                ElementSpan span = new ElementSpan(isFirstElement, isLastElement);
 
-            if (elementItem.hasChildNodes())
+                if (elementItem.hasAttributes())
+                {
+                    span.parse(context, elementItem.getAttributes());
+                }
+
+                if (elementItem.hasChildNodes())
+                {
+                    TextStyle spanDefaults = TextStyle.parse(elementItem.getAttributes(), defaultStyle);
+
+                    List<ElementInline> elementList = Lists.newArrayList();
+
+                    parseRunElements(context, elementItem, elementList, spanDefaults);
+
+                    span.inlines.addAll(elementList);
+                }
+
+                yield span;
+            }
+            case "link", "a" ->
             {
-                TextStyle spanDefaults = TextStyle.parse(elementItem.getAttributes(), defaultStyle);
+                ElementLink link = new ElementLink(isFirstElement, isLastElement);
 
-                List<ElementInline> elementList = Lists.newArrayList();
+                if (elementItem.hasAttributes())
+                {
+                    link.parse(context, elementItem.getAttributes());
+                }
 
-                parseRunElements(context, elementItem, elementList, spanDefaults);
+                if (elementItem.hasChildNodes())
+                {
+                    TextStyle spanDefaults = TextStyle.parse(elementItem.getAttributes(), TextStyle.LINK);
 
-                span.inlines.addAll(elementList);
+                    List<ElementInline> elementList = Lists.newArrayList();
+
+                    parseRunElements(context, elementItem, elementList, spanDefaults);
+
+                    link.inlines.addAll(elementList);
+                }
+
+                yield link;
             }
-
-            parsedElement = span;
-        }
-        else if (nodeName.equals("link") || nodeName.equals("a"))
-        {
-            ElementLink link = new ElementLink(isFirstElement, isLastElement);
-
-            if (elementItem.hasAttributes())
+            case "stack" ->
             {
-                link.parse(context, elementItem.getAttributes());
-            }
+                ElementStack s = new ElementStack(isFirstElement, isLastElement);
 
-            if (elementItem.hasChildNodes())
+                if (elementItem.hasAttributes())
+                {
+                    s.parse(context, elementItem.getAttributes());
+                }
+
+                yield s;
+            }
+            case "image" ->
             {
-                TextStyle spanDefaults = TextStyle.parse(elementItem.getAttributes(), TextStyle.LINK);
+                ElementImage i = new ElementImage(isFirstElement, isLastElement);
 
-                List<ElementInline> elementList = Lists.newArrayList();
+                if (elementItem.hasAttributes())
+                {
+                    i.parse(context, elementItem.getAttributes());
+                }
 
-                parseRunElements(context, elementItem, elementList, spanDefaults);
-
-                link.inlines.addAll(elementList);
+                yield i;
             }
-
-            parsedElement = link;
-        }
-        else if (nodeName.equals("stack"))
-        {
-            ElementStack s = new ElementStack(isFirstElement, isLastElement);
-
-            if (elementItem.hasAttributes())
+            case "element" ->
             {
-                s.parse(context, elementItem.getAttributes());
+                TemplateElement i = new TemplateElement(isFirstElement, isLastElement);
+
+                if (elementItem.hasAttributes())
+                {
+                    i.parse(context, elementItem.getAttributes());
+                }
+
+                yield i;
             }
-
-            parsedElement = s;
-        }
-        else if (nodeName.equals("image"))
-        {
-            ElementImage i = new ElementImage(isFirstElement, isLastElement);
-
-            if (elementItem.hasAttributes())
+            default ->
             {
-                i.parse(context, elementItem.getAttributes());
+                if (elementItem.getNodeType() == Node.TEXT_NODE)
+                {
+                    String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
+                    if (!Strings.isNullOrEmpty(textContent))
+                    {
+                        yield ElementSpan.of(textContent, isFirstElement, isLastElement, defaultStyle);
+                    }
+                }
+                yield null;
             }
-
-            parsedElement = i;
-        }
-        else if (nodeName.equals("element"))
-        {
-            TemplateElement i = new TemplateElement(isFirstElement, isLastElement);
-
-            if (elementItem.hasAttributes())
-            {
-                i.parse(context, elementItem.getAttributes());
-            }
-
-            parsedElement = i;
-        }
-        else if (elementItem.getNodeType() == Node.TEXT_NODE)
-        {
-            String textContent = ElementText.compactString(elementItem.getTextContent(), isFirstElement, isLastElement);
-            if (!Strings.isNullOrEmpty(textContent))
-                parsedElement = ElementSpan.of(textContent, isFirstElement, isLastElement, defaultStyle);
-        }
-        return parsedElement;
+        };
     }
 
     public static void parseRunElements(ParsingContext context, Node pageItem, List<ElementInline> elements, TextStyle defaultStyle)
@@ -872,19 +812,19 @@ public class BookDocument
 
                 Element t = factory.newInstance();
 
-                if (t instanceof ElementInline)
+                if (t instanceof ElementInline inline)
                 {
                     if (elementItem.hasAttributes())
                     {
-                        t.parse(context, elementItem.getAttributes());
+                        inline.parse(context, elementItem.getAttributes());
                     }
 
                     if (elementItem.hasChildNodes())
                     {
-                        t.parseChildNodes(context, elementItem.getChildNodes(), Collections.emptyMap(), defaultStyle);
+                        inline.parseChildNodes(context, elementItem.getChildNodes(), Collections.emptyMap(), defaultStyle);
                     }
 
-                    parsedElement = (ElementInline) t;
+                    parsedElement = inline;
                 }
             }
             else if (elementItem.getNodeType() == Node.TEXT_NODE)
@@ -893,11 +833,7 @@ public class BookDocument
                 if (!Strings.isNullOrEmpty(textContent))
                     parsedElement = ElementSpan.of(textContent, isFirstElement, isLastElement, defaultStyle);
             }
-            else if (elementItem.getNodeType() == Node.COMMENT_NODE)
-            {
-                // Ignore.
-            }
-            else
+            else if (elementItem.getNodeType() != Node.COMMENT_NODE)
             {
                 parsedElement = parseParagraphElement(context, elementItem, nodeName, isFirstElement, isLastElement, defaultStyle);
 
@@ -957,7 +893,7 @@ public class BookDocument
         return anyChanged;
     }
 
-    public class ChapterData
+    public static class ChapterData
     {
         public final int num;
         public String id;
@@ -1006,7 +942,7 @@ public class BookDocument
         }
     }
 
-    public class PageData
+    public static class PageData
     {
         public final SectionRef ref;
         public String id;
@@ -1074,7 +1010,7 @@ public class BookDocument
      * </chapter>
      * </book>
      */
-    public class PageGroup extends PageData
+    public static class PageGroup extends PageData
     {
         public PageGroup(SectionRef ref)
         {
