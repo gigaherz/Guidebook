@@ -63,8 +63,9 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
-                thismod {
+                gbook {
                     source sourceSets.main
+                    source sourceSets.test
                 }
             }
         }
@@ -80,8 +81,24 @@ minecraft {
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
-                thismod {
+                gbook {
                     source sourceSets.main
+                }
+            }
+        }
+        data {
+            property 'forge.logging.markers', ''
+            property 'forge.logging.console.level', 'debug'
+
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
+            args '--mod', 'gbook', '--all', '--output', file('src/test/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                gbook {
+                    source sourceSets.main
+                    source sourceSets.test
                 }
             }
         }
@@ -92,8 +109,8 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.19-41.0.17'
 
 
-    //compileOnly fg.deobf("mezz.jei:jei-1.18.2:9.5.5.174:api")
-    //runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.5.5.174")
+    compileOnly fg.deobf("mezz.jei:jei-1.18.2-common-api:10.0.0.191")
+    //runtimeOnly fg.deobf("mezz.jei:jei-1.19-forge:10.0.0.191")
 
     implementation fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.19:9.0.1")
     implementation fg.deobf( "net.darkhax.bookshelf:Bookshelf-Forge-1.19:14.0.2")
