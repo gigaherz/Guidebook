@@ -6,10 +6,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import dev.gigaherz.guidebook.ConfigValues;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.SectionRef;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
+import dev.gigaherz.guidebook.guidebook.book.ChapterData;
+import dev.gigaherz.guidebook.guidebook.book.PageData;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualChapter;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPage;
@@ -24,7 +26,6 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -393,16 +394,16 @@ public class BookRendering implements IBookGraphics
     {
         if (chapterNumber < 0 || chapterNumber >= book.chapterCount())
             return false;
-        BookDocument.ChapterData ch = book.getChapter(chapterNumber);
+        ChapterData ch = book.getChapter(chapterNumber);
         return ch.conditionResult && !ch.isEmpty();
     }
 
     private boolean needSection(int chapterNumber, int sectionNumber)
     {
-        BookDocument.ChapterData ch = book.getChapter(chapterNumber);
+        ChapterData ch = book.getChapter(chapterNumber);
         if (sectionNumber < 0 || sectionNumber >= ch.sections.size())
             return false;
-        BookDocument.PageData section = ch.sections.get(sectionNumber);
+        PageData section = ch.sections.get(sectionNumber);
         return section.conditionResult && !section.isEmpty();
     }
 
@@ -443,7 +444,7 @@ public class BookRendering implements IBookGraphics
     {
         while (chapters.size() <= chapter && lastProcessedChapter < book.chapterCount())
         {
-            BookDocument.ChapterData bc = book.getChapter(lastProcessedChapter++);
+            ChapterData bc = book.getChapter(lastProcessedChapter++);
             if (!bc.conditionResult)
                 continue;
 

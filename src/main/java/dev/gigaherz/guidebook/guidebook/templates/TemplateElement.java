@@ -2,7 +2,7 @@ package dev.gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.primitives.Ints;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.elements.ElementInline;

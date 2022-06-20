@@ -34,8 +34,8 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
 
     public static void register()
     {
-        ConditionManager.register("advancement-locked", (doc, node) -> new Locked(parseAdvancementLocation(node)));
-        ConditionManager.register("advancement-unlocked", (doc, node) -> new Unlocked(parseAdvancementLocation(node)));
+        ConditionManager.register("advancement-locked", (node) -> new Locked(parseAdvancementLocation(node)));
+        ConditionManager.register("advancement-unlocked", (node) -> new Unlocked(parseAdvancementLocation(node)));
     }
 
     public static class Locked extends AdvancementCondition

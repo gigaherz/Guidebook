@@ -1,6 +1,8 @@
 package dev.gigaherz.guidebook.guidebook;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.network.chat.Component;

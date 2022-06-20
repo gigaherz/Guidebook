@@ -1,18 +1,23 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
+import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ElementParagraph extends Element
@@ -198,6 +203,31 @@ public class ElementParagraph extends Element
 
         indent = getAttribute(attributes, "indent", indent);
         space = getAttribute(attributes, "space", space);
+    }
+
+    @Override
+    public TextStyle childStyle(ParsingContext context, NamedNodeMap attributes, TextStyle defaultStyle)
+    {
+        return TextStyle.parse(attributes, defaultStyle);
+    }
+
+    @Override
+    public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
+    {
+        for (int q = 0; q < childNodes.getLength(); q++)
+        {
+            Node childNode = childNodes.item(q);
+            ElementInline parsedChild = BookDocumentParser.parseParagraphElement(context, childNode, childNode.getNodeName(), defaultStyle);
+
+            if (parsedChild == null)
+            {
+                GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
+            }
+            else
+            {
+                inlines.add(parsedChild);
+            }
+        }
     }
 
     @Override

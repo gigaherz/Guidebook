@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.ConfigValues;
 import dev.gigaherz.guidebook.GuidebookMod;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import net.minecraft.client.Minecraft;
@@ -16,10 +16,11 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Objects;
 
 public class GuidebookScreen extends Screen
 {
@@ -340,7 +341,7 @@ public class GuidebookScreen extends Screen
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShaderTexture(0, BOOK_GUI_TEXTURES);
+            RenderSystem.setShaderTexture(0, Objects.requireNonNullElse(book.getBook().getWidgets(), BOOK_GUI_TEXTURES));
 
             int x = xPixel[whichIcon];
             int y = yPixel[whichIcon];

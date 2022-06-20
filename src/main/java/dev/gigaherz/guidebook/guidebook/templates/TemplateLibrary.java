@@ -1,9 +1,10 @@
 package dev.gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.collect.Maps;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;
@@ -70,43 +71,15 @@ public class TemplateLibrary
 
     private void parseTemplateDefinition(ParsingContext parentContext, Node templateItem)
     {
-        if (!templateItem.hasAttributes())
-            return; // TODO: Throw error
-
-        TemplateDefinition page = new TemplateDefinition();
-
-        NamedNodeMap attributes = templateItem.getAttributes();
-        Node n = attributes.getNamedItem("id");
-        if (n == null)
-            return;
-
-        templates.put(n.getTextContent(), page);
-
-        var context = new ParsingContext()
+        ParsingContext.Wrapper context = new ParsingContext.Wrapper(parentContext)
         {
             @Override
-            public Predicate<ConditionContext> getCondition(String name)
+            public BookDocument document()
             {
                 return null;
             }
-
-            @Override
-            public boolean loadedFromConfigFolder()
-            {
-                return parentContext.loadedFromConfigFolder();
-            }
-
-            @Override
-            public DocumentBuilder xmlDocumentBuilder()
-            {
-                return parentContext.xmlDocumentBuilder();
-            }
         };
-
-        BookDocument.parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
-
-        attributes.removeNamedItem("id");
-        page.attributes = attributes;
+        BookDocumentParser.parseTemplateDefinition(context, templateItem, templates);
     }
 
     public static Map<String, TemplateLibrary> LIBRARIES = Maps.newHashMap();

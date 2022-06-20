@@ -2,10 +2,11 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookParsingException;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
@@ -19,7 +20,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
 import java.util.*;
 
 public class ElementGrid extends Element
@@ -105,7 +105,7 @@ public class ElementGrid extends Element
                             {
                                 var list = new ArrayList<Element>();
 
-                                BookDocument.parseChildElements(context, colNode.getChildNodes(), list, templates, true, defaultStyle);
+                                BookDocumentParser.parseChildElements(context, colNode.getChildNodes(), list, templates, true, defaultStyle);
 
                                 if (list.size() == 1)
                                     cell.content = list.get(0);

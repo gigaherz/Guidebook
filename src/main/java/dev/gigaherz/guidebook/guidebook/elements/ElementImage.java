@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualImage;
 import dev.gigaherz.guidebook.guidebook.util.Rect;

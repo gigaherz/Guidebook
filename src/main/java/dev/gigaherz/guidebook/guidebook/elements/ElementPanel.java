@@ -2,9 +2,10 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
@@ -82,7 +83,7 @@ public class ElementPanel extends Element
     @Override
     public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
-        BookDocument.parseChildElements(context, childNodes, innerElements, templates, true, defaultStyle);
+        BookDocumentParser.parseChildElements(context, childNodes, innerElements, templates, true, defaultStyle);
     }
 
     @Override

@@ -1,14 +1,19 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
+import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
-import dev.gigaherz.guidebook.guidebook.SectionRef;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ElementLink extends ElementSpan
@@ -63,6 +68,20 @@ public class ElementLink extends ElementSpan
         {
             ctx.textAction = attr.getTextContent();
         }
+    }
+
+    @Override
+    public TextStyle childStyle(ParsingContext context, NamedNodeMap attributes, TextStyle defaultStyle)
+    {
+        return TextStyle.parse(attributes, TextStyle.LINK);
+    }
+
+    @Override
+    public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
+    {
+        List<ElementInline> elementList = Lists.newArrayList();
+        BookDocumentParser.parseRunElements(context, childNodes, elementList, defaultStyle);
+        inlines.addAll(elementList);
     }
 
     @Override

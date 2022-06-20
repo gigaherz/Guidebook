@@ -2,9 +2,9 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.primitives.Ints;
 import dev.gigaherz.guidebook.GuidebookMod;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.recipe.IRecipeLayoutProvider;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayout;
@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author joazlazer
  * A section element that will display a recipe provided by the specified recipe type's RecipeProvider and will render hoverable stacks,
  * a background image, and additional components to display said recipe
+ * @author joazlazer
  */
 public class ElementRecipe extends Element
 {
@@ -40,7 +40,7 @@ public class ElementRecipe extends Element
     @Nonnull
     private RecipeLayout getRecipeLayout(@Nonnull Level world, IRecipeLayoutProvider recipeProvider, ElementStack output)
     {
-        if (output == null || output.stacks == null || output.stacks.size() == 0)
+        if (output == null || output.stacks.size() == 0)
             throw new IllegalArgumentException("Provided output stack is null or empty.");
 
         ItemStack targetOutput = output.stacks.get(0);
@@ -106,6 +106,7 @@ public class ElementRecipe extends Element
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void parse(ParsingContext context, NamedNodeMap attributes)
     {
@@ -159,7 +160,7 @@ public class ElementRecipe extends Element
                         String stackNodeName = stackNode.getNodeName();
                         if (stackNodeName.equals("stack") || stackNodeName.equals("element"))
                         {
-                            recipeOutput = BookDocument.parseParagraphElement(context, stackNode, stackNodeName, false, false, defaultStyle);
+                            recipeOutput = BookDocumentParser.parseParagraphElement(context, stackNode, stackNodeName, defaultStyle);
                         }
                     }
                 }

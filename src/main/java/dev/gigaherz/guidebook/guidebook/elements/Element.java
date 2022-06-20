@@ -2,7 +2,8 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.IParseable;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
@@ -15,7 +16,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class Element
+public abstract class Element implements IParseable
 {
     public static final int VA_TOP = 0;
     public static final int VA_MIDDLE = 1;
@@ -118,17 +118,13 @@ public abstract class Element
 
     public Point applyPosition(Point point, Point parent)
     {
-        switch (position)
+        return switch (position)
         {
-            case POS_RELATIVE:
-                return new Point(point.x + x, point.y + y);
-            case POS_ABSOLUTE:
-                return new Point(parent.x + x, parent.y + y);
-            case POS_FIXED:
-                return new Point(x, y);
-        }
-
-        return new Point(point.x, point.y);
+            case POS_RELATIVE -> new Point(point.x + x, point.y + y);
+            case POS_ABSOLUTE -> new Point(parent.x + x, parent.y + y);
+            case POS_FIXED -> new Point(x, y);
+            default -> new Point(point.x, point.y);
+        };
     }
 
     protected <T extends Element> T copy(T other)
@@ -142,6 +138,7 @@ public abstract class Element
         return other;
     }
 
+    @Override
     public void parse(ParsingContext context, NamedNodeMap attributes)
     {
         x = getAttribute(attributes, "x", x);
@@ -155,40 +152,26 @@ public abstract class Element
         Node attr = attributes.getNamedItem("align");
         if (attr != null)
         {
-            String a = attr.getTextContent();
-            switch (a)
+            position = switch (attr.getTextContent())
             {
-                case "relative":
-                    position = 0;
-                    break;
-                case "absolute":
-                    position = 1;
-                    break;
-                case "fixed":
-                    position = 2;
-                    break;
-            }
+                case "relative" -> 0;
+                case "absolute" -> 1;
+                case "fixed" -> 2;
+                default -> position;
+            };
         }
 
         attr = attributes.getNamedItem("vertical-align");
         if (attr != null)
         {
-            String a = attr.getTextContent();
-            switch (a)
+            verticalAlignment = switch (attr.getTextContent())
             {
-                case "top":
-                    verticalAlignment = VA_TOP;
-                    break;
-                case "middle":
-                    verticalAlignment = VA_MIDDLE;
-                    break;
-                case "baseline":
-                    verticalAlignment = VA_BASELINE;
-                    break;
-                case "bottom":
-                    verticalAlignment = VA_BOTTOM;
-                    break;
-            }
+                case "top" -> VA_TOP;
+                case "middle" -> VA_MIDDLE;
+                case "baseline" -> VA_BASELINE;
+                case "bottom" -> VA_BOTTOM;
+                default -> verticalAlignment;
+            };
         }
 
         attr = attributes.getNamedItem("condition");
@@ -198,6 +181,7 @@ public abstract class Element
         }
     }
 
+    @Override
     public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
     }

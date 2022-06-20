@@ -5,10 +5,10 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import dev.gigaherz.guidebook.GuidebookMod;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.LanguageManager;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.FolderPackResources;
@@ -81,6 +81,8 @@ public class BookRegistry
         TemplateLibrary.clear();
 
         LOADED_BOOKS.clear();
+
+        BookDocumentParser.invalidateIncludeCache();
 
         Set<ResourceLocation> toLoad = Sets.newHashSet(REGISTRY);
 
@@ -170,8 +172,7 @@ public class BookRegistry
             }
             try (InputStream stream = bookResource.open())
             {
-                if (!bookDocument.parseBook(stream, false))
-                    return null;
+                return BookDocumentParser.parseBook(bookDocument, stream, false);
             }
         }
         catch (IOException e)
@@ -185,13 +186,11 @@ public class BookRegistry
     private static BookDocument parseBook(ResourceLocation location, File file)
     {
         BookDocument bookDocument = new BookDocument(location);
-        try
+        try(InputStream stream = new FileInputStream(file))
         {
-            InputStream stream = new FileInputStream(file);
-            if (!bookDocument.parseBook(stream, true))
-                return null;
+            return BookDocumentParser.parseBook(bookDocument, stream, true);
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             bookDocument.initializeWithLoadError(e.toString());
         }

@@ -4,7 +4,7 @@ import com.google.common.primitives.Ints;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualStack;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
