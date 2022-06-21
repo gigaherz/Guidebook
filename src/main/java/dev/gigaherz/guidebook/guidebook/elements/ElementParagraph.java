@@ -217,7 +217,7 @@ public class ElementParagraph extends Element
         for (int q = 0; q < childNodes.getLength(); q++)
         {
             Node childNode = childNodes.item(q);
-            ElementInline parsedChild = BookDocumentParser.parseParagraphElement(context, childNode, childNode.getNodeName(), defaultStyle);
+            ElementInline parsedChild = BookDocumentParser.parseParagraphElement(context, childNode, defaultStyle);
 
             if (parsedChild == null)
             {

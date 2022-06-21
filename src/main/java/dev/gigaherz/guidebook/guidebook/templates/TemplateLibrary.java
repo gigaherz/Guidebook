@@ -50,11 +50,9 @@ public class TemplateLibrary
         }
     }
 
-    public void parseLibrary(ParsingContext context, Document doc) throws ParserConfigurationException, IOException, SAXException
+    public void parseLibrary(ParsingContext context, Node root) throws ParserConfigurationException, IOException, SAXException
     {
-        doc.getDocumentElement().normalize();
-
-        Node root = doc.getChildNodes().item(0);
+        root.normalize();
 
         NodeList chaptersList = root.getChildNodes();
         for (int i = 0; i < chaptersList.getLength(); i++)
@@ -136,7 +134,7 @@ public class TemplateLibrary
         return lib;
     }
 
-    public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Document doc)
+    public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Node doc)
     {
         TemplateLibrary lib = LIBRARIES.get(path.toString());
         if (lib == null)

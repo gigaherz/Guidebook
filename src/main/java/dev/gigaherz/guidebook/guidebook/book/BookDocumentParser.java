@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -308,19 +309,16 @@ public class BookDocumentParser
     }
 
     @Nullable
-    public static ElementInline parseParagraphElement(ParsingContext context, Node elementItem, String nodeName, TextStyle defaultStyle)
+    public static ElementInline parseParagraphElement(ParsingContext context, Node elementItem, TextStyle defaultStyle)
     {
         if (elementItem.getNodeType() != Node.TEXT_NODE)
         {
-            return createInlineElement(context, defaultStyle, elementItem, new ResourceLocation(nodeName));
+            return createInlineElement(context, defaultStyle, elementItem, getNodeLoc(elementItem));
         }
-        else
+        String textContent = ElementText.compactString(elementItem.getTextContent(), context.isFirstElement(), context.isLastElement());
+        if (!Strings.isNullOrEmpty(textContent))
         {
-            String textContent = ElementText.compactString(elementItem.getTextContent(), context.isFirstElement(), context.isLastElement());
-            if (!Strings.isNullOrEmpty(textContent))
-            {
-                return ElementSpan.of(textContent, context.isFirstElement(), context.isLastElement(), defaultStyle);
-            }
+            return ElementSpan.of(textContent, context.isFirstElement(), context.isLastElement(), defaultStyle);
         }
         return null;
     }
@@ -347,59 +345,66 @@ public class BookDocumentParser
                 }
             };
 
-            Node elementItem = elementsList.item(k);
+            parseRunElement(context, elements, elementsList.item(k), defaultStyle);
+        }
+    }
 
-            ElementInline parsedElement = null;
+    private static void parseRunElement(ParsingContext context, List<ElementInline> elements, Node elementItem, TextStyle defaultStyle)
+    {
+        String nodeName = elementItem.getNodeName();
+        ResourceLocation nodeLoc = getNodeLoc(elementItem);
 
-            String nodeName = elementItem.getNodeName();
-            ResourceLocation nodeLoc =
-                    elementItem.getNodeType() == Node.ELEMENT_NODE ?
-                            new ResourceLocation(nodeName) : new ResourceLocation("_");
-
-            if (BookDocumentParser.elements.containsKey(nodeLoc))
+        if (BookDocumentParser.elements.containsKey(nodeLoc))
+        {
+            if (createElement(context, Collections.emptyMap(), defaultStyle, elementItem, nodeLoc) instanceof ElementInline inline)
             {
-                if (createElement(context, Collections.emptyMap(), defaultStyle, elementItem, nodeLoc) instanceof ElementInline inline)
-                {
-                    if (elementItem.hasAttributes())
-                    {
-                        inline.parse(context, elementItem.getAttributes());
-                    }
-
-                    if (elementItem.hasChildNodes())
-                    {
-                        inline.parseChildNodes(context, elementItem.getChildNodes(), Collections.emptyMap(), defaultStyle);
-                    }
-
-                    parsedElement = inline;
-                }
-            }
-            else if (inlineElements.containsKey(nodeLoc))
-            {
-                parsedElement = createInlineElement(context, defaultStyle, elementItem, nodeLoc);
-            }
-            else if (elementItem.getNodeType() == Node.TEXT_NODE)
-            {
-                String textContent = ElementText.compactString(elementItem.getTextContent(), context.isFirstElement(), context.isLastElement());
-                if (!Strings.isNullOrEmpty(textContent))
-                {
-                    parsedElement = ElementSpan.of(textContent, context.isFirstElement(), context.isLastElement(), defaultStyle);
-                }
-            }
-            else if (elementItem.getNodeType() != Node.COMMENT_NODE)
-            {
-                parsedElement = parseParagraphElement(context, elementItem, nodeName, defaultStyle);
-
-                if (parsedElement == null)
-                {
-                    GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
-                }
-            }
-
-            if (parsedElement != null)
-            {
-                elements.add(parsedElement);
+                elements.add(inline);
             }
         }
+        else if (inlineElements.containsKey(nodeLoc))
+        {
+            var e = createInlineElement(context, defaultStyle, elementItem, nodeLoc);
+            if (e != null)
+            {
+                elements.add(e);
+            }
+        }
+        else
+        {
+            var e = switch (elementItem.getNodeType())
+            {
+                case Node.TEXT_NODE ->
+                {
+                    String textContent = ElementText.compactString(elementItem.getTextContent(), context.isFirstElement(), context.isLastElement());
+                    if (!Strings.isNullOrEmpty(textContent))
+                    {
+                        yield ElementSpan.of(textContent, context.isFirstElement(), context.isLastElement(), defaultStyle);
+                    }
+                    yield null;
+                }
+                case Node.COMMENT_NODE -> null;
+                default ->
+                {
+                    var el = parseParagraphElement(context, elementItem, defaultStyle);
+                    if (el == null)
+                    {
+                        GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
+                    }
+                    yield el;
+                }
+            };
+            if (e != null)
+            {
+                elements.add(e);
+            }
+        }
+
+    }
+
+    @NotNull
+    private static ResourceLocation getNodeLoc(Node elementItem)
+    {
+        return elementItem.getNodeType() == Node.ELEMENT_NODE ? new ResourceLocation(elementItem.getNodeName()) : new ResourceLocation("_");
     }
 
     private static void registerDefaultElement(String location, ElementFactory factory)
@@ -438,11 +443,10 @@ public class BookDocumentParser
         String nodeName = firstLevelNode.getNodeName();
         if ("include".equals(nodeName))
         {
-            parseInclude(context, firstLevelNode, (resLoc, document) -> {
-                var includeRoot = document.getDocumentElement();
-                if (includeRoot.getTagName().equals("library"))
+            parseInclude(context, firstLevelNode, (resLoc, includeRoot) -> {
+                if ("library".equals(includeRoot.getNodeName()))
                 {
-                    TemplateLibrary tpl = TemplateLibrary.get(context, resLoc, document);
+                    TemplateLibrary tpl = TemplateLibrary.get(context, resLoc, includeRoot);
                     context.document().templates.putAll(tpl.templates);
                 }
                 else
@@ -454,7 +458,7 @@ public class BookDocumentParser
         }
         if (firstLevelNode.getNodeType() != Node.ELEMENT_NODE)
             return;
-        DocumentLevelElementParser parser = documentLevelElements.get(new ResourceLocation(nodeName));
+        DocumentLevelElementParser parser = documentLevelElements.get(getNodeLoc(firstLevelNode));
         if (parser != null)
         {
             parser.parse(context, chapterNumber, firstLevelNode);
@@ -539,11 +543,11 @@ public class BookDocumentParser
     {
         if ("include".equals(pageItem.getNodeName()))
         {
-            parseInclude(context, pageItem, (name, doc) -> parseChapterElement(context, chapterNumber, chapter, sectionNumber, doc.getDocumentElement()));
+            parseInclude(context, pageItem, (name, doc) -> parseChapterElement(context, chapterNumber, chapter, sectionNumber, doc));
         }
-        else if (pageItem.getNodeType() == Node.ELEMENT_NODE && pages.containsKey(new ResourceLocation(pageItem.getNodeName())))
+        else if (pageItem.getNodeType() == Node.ELEMENT_NODE && pages.containsKey(getNodeLoc(pageItem)))
         {
-            PageFactory factory = pages.get(new ResourceLocation(pageItem.getNodeName()));
+            PageFactory factory = pages.get(getNodeLoc(pageItem));
             PageData page = factory.newInstance(new SectionRef(chapterNumber, sectionNumber.getAndIncrement()));
             parseSection(context, chapter, pageItem, page);
         }
@@ -573,7 +577,7 @@ public class BookDocumentParser
         }
     }
 
-    private static void parseInclude(ParsingContext context, Node firstLevelNode, BiConsumer<ResourceLocation, Document> includeAction)
+    private static void parseInclude(ParsingContext context, Node firstLevelNode, BiConsumer<ResourceLocation, Node> includeAction)
     {
         NamedNodeMap attributes = firstLevelNode.getAttributes();
         Node n = attributes.getNamedItem("ref");
@@ -629,7 +633,7 @@ public class BookDocumentParser
             }
         });
 
-        includeAction.accept(id, include);
+        includeAction.accept(id, include.getDocumentElement());
     }
 
     private static Predicate<ConditionContext> parseSingleCondition(Node condition)
@@ -657,13 +661,12 @@ public class BookDocumentParser
 
         String nodeName = elementItem.getNodeName();
         ResourceLocation nodeLoc =
-                elementItem.getNodeType() == Node.ELEMENT_NODE ?
-                        new ResourceLocation(nodeName) : new ResourceLocation("_");
+                getNodeLoc(elementItem);
 
         if ("include".equals(nodeName))
         {
             parseInclude(context, elementItem, (name, document) ->
-                    parsePageElement(context, elements, templates, generateParagraphs, defaultStyle, document.getDocumentElement())
+                    parsePageElement(context, elements, templates, generateParagraphs, defaultStyle, document)
             );
         }
         else if (BookDocumentParser.elements.containsKey(nodeLoc))
@@ -705,7 +708,7 @@ public class BookDocumentParser
         }
         else if (elementItem.getNodeType() != Node.COMMENT_NODE)
         {
-            parsedElement = parseParagraphElement(context, elementItem, nodeName, defaultStyle);
+            parsedElement = parseParagraphElement(context, elementItem, defaultStyle);
 
             if (parsedElement == null)
             {

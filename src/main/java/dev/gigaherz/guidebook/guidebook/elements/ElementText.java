@@ -7,6 +7,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 
@@ -41,7 +42,16 @@ public class ElementText extends ElementInline
 
     private FormattedText getStringWithFormat(FormattedText text)
     {
-        return Component.literal(text.getString()).withStyle(style -> style
+        MutableComponent mutable;
+        if (text instanceof Component)
+        {
+            mutable = ((Component) text).copy();
+        }
+        else
+        {
+            mutable = Component.literal(text.getString());
+        }
+        return mutable.withStyle(style -> style
                 .withBold(bold)
                 .withItalic(italics)
                 .withUnderlined(underline)
@@ -61,9 +71,8 @@ public class ElementText extends ElementInline
         List<VisualElement> elements = nav.measure(getStringWithFormat(getActualString()), width, firstLineWidth, scale, position, baseline, verticalAlignment);
         for (VisualElement text : elements)
         {
-            if (text instanceof VisualText)
+            if (text instanceof VisualText visualText)
             {
-                VisualText visualText = (VisualText) text;
                 visualText.color = color;
             }
         }

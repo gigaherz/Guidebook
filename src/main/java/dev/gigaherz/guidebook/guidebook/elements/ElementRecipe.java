@@ -160,7 +160,7 @@ public class ElementRecipe extends Element
                         String stackNodeName = stackNode.getNodeName();
                         if (stackNodeName.equals("stack") || stackNodeName.equals("element"))
                         {
-                            recipeOutput = BookDocumentParser.parseParagraphElement(context, stackNode, stackNodeName, defaultStyle);
+                            recipeOutput = BookDocumentParser.parseParagraphElement(context, stackNode, defaultStyle);
                         }
                     }
                 }
