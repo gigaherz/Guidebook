@@ -10,7 +10,7 @@ import dev.gigaherz.guidebook.guidebook.recipe.IRecipeLayoutProvider;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayout;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayoutProviders;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
-import dev.gigaherz.guidebook.guidebook.util.Point;
+import dev.gigaherz.guidebook.guidebook.util.Point2I;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -84,7 +84,7 @@ public class ElementRecipe extends Element
             ElementStack[] ingredients = recipeLayout.recipeComponents;
             int height = h != 0 ? h : recipeLayout.height;
 
-            Point adjustedPosition = applyPosition(bounds.position, bounds.position);
+            Point2I adjustedPosition = applyPosition(bounds.position, bounds.position);
             Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
             for (ElementStack ingredient : ingredients)
@@ -96,8 +96,8 @@ public class ElementRecipe extends Element
             if (additionalRenderer != null)
                 list.add(additionalRenderer);
             if (position != POS_RELATIVE)
-                return bounds.position.y;
-            return adjustedPosition.y + height;
+                return bounds.position.y();
+            return adjustedPosition.y() + height;
         }
         catch (Exception e)
         {

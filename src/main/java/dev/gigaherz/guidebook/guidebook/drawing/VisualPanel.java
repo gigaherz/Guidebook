@@ -34,11 +34,7 @@ public class VisualPanel extends VisualElement
         VisualElement newOver = null;
         for (VisualElement child : children)
         {
-            if (child.wantsHover()
-                    && x >= child.position.x
-                    && y >= child.position.y
-                    && (x - child.position.x) < child.size.width
-                    && (y - child.position.y) < child.size.height)
+            if (child.wantsHover() && child.contains(x, y))
             {
                 newOver = child;
                 break;
@@ -78,6 +74,6 @@ public class VisualPanel extends VisualElement
     @Override
     public boolean wantsHover()
     {
-        return children.stream().anyMatch(e -> e.wantsHover());
+        return children.stream().anyMatch(VisualElement::wantsHover);
     }
 }

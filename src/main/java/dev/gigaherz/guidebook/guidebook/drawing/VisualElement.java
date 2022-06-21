@@ -36,7 +36,7 @@ public abstract class VisualElement extends Rect
     {
         if (BookRendering.DEBUG_DRAW_BOUNDS)
         {
-            GuiComponent.fill(matrixStack, this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
+            GuiComponent.fill(matrixStack, this.position.x(), this.position.y(), this.position.x() + this.size.width(), this.position.y() + this.size.height(), 0x3f000000);
         }
     }
 

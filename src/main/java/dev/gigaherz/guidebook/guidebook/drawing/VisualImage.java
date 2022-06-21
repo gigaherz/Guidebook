@@ -39,7 +39,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         super.draw(nav, matrixStack);
-        nav.drawImage(matrixStack, textureLocation, position.x, position.y, tx, ty, w, h, tw, th, scale);
+        nav.drawImage(matrixStack, textureLocation, position.x(), position.y(), tx, ty, w, h, tw, th, scale);
     }
 
     //public int colorHover = 0xFF77cc66;

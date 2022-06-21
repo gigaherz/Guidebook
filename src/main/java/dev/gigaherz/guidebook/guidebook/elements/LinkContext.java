@@ -18,6 +18,6 @@ public class LinkContext
         link.colorHover = colorHover;
         link.textTarget = textTarget;
         link.textAction = textAction;
-        return null;
+        return link;
     }
 }

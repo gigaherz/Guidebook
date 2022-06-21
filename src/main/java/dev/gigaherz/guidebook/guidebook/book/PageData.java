@@ -7,7 +7,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualPage;
 import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
-import dev.gigaherz.guidebook.guidebook.util.Point;
+import dev.gigaherz.guidebook.guidebook.util.Point2I;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import org.w3c.dom.NamedNodeMap;
@@ -36,14 +36,14 @@ public class PageData implements IParseable
     public List<VisualPage> reflow(IBookGraphics rendering, Size pageSize)
     {
         VisualPage page = new VisualPage(ref);
-        Rect pageBounds = new Rect(new Point(), pageSize);
+        Rect pageBounds = new Rect(new Point2I(), pageSize);
 
         int top = 0;
         for (Element element : elements)
         {
             if (element.conditionResult)
             {
-                top = element.reflow(page.children, rendering, new Rect(new Point(0, top), pageSize), pageBounds);
+                top = element.reflow(page.children, rendering, new Rect(new Point2I(0, top), pageSize), pageBounds);
             }
         }
 

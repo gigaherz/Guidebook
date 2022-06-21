@@ -4,6 +4,7 @@ import com.google.common.primitives.Ints;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
+import dev.gigaherz.guidebook.guidebook.book.IParseable;
 import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualStack;
@@ -64,8 +65,8 @@ public class ElementStack extends ElementInline
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
         if (position != POS_RELATIVE)
-            return bounds.position.y;
-        return bounds.position.y + element.size.height;
+            return bounds.position.y();
+        return bounds.position.y() + element.size.height();
     }
 
     @Override
@@ -76,7 +77,7 @@ public class ElementStack extends ElementInline
 
         super.parse(context, attributes);
 
-        scale = getAttribute(attributes, "scale", scale);
+        scale = IParseable.getAttribute(attributes, "scale", scale);
 
         Node attr;
         attr = attributes.getNamedItem("count");

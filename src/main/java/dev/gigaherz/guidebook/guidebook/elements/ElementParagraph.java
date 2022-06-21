@@ -4,11 +4,12 @@ import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.IParseable;
 import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
-import dev.gigaherz.guidebook.guidebook.util.Point;
+import dev.gigaherz.guidebook.guidebook.util.Point2I;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import org.w3c.dom.NamedNodeMap;
@@ -22,11 +23,7 @@ import java.util.stream.Collectors;
 
 public class ElementParagraph extends Element
 {
-    public static final int ALIGN_LEFT = 0;
-    public static final int ALIGN_CENTER = 1;
-    public static final int ALIGN_RIGHT = 2;
-
-    public int alignment = ALIGN_LEFT;
+    public Alignment alignment = Alignment.LEFT;
     public int indent = 0; // First line?
     public int indentFirstLine = 0; // First line?
     public int space = 2;
@@ -51,8 +48,8 @@ public class ElementParagraph extends Element
     @Override
     public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
-        Point adjustedPosition = applyPosition(bounds.position, bounds.position);
-        int currentLineTop = adjustedPosition.y;
+        Point2I adjustedPosition = applyPosition(bounds.position, bounds.position);
+        int currentLineTop = adjustedPosition.y();
         int currentLineLeft = indentFirstLine;
         int currentLineHeight = 0;
         int currentIndent = indentFirstLine;
@@ -61,9 +58,9 @@ public class ElementParagraph extends Element
 
         for (Element element : inlines)
         {
-            int firstLineWidth = bounds.size.width - currentLineLeft - indent - indentFirstLine;
+            int firstLineWidth = bounds.size.width() - currentLineLeft - indent - indentFirstLine;
             List<VisualElement> pieces = element.measure(nav,
-                    bounds.size.width - indent,
+                    bounds.size.width() - indent,
                     firstLineWidth);
 
             if (pieces.size() < 1)
@@ -75,9 +72,9 @@ public class ElementParagraph extends Element
 
                 boolean isLineBreak = "\n".equals(current.getText().getString());
 
-                if (isLineBreak || (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
+                if (isLineBreak || (currentLineLeft + size.width() > bounds.size.width() && currentLineLeft > 0))
                 {
-                    processAlignment(paragraph, bounds.size.width - currentIndent, currentLineLeft, firstInLine);
+                    processAlignment(paragraph, bounds.size.width() - currentIndent, currentLineLeft, firstInLine);
 
                     currentLineTop += currentLineHeight;
                     currentLineLeft = 0;
@@ -90,15 +87,15 @@ public class ElementParagraph extends Element
                 if (isLineBreak)
                     continue;
 
-                if (size.height > currentLineHeight)
-                    currentLineHeight = size.height;
+                if (size.height() > currentLineHeight)
+                    currentLineHeight = size.height();
 
-                current.position = element.applyPosition(new Point(adjustedPosition.x + currentLineLeft + indent, currentLineTop), bounds.position);
+                current.position = element.applyPosition(new Point2I(adjustedPosition.x() + currentLineLeft + indent, currentLineTop), bounds.position);
 
-                if (size.width > 0)
-                    currentLineLeft += size.width;
+                if (size.width() > 0)
+                    currentLineLeft += size.width();
 
-                if (currentLineLeft > bounds.size.width)
+                if (currentLineLeft > bounds.size.width())
                 {
                     currentLineTop += currentLineHeight;
                     currentLineLeft = 0;
@@ -111,10 +108,10 @@ public class ElementParagraph extends Element
             }
         }
 
-        processAlignment(paragraph, bounds.size.width - currentIndent, currentLineLeft, firstInLine);
+        processAlignment(paragraph, bounds.size.width() - currentIndent, currentLineLeft, firstInLine);
 
         if (position != POS_RELATIVE)
-            return bounds.position.y;
+            return bounds.position.y();
         return currentLineTop + currentLineHeight + space;
     }
 
@@ -125,8 +122,8 @@ public class ElementParagraph extends Element
 
         int leftOffset = switch (alignment)
         {
-            case ALIGN_CENTER -> (width - currentLineLeft) / 2;
-            case ALIGN_RIGHT -> width - currentLineLeft;
+            case CENTER -> (width - currentLineLeft) / 2;
+            case RIGHT -> width - currentLineLeft;
             default -> 0;
         };
 
@@ -138,11 +135,11 @@ public class ElementParagraph extends Element
             VisualElement e = paragraph.get(i);
             if (e.positionMode == 0)
             {
-                e.position = new Point(e.position.x + leftOffset, e.position.y);
+                e.position = new Point2I(e.position.x() + leftOffset, e.position.y());
 
-                yMin = Math.min(yMin, e.position.y);
-                yMax = Math.min(yMax, e.position.y + e.size.height); // TODO check if this is correct
-                yBaseline = Math.min(yBaseline, e.position.y + (int) (e.size.height * e.baseline));
+                yMin = Math.min(yMin, e.position.y());
+                yMax = Math.min(yMax, e.position.y() + e.size.height()); // TODO check if this is correct
+                yBaseline = Math.min(yBaseline, e.position.y() + (int) (e.size.height() * e.baseline));
             }
         }
 
@@ -155,18 +152,18 @@ public class ElementParagraph extends Element
             {
                 if (e.verticalAlign == VA_MIDDLE)
                 {
-                    e.position = new Point(e.position.x, yMin + (yHeight - e.size.height) / 2);
+                    e.position = new Point2I(e.position.x(), yMin + (yHeight - e.size.height()) / 2);
                 }
                 else if (e.verticalAlign == VA_BASELINE)
                 {
-                    e.position = new Point(e.position.x, yBaseline - (int) (e.size.height * e.baseline));
+                    e.position = new Point2I(e.position.x(), yBaseline - (int) (e.size.height() * e.baseline));
                 }
                 else if (e.verticalAlign == VA_BOTTOM)
                 {
-                    e.position = new Point(e.position.x, yMax - e.size.height);
+                    e.position = new Point2I(e.position.x(), yMax - e.size.height());
                 }
 
-                yMin2 = Math.min(yMin2, e.position.y);
+                yMin2 = Math.min(yMin2, e.position.y());
             }
         }
 
@@ -178,7 +175,7 @@ public class ElementParagraph extends Element
                 VisualElement e = paragraph.get(i);
                 if (e.positionMode == 0)
                 {
-                    e.position = new Point(e.position.x, e.position.y + yOffset);
+                    e.position = new Point2I(e.position.x(), e.position.y() + yOffset);
                 }
             }
         }
@@ -189,20 +186,9 @@ public class ElementParagraph extends Element
     {
         super.parse(context, attributes);
 
-        Node attr = attributes.getNamedItem("align");
-        if (attr != null)
-        {
-            alignment = switch (attr.getTextContent())
-            {
-                case "left" -> ElementParagraph.ALIGN_LEFT;
-                case "center" -> ElementParagraph.ALIGN_CENTER;
-                case "right" -> ElementParagraph.ALIGN_RIGHT;
-                default -> alignment;
-            };
-        }
-
-        indent = getAttribute(attributes, "indent", indent);
-        space = getAttribute(attributes, "space", space);
+        alignment = IParseable.getAttribute(attributes, "align", alignment, Alignment.class);
+        indent = IParseable.getAttribute(attributes, "indent", indent);
+        space = IParseable.getAttribute(attributes, "space", space);
     }
 
     @Override
@@ -296,6 +282,13 @@ public class ElementParagraph extends Element
         ElementSpan s = ElementSpan.of(text, style);
         p.inlines.add(s);
         return p;
+    }
+
+    public enum Alignment
+    {
+        LEFT,
+        CENTER,
+        RIGHT
     }
 }
 

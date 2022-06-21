@@ -1,18 +1,22 @@
 package dev.gigaherz.guidebook.guidebook.util;
 
-public class Size
+public record Size(int width, int height) implements Cloneable
 {
-    public final int width;
-    public final int height;
+    public static final Size ZERO = new Size();
 
     public Size()
     {
-        this.width = this.height = 0;
+        this(0, 0);
     }
 
-    public Size(int width, int height)
+    public Size(Size other)
     {
-        this.width = width;
-        this.height = height;
+        this(other.width, other.height);
+    }
+
+    @Override
+    public Size clone() throws CloneNotSupportedException
+    {
+        return (Size) super.clone();
     }
 }

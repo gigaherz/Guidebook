@@ -39,7 +39,7 @@ public class VisualStack extends VisualElement
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
-            nav.drawItemStack(matrixStack, position.x, position.y, z, stack, 0xFFFFFFFF, scale);
+            nav.drawItemStack(matrixStack, position.x(), position.y(), z, stack, 0xFFFFFFFF, scale);
         }
     }
 

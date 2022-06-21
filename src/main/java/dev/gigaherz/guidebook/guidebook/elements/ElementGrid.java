@@ -2,7 +2,6 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
-import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookParsingException;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
@@ -11,7 +10,7 @@ import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
-import dev.gigaherz.guidebook.guidebook.util.Point;
+import dev.gigaherz.guidebook.guidebook.util.Point2I;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.resources.model.Material;
@@ -171,10 +170,10 @@ public class ElementGrid extends Element
     {
         List<VisualElement> visuals = Lists.newArrayList();
 
-        Point adjustedPosition = applyPosition(bounds.position, bounds.position);
+        Point2I adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
-        int top = adjustedPosition.y;
+        int top = adjustedPosition.y();
 
         var explicitHeight = 0;
         for (var row : rows)
@@ -185,22 +184,22 @@ public class ElementGrid extends Element
                 explicitHeight += row.computedHeight;
             }
         }
-        var flexHeight = adjustedBounds.size.height - explicitHeight;
+        var flexHeight = adjustedBounds.size.height() - explicitHeight;
         var accHeight = 0;
         for (var row : rows)
         {
-            row.computedHeight = adjustedBounds.size.height / rows.size();
+            row.computedHeight = adjustedBounds.size.height() / rows.size();
             if (row.height != null)
-                row.computedHeight = (row.heightPercent ? (row.height * bounds.size.height / 100) : row.height);
+                row.computedHeight = (row.heightPercent ? (row.height * bounds.size.height() / 100) : row.height);
             accHeight += row.computedHeight;
         }
-        if (accHeight > adjustedBounds.size.height)
+        if (accHeight > adjustedBounds.size.height())
         {
             var div = accHeight;
             accHeight = 0;
             for (var row : rows)
             {
-                row.computedHeight = row.computedHeight * adjustedBounds.size.height / div;
+                row.computedHeight = row.computedHeight * adjustedBounds.size.height() / div;
                 accHeight += row.computedHeight;
             }
         }
@@ -208,18 +207,18 @@ public class ElementGrid extends Element
         var accWidth = 0;
         for (var col : cols)
         {
-            col.computedWidth = adjustedBounds.size.width / cols.size();
+            col.computedWidth = adjustedBounds.size.width() / cols.size();
             if (col.width != null)
-                col.computedWidth = (col.widthPercent ? (col.width * bounds.size.width / 100) : col.width);
+                col.computedWidth = (col.widthPercent ? (col.width * bounds.size.width() / 100) : col.width);
             accWidth += col.computedWidth;
         }
-        if (accWidth > adjustedBounds.size.width)
+        if (accWidth > adjustedBounds.size.width())
         {
             var div = accWidth;
             accWidth = 0;
             for (var col : cols)
             {
-                col.computedWidth = col.computedWidth * adjustedBounds.size.width / div;
+                col.computedWidth = col.computedWidth * adjustedBounds.size.width() / div;
                 accWidth += col.computedWidth;
             }
         }
@@ -229,7 +228,7 @@ public class ElementGrid extends Element
             var rowHeight = row.computedHeight;
 
             int col = 0;
-            int left = adjustedBounds.position.x;
+            int left = adjustedBounds.position.x();
             for(var cell : row.cells)
             {
                 var cellWidth = 0;
@@ -251,16 +250,16 @@ public class ElementGrid extends Element
 
         if (position != POS_RELATIVE)
         {
-            top = bounds.position.y;
+            top = bounds.position.y();
         }
         else if (height != null)
         {
-            top = adjustedPosition.y + (heightPercent ? (height * bounds.size.height / 100) : height);
+            top = adjustedPosition.y() + (heightPercent ? (height * bounds.size.height() / 100) : height);
         }
 
         if (visuals.size() > 0)
         {
-            Size size = new Size(bounds.size.width, top - adjustedPosition.y);
+            Size size = new Size(bounds.size.width(), top - adjustedPosition.y());
 
             VisualPanel p = new VisualPanel(size, position, baseline, verticalAlignment);
 

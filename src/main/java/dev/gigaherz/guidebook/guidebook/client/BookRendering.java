@@ -16,7 +16,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualChapter;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPage;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
-import dev.gigaherz.guidebook.guidebook.util.PointD;
+import dev.gigaherz.guidebook.guidebook.util.Point2D;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -481,9 +481,9 @@ public class BookRendering implements IBookGraphics
         double top0 = top;
         if (hasScale && ConfigValues.flexibleScale)
         {
-            PointD pt = getPageOffset(currentDrawingPage);
-            left0 = Math.floor((pt.x + left) * scalingFactor) / scalingFactor - pt.x;
-            top0 = Math.floor((pt.y + top) * scalingFactor) / scalingFactor - pt.y;
+            Point2D pt = getPageOffset(currentDrawingPage);
+            left0 = Math.floor((pt.x() + left) * scalingFactor) / scalingFactor - pt.x();
+            top0 = Math.floor((pt.y() + top) * scalingFactor) / scalingFactor - pt.y();
         }
 
         // Does scaling need to be performed?
@@ -544,13 +544,13 @@ public class BookRendering implements IBookGraphics
 
     private boolean mouseClickPage(double mX, double mY, VisualPage pg, boolean isLeftPage)
     {
-        PointD offset = getPageOffset(isLeftPage);
-        mX -= offset.x;
-        mY -= offset.y;
+        Point2D offset = getPageOffset(isLeftPage);
+        mX -= offset.x();
+        mY -= offset.y();
         for (VisualElement e : pg.children)
         {
-            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
-                    mY >= e.position.y && mY <= (e.position.y + e.size.height))
+            if (mX >= e.position.x() && mX <= (e.position.x() + e.size.width()) &&
+                    mY >= e.position.y() && mY <= (e.position.y() + e.size.height()))
             {
                 e.click(this);
                 return true;
@@ -609,22 +609,17 @@ public class BookRendering implements IBookGraphics
         GLFW.glfwGetCursorPos(mc.getWindow().getWindow(), xPos, yPos);
         double mX = xPos[0] * dw / width;
         double mY = yPos[0] * dh / height;
-        PointD offset = getPageOffset(isLeftPage);
+        Point2D offset = getPageOffset(isLeftPage);
 
-        mX -= offset.x;
-        mY -= offset.y;
+        mX -= offset.x();
+        mY -= offset.y();
 
         mouseCoords.mouseScaledX = mX;
         mouseCoords.mouseScaledY = mY;
 
         for (VisualElement e : pg.children)
         {
-            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
-                    mY >= e.position.y && mY <= (e.position.y + e.size.height))
-            {
-                if (e.wantsHover())
-                    return e;
-            }
+            if (e.contains(mX, mY) && e.wantsHover()) return e;
         }
 
         return null;
@@ -655,13 +650,13 @@ public class BookRendering implements IBookGraphics
         }
     }
 
-    private PointD getPageOffset(boolean leftPage)
+    private Point2D getPageOffset(boolean leftPage)
     {
         double left = (scaledWidth - bookWidth) / 2 + outerMargin;
         double right = left + pageWidth + innerMargin * 2;
         double top = (scaledHeight - bookHeight) / 2 + topMargin;
 
-        return new PointD(leftPage ? left : right, top);
+        return new Point2D(leftPage ? left : right, top);
     }
 
     private void drawPage(PoseStack matrixStack, int page)
@@ -674,12 +669,12 @@ public class BookRendering implements IBookGraphics
 
         VisualPage pg = ch.pages.get(page);
 
-        PointD offset = getPageOffset(currentDrawingPage);
+        Point2D offset = getPageOffset(currentDrawingPage);
         matrixStack.pushPose();
         if (ConfigValues.flexibleScale)
-            matrixStack.translate(offset.x, offset.y, 0);
+            matrixStack.translate(offset.x(), offset.y(), 0);
         else
-            matrixStack.translate((int) offset.x, (int) offset.y, 0);
+            matrixStack.translate((int) offset.x(), (int) offset.y(), 0);
 
         if (DEBUG_DRAW_BOUNDS)
         {
@@ -694,7 +689,7 @@ public class BookRendering implements IBookGraphics
         Component cnt = Component.literal(String.valueOf(ch.startPair * 2 + page + 1));
         Size sz = measure(cnt);
 
-        addString(matrixStack, (pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
+        addString(matrixStack, (pageWidth - sz.width()) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
 
         matrixStack.popPose();
     }

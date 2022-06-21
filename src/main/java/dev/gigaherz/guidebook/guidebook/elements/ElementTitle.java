@@ -7,13 +7,13 @@ public class ElementTitle extends ElementParagraph
 {
     public ElementTitle()
     {
-        alignment = ElementParagraph.ALIGN_CENTER;
+        alignment = Alignment.CENTER;
         space = 4;
     }
 
     @Override
     public TextStyle childStyle(ParsingContext context, NamedNodeMap attributes, TextStyle defaultStyle)
     {
-        return TextStyle.parse(attributes, new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f));
+        return TextStyle.parse(attributes, new TextStyle(defaultStyle.color(), true, false, true, false, false, null, 1.0f));
     }
 }
