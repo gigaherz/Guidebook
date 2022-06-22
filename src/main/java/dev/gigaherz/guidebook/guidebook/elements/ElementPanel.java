@@ -142,7 +142,7 @@ public class ElementPanel extends Element
             }
         }
 
-        if (position != POS_RELATIVE)
+        if (position != Position.RELATIVE)
         {
             top = bounds.position.y();
         }

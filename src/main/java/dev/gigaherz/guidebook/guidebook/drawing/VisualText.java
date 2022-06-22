@@ -3,6 +3,7 @@ package dev.gigaherz.guidebook.guidebook.drawing;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.elements.LinkContext;
 import dev.gigaherz.guidebook.guidebook.util.Color;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
@@ -18,7 +19,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
 
     public LinkContext linkContext = null;
 
-    public VisualText(Component text, Size size, int positionMode, float baseline, int verticalAlign, float scale)
+    public VisualText(Component text, Size size, Element.Position positionMode, float baseline, Element.VerticalAlignment verticalAlign, float scale)
     {
         super(size, positionMode, baseline, verticalAlign);
         this.text = text;

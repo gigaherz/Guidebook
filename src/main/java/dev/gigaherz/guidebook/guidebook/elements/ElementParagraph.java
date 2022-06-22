@@ -110,7 +110,7 @@ public class ElementParagraph extends Element
 
         processAlignment(paragraph, bounds.size.width() - currentIndent, currentLineLeft, firstInLine);
 
-        if (position != POS_RELATIVE)
+        if (position != Element.Position.RELATIVE)
             return bounds.position.y();
         return currentLineTop + currentLineHeight + space;
     }
@@ -133,7 +133,7 @@ public class ElementParagraph extends Element
         for (int i = firstInLine; i < paragraph.size(); i++)
         {
             VisualElement e = paragraph.get(i);
-            if (e.positionMode == 0)
+            if (e.positionMode == Position.RELATIVE)
             {
                 e.position = new Point2I(e.position.x() + leftOffset, e.position.y());
 
@@ -148,20 +148,15 @@ public class ElementParagraph extends Element
         for (int i = firstInLine; i < paragraph.size(); i++)
         {
             VisualElement e = paragraph.get(i);
-            if (e.positionMode == 0)
+            if (e.positionMode == Position.RELATIVE)
             {
-                if (e.verticalAlign == VA_MIDDLE)
+                e.position = switch (e.verticalAlign)
                 {
-                    e.position = new Point2I(e.position.x(), yMin + (yHeight - e.size.height()) / 2);
-                }
-                else if (e.verticalAlign == VA_BASELINE)
-                {
-                    e.position = new Point2I(e.position.x(), yBaseline - (int) (e.size.height() * e.baseline));
-                }
-                else if (e.verticalAlign == VA_BOTTOM)
-                {
-                    e.position = new Point2I(e.position.x(), yMax - e.size.height());
-                }
+                    case MIDDLE -> new Point2I(e.position.x(), yMin + (yHeight - e.size.height()) / 2);
+                    case BASELINE -> new Point2I(e.position.x(), yBaseline - (int) (e.size.height() * e.baseline));
+                    case BOTTOM -> new Point2I(e.position.x(), yMax - e.size.height());
+                    case TOP -> e.position;
+                };
 
                 yMin2 = Math.min(yMin2, e.position.y());
             }
@@ -173,7 +168,7 @@ public class ElementParagraph extends Element
             for (int i = firstInLine; i < paragraph.size(); i++)
             {
                 VisualElement e = paragraph.get(i);
-                if (e.positionMode == 0)
+                if (e.positionMode == Position.RELATIVE)
                 {
                     e.position = new Point2I(e.position.x(), e.position.y() + yOffset);
                 }

@@ -16,6 +16,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualChapter;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPage;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.util.Point2D;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
@@ -789,7 +790,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public List<VisualElement> measure(FormattedText text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment)
+    public List<VisualElement> measure(FormattedText text, int width, int firstLineWidth, float scale, Element.Position position, float baseline, Element.VerticalAlignment verticalAlignment)
     {
         Font font = gui.getFontRenderer();
         List<VisualElement> sizes = Lists.newArrayList();

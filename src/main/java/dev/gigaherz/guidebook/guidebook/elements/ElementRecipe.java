@@ -95,7 +95,7 @@ public class ElementRecipe extends Element
             background.reflow(list, nav, adjustedBounds, pageBounds);
             if (additionalRenderer != null)
                 list.add(additionalRenderer);
-            if (position != POS_RELATIVE)
+            if (position != Position.RELATIVE)
                 return bounds.position.y();
             return adjustedPosition.y() + height;
         }

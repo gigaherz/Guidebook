@@ -54,7 +54,7 @@ public class ElementImage extends ElementInline
         VisualImage element = getVisual();
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
-        if (position != POS_RELATIVE)
+        if (position != Position.RELATIVE)
             return bounds.position.y();
         return bounds.position.y() + element.size.height();
     }

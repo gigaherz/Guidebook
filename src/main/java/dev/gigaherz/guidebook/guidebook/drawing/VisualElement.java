@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.client.BookRendering;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.gui.GuiComponent;
@@ -12,19 +13,19 @@ import net.minecraft.network.chat.Component;
 
 public abstract class VisualElement extends Rect
 {
-    public static final VisualElement EMPTY = new VisualElement(new Size(), 0, 0, 0)
+    public static final VisualElement EMPTY = new VisualElement(new Size(), Element.Position.RELATIVE, 0, Element.VerticalAlignment.TOP)
     {
     };
     ;
 
-    // Only position modes 1 and 2 are valid here, mode 0 will have been handled by reflow
-    public int positionMode = 1;
+    // Only position modes ABSOLUTE and FIXED are valid here, mode RELATIVE will have been handled by reflow
+    public Element.Position positionMode;
 
-    public int verticalAlign = 1;
+    public Element.VerticalAlignment verticalAlign;
 
     public float baseline = 0;
 
-    public VisualElement(Size size, int positionMode, float baseline, int verticalAlign)
+    public VisualElement(Size size, Element.Position positionMode, float baseline, Element.VerticalAlignment verticalAlign)
     {
         this.size = size;
         this.positionMode = positionMode;

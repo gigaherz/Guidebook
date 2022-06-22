@@ -3,6 +3,7 @@ package dev.gigaherz.guidebook.guidebook.drawing;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.elements.LinkContext;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -21,8 +22,8 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
 
     public LinkContext linkContext = null;
 
-    public VisualImage(Size size, int positionMode, float baseline, int verticalAlign, ResourceLocation textureLocation,
-                       int tx, int ty, int tw, int th, int w, int h, float scale)
+    public VisualImage(Size size, Element.Position positionMode, float baseline, Element.VerticalAlignment verticalAlign,
+                       ResourceLocation textureLocation, int tx, int ty, int tw, int th, int w, int h, float scale)
     {
         super(size, positionMode, baseline, verticalAlign);
         this.textureLocation = textureLocation;

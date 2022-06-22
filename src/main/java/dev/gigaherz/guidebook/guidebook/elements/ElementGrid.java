@@ -5,11 +5,13 @@ import com.google.common.primitives.Ints;
 import dev.gigaherz.guidebook.guidebook.BookParsingException;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.IParseable;
 import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
+import dev.gigaherz.guidebook.guidebook.util.Length;
 import dev.gigaherz.guidebook.guidebook.util.Point2I;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -178,9 +180,9 @@ public class ElementGrid extends Element
         var explicitHeight = 0;
         for (var row : rows)
         {
-            if (row.height != null && !row.heightPercent)
+            if (row.height != null && row.height.unit().equals("px"))
             {
-                row.computedHeight = row.height;
+                row.computedHeight = row.height.value();
                 explicitHeight += row.computedHeight;
             }
         }
@@ -190,7 +192,7 @@ public class ElementGrid extends Element
         {
             row.computedHeight = adjustedBounds.size.height() / rows.size();
             if (row.height != null)
-                row.computedHeight = (row.heightPercent ? (row.height * bounds.size.height() / 100) : row.height);
+                row.computedHeight = (int) row.height.getValue(bounds.size.height());
             accHeight += row.computedHeight;
         }
         if (accHeight > adjustedBounds.size.height())
@@ -209,7 +211,7 @@ public class ElementGrid extends Element
         {
             col.computedWidth = adjustedBounds.size.width() / cols.size();
             if (col.width != null)
-                col.computedWidth = (col.widthPercent ? (col.width * bounds.size.width() / 100) : col.width);
+                col.computedWidth = (int) col.width.getValue(bounds.size.width());
             accWidth += col.computedWidth;
         }
         if (accWidth > adjustedBounds.size.width())
@@ -248,7 +250,7 @@ public class ElementGrid extends Element
             top += rowHeight;
         }
 
-        if (position != POS_RELATIVE)
+        if (position != Element.Position.RELATIVE)
         {
             top = bounds.position.y();
         }
@@ -312,7 +314,6 @@ public class ElementGrid extends Element
         {
             var row1 = new Row();
             row1.height = row.height;
-            row1.heightPercent = row.heightPercent;
 
             for(var cell : row.cells)
             {
@@ -333,7 +334,6 @@ public class ElementGrid extends Element
         {
             var col1 = new Column();
             col1.width = col.width;
-            col1.widthPercent = col.widthPercent;
             grid.cols.add(col1);
         }
 
@@ -349,75 +349,38 @@ public class ElementGrid extends Element
         return true;
     }
 
-    private static class Column
-    {
-        public boolean widthPercent;
-        public Integer width;
-        public int computedWidth;
-
-        public void parse(NamedNodeMap attributes)
-        {
-            var attr = attributes.getNamedItem("width");
-            if (attr != null)
-            {
-                String t = attr.getTextContent();
-                if (t.endsWith("%"))
-                {
-                    widthPercent = true;
-                    t = t.substring(0, t.length() - 1);
-                }
-
-                width = Ints.tryParse(t);
-            }
-        }
-    }
-
-    private static class Cell
-    {
-        public Integer colspan = 1;
-        @Nullable
-        public Element content;
-
-        public void parse(NamedNodeMap attributes)
-        {
-            Node attr = attributes.getNamedItem("colspan");
-            if (attr != null)
-            {
-                String t = attr.getTextContent();
-                colspan = Ints.tryParse(t);
-            }
-        }
-    }
-
     private static class Row
     {
-        public boolean heightPercent;
-        public Integer height;
+        public Length height;
         public List<Cell> cells = new ArrayList<>();
         public int computedHeight;
 
         public void parse(NamedNodeMap attributes)
         {
-            Node attr = attributes.getNamedItem("height");
-            if (attr != null)
-            {
-                String t = attr.getTextContent();
-                if (t.endsWith("%"))
-                {
-                    heightPercent = true;
-                    t = t.substring(0, t.length() - 1);
-                }
-
-                height = Ints.tryParse(t);
-            }
+            height = IParseable.getAttribute(attributes, "height", height);
         }
     }
 
-    public record NumberWithUnits(float number, SizeUnits units){}
+    private static class Column
+    {
+        public Length width;
+        public int computedWidth;
 
-    public enum SizeUnits {
-        PIXELS,
-        PERCENT,
+        public void parse(NamedNodeMap attributes)
+        {
+            width = IParseable.getAttribute(attributes, "width", width);
+        }
+    }
 
+    private static class Cell
+    {
+        public int colspan = 1;
+        @Nullable
+        public Element content;
+
+        public void parse(NamedNodeMap attributes)
+        {
+            colspan = IParseable.getAttribute(attributes, "colspan", colspan);
+        }
     }
 }

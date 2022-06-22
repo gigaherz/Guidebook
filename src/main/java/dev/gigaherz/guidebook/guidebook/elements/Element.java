@@ -23,21 +23,28 @@ import java.util.regex.Pattern;
 
 public abstract class Element implements IParseable
 {
-    public static final int VA_TOP = 0;
+    public enum VerticalAlignment
+    {
+        TOP,
+        MIDDLE,
+        BASELINE,
+        BOTTOM
+    }
+
+    public enum Position
+    {
+        /* relative to the computed position (offset) */
+        RELATIVE,
+        /* relative to the containing Panel */
+        ABSOLUTE,
+        /* relative to the section */
+        FIXED
+    }
     public static final int VA_MIDDLE = 1;
     public static final int VA_BASELINE = 2;
     public static final int VA_BOTTOM = 3;
 
-    public static final int POS_RELATIVE = 0;
-    public static final int POS_ABSOLUTE = 1;
-    public static final int POS_FIXED = 2;
-
-    /* Positioning mode:
-     * 0 = "relative" -- relative to the computed position (offset)
-     * 1 = "absolute" -- relative to the containing Panel
-     * 2 = "fixed" -- relative to the section
-     */
-    public int position = 0;
+    public Position position = Position.RELATIVE;
 
     public int x = 0;
     public int y = 0;
@@ -49,13 +56,8 @@ public abstract class Element implements IParseable
     // in proportion to the element's calculated height
     public float baseline = 7 / 9f; // vanilla font has a baseline 7 pixels from the bottom, with 9px total height
 
-    /* Vertical align mode -- only applicable within a paragraph
-     * 0 = top
-     * 1 = middle
-     * 2 = baseline
-     * 3 = bottom
-     */
-    public int verticalAlignment = VA_BASELINE;
+    /* Vertical align mode -- only applicable within a paragraph */
+    public VerticalAlignment verticalAlignment = VerticalAlignment.BASELINE;
 
     public Predicate<ConditionContext> condition;
     public boolean conditionResult;
@@ -117,10 +119,9 @@ public abstract class Element implements IParseable
     {
         return switch (position)
         {
-            case POS_RELATIVE -> new Point2I(point.x() + x, point.y() + y);
-            case POS_ABSOLUTE -> new Point2I(parent.x() + x, parent.y() + y);
-            case POS_FIXED -> new Point2I(x, y);
-            default -> new Point2I(point);
+            case RELATIVE -> new Point2I(point.x() + x, point.y() + y);
+            case ABSOLUTE -> new Point2I(parent.x() + x, parent.y() + y);
+            case FIXED -> new Point2I(x, y);
         };
     }
 
@@ -143,35 +144,11 @@ public abstract class Element implements IParseable
         z = IParseable.getAttribute(attributes, "z", z);
         w = IParseable.getAttribute(attributes, "w", w);
         h = IParseable.getAttribute(attributes, "h", h);
-
         baseline = IParseable.getAttribute(attributes, "baseline", baseline);
+        position = IParseable.getAttribute(attributes, "position", position, Position.class);
+        verticalAlignment = IParseable.getAttribute(attributes, "verticalAlignment", verticalAlignment, VerticalAlignment.class);
 
-        Node attr = attributes.getNamedItem("align");
-        if (attr != null)
-        {
-            position = switch (attr.getTextContent())
-            {
-                case "relative" -> 0;
-                case "absolute" -> 1;
-                case "fixed" -> 2;
-                default -> position;
-            };
-        }
-
-        attr = attributes.getNamedItem("vertical-align");
-        if (attr != null)
-        {
-            verticalAlignment = switch (attr.getTextContent())
-            {
-                case "top" -> VA_TOP;
-                case "middle" -> VA_MIDDLE;
-                case "baseline" -> VA_BASELINE;
-                case "bottom" -> VA_BOTTOM;
-                default -> verticalAlignment;
-            };
-        }
-
-        attr = attributes.getNamedItem("condition");
+        Node attr = attributes.getNamedItem("condition");
         if (attr != null)
         {
             condition = context.getCondition(attr.getTextContent());

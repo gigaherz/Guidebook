@@ -4,6 +4,7 @@ import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.Color;
+import dev.gigaherz.guidebook.guidebook.util.Length;
 import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -128,5 +129,25 @@ public interface IParseable
             GuidebookMod.logger.warn("Color value not valid {}", e.getColorString(), e);
             return def;
         }
+    }
+
+    static Length getAttribute(NamedNodeMap attributes, String name, Length def)
+    {
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null)
+        {
+            String text = attr.getTextContent();
+            if (text != null)
+            {
+                try
+                {
+                    return Length.parse(text);
+                }
+                catch (IllegalArgumentException ignored)
+                {
+                }
+            }
+        }
+        return def;
     }
 }
