@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.collect.Lists;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.elements.Element;
 import org.w3c.dom.NamedNodeMap;
 

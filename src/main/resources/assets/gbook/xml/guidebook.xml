@@ -235,7 +235,7 @@
         <p>Recipe Keys</p>
       </page_title>
       <p space="12">Another way to declare a recipe is to use its registry name. Simply use the key attribute and specify the domain ("minecraft" by default) as well as the path for the json file that the recipe was contained in. For example, the following XML:</p>
-      <p space="12" indent="8" color="505050">&lt;recipe type="crafting" key="minecraft:fire_charge"/&gt;</p>
+      <p indent="8" color="505050">&lt;recipe type="crafting" key="minecraft:fire_charge"/&gt;</p>
       <recipe type="crafting" key="minecraft:fire_charge"/>
     </section>
     <section>
@@ -287,18 +287,17 @@
     <section>
       <title>Template Libraries</title>
       <p>Templates can be defined inside template library files, and thosefiles can be included from books.</p>
-      <p>Browse this mod's source code on github for an example of use and declaration.</p>
+      <p>Browse this mod's source code on GitHub for an example of use and declaration.</p>
     </section>
     <section>
       <p>Although the recipe panel system exists, another way to display recipes is to declare them using the template system. The result looks as follows:</p>
-      <p>For Items with multiple Id's (for example orange dye - 351:14) use the meta tag as below for bonemeal</p>
       <big_recipe>
         <space/>
         <space/>
         <space/>
-        <stack item="minecraft:dye" meta="15"/>
+        <stack tag="forge:dyes/red"/>
         <stack item="minecraft:slime_ball"/>
-        <stack item="minecraft:dye" meta="15"/>
+        <stack tag="forge:dyes/red"/>
         <stack item="minecraft:gold_nugget"/>
         <stack item="minecraft:bucket"/>
         <stack item="minecraft:gold_nugget"/>
@@ -309,13 +308,13 @@
         <space/>
         <space/>
         <space/>
-        <stack item="minecraft:planks" meta="*" />
-        <stack item="minecraft:planks" meta="*" />
-        <stack item="minecraft:planks" meta="*" />
-        <stack ore="plankWood" />
-        <stack ore="plankWood" />
-        <stack ore="plankWood" />
-        <stack item="minecraft:trapdoor" />
+        <stack name="minecraft:oak_planks" />
+        <stack name="minecraft:oak_planks" />
+        <stack name="minecraft:oak_planks" />
+        <stack name="minecraft:oak_planks" />
+        <stack name="minecraft:oak_planks" />
+        <stack name="minecraft:oak_planks" />
+        <stack name="minecraft:oak_trapdoor" />
       </big_recipe>
     </section>
   </chapter>

@@ -18,8 +18,8 @@ public abstract class GameStageCondition implements Predicate<ConditionContext>
 
     public static void register()
     {
-        ConditionManager.register("stage-locked", (doc, node) -> new Locked(parseStageName(node)));
-        ConditionManager.register("stage-unlocked", (doc, node) -> new Unlocked(parseStageName(node)));
+        ConditionManager.register("stage-locked", (node) -> new Locked(parseStageName(node)));
+        ConditionManager.register("stage-unlocked", (node) -> new Unlocked(parseStageName(node)));
     }
 
     public static class Locked extends GameStageCondition

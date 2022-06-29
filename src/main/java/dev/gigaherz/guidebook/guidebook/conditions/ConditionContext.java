@@ -1,6 +1,6 @@
 package dev.gigaherz.guidebook.guidebook.conditions;
 
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import net.minecraft.client.player.LocalPlayer;
 
 public class ConditionContext

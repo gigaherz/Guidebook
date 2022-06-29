@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public class VisualPanel extends VisualElement
 {
     public final List<VisualElement> children = Lists.newArrayList();
 
-    public VisualPanel(Size size, int positionMode, float baseline, int verticalAlign)
+    public VisualPanel(Size size, Element.Position positionMode, float baseline, Element.VerticalAlignment verticalAlign)
     {
         super(size, positionMode, baseline, verticalAlign);
     }
@@ -34,11 +35,7 @@ public class VisualPanel extends VisualElement
         VisualElement newOver = null;
         for (VisualElement child : children)
         {
-            if (child.wantsHover()
-                    && x >= child.position.x
-                    && y >= child.position.y
-                    && (x - child.position.x) < child.size.width
-                    && (y - child.position.y) < child.size.height)
+            if (child.wantsHover() && child.contains(x, y))
             {
                 newOver = child;
                 break;
@@ -78,6 +75,6 @@ public class VisualPanel extends VisualElement
     @Override
     public boolean wantsHover()
     {
-        return children.stream().anyMatch(e -> e.wantsHover());
+        return children.stream().anyMatch(VisualElement::wantsHover);
     }
 }

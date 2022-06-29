@@ -3,7 +3,8 @@ package dev.gigaherz.guidebook.guidebook.drawing;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.SectionRef;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +17,7 @@ public class VisualStack extends VisualElement
     public float scale = 1.0f;
     public int z;
 
-    public VisualStack(NonNullList<ItemStack> stacks, Size size, int positionMode, float baseline, int verticalAlign, float scale, int z)
+    public VisualStack(NonNullList<ItemStack> stacks, Size size, Element.Position positionMode, float baseline, Element.VerticalAlignment verticalAlign, float scale, int z)
     {
         super(size, positionMode, baseline, verticalAlign);
         this.stacks = stacks.toArray(new ItemStack[0]);
@@ -39,7 +40,7 @@ public class VisualStack extends VisualElement
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
-            nav.drawItemStack(matrixStack, position.x, position.y, z, stack, 0xFFFFFFFF, scale);
+            nav.drawItemStack(matrixStack, position.x(), position.y(), z, stack, 0xFFFFFFFF, scale);
         }
     }
 

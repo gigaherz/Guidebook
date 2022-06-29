@@ -11,19 +11,36 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class LinkHelper
 {
-    private static final MutableComponent COPY_TO_CLIPBOARD_1 = Component.translatable("text.gbook.actions.copy_to_clipboard.line1");
-    private static final MutableComponent COPY_TO_CLIPBOARD_2 = Component.translatable("text.gbook.actions.copy_to_clipboard.line2");
+    private static final Component COPY_TO_CLIPBOARD_1 = Component.translatable("text.gbook.actions.copy_to_clipboard.line1");
+    private static final Component COPY_TO_CLIPBOARD_2 = Component.translatable("text.gbook.actions.copy_to_clipboard.line2");
+    private static final Component COPY_TO_CLIPBOARD_SUCCESS = Component.translatable("text.gbook.actions.copy_to_clipboard.success");
+    private static final Component TEMPORARY_CHAT_WINDOW = Component.translatable("text.gbook.actions.copy_to_chat.window_open");
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
+    private static final Map<String, Consumer<LinkContext>> ACTIONS = new HashMap<>();
+
+    static
+    {
+        registerLinkAction("openUrl", context -> clickWeb(context.textTarget));
+        registerLinkAction("copyText", context -> clickCopyToClipboard(context.textTarget));
+        registerLinkAction("copyToChat", context -> clickCopyToChat(context.textTarget));
+    }
+
+    public static void registerLinkAction(String name, Consumer<LinkContext> action)
+    {
+        ACTIONS.put(name, action);
+    }
 
     public interface ILinkable
     {
@@ -34,12 +51,7 @@ public class LinkHelper
     {
         if (context.textTarget != null && context.textAction != null)
         {
-            switch (context.textAction)
-            {
-                case "openUrl" -> clickWeb(context.textTarget);
-                case "copyText" -> clickCopyToClipboard(context.textTarget);
-                case "copyToChat" -> clickCopyToChat(context.textTarget);
-            }
+            ACTIONS.getOrDefault(context.textAction, $ -> {}).accept(context);
         }
         if (context.target != null)
         {
@@ -54,7 +66,7 @@ public class LinkHelper
             if (result)
             {
                 GLFW.glfwSetClipboardString(mc.getWindow().getWindow(), textTarget);
-                mc.gui.getChat().addMessage(Component.translatable("text.gbook.actions.copy_to_clipboard.success"));
+                mc.gui.getChat().addMessage(COPY_TO_CLIPBOARD_SUCCESS);
             }
             mc.popGuiLayer();
         }, COPY_TO_CLIPBOARD_1, COPY_TO_CLIPBOARD_2));
@@ -68,7 +80,7 @@ public class LinkHelper
             @Override
             public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
             {
-                String text = "Temporary chat window open, press ESCAPE to cancel.";
+                Component text = TEMPORARY_CHAT_WINDOW;
                 int textWidth = Math.max(font.width(text) + 40, width / 2);
                 fill(matrixStack, (width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
                 drawCenteredString(matrixStack, font, text, width / 2, (height - font.lineHeight) / 2, 0xFFFFFFFF);

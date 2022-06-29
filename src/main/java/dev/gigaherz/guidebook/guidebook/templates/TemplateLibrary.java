@@ -1,9 +1,10 @@
 package dev.gigaherz.guidebook.guidebook.templates;
 
 import com.google.common.collect.Maps;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.client.Minecraft;
@@ -49,11 +50,9 @@ public class TemplateLibrary
         }
     }
 
-    public void parseLibrary(ParsingContext context, Document doc) throws ParserConfigurationException, IOException, SAXException
+    public void parseLibrary(ParsingContext context, Node root) throws ParserConfigurationException, IOException, SAXException
     {
-        doc.getDocumentElement().normalize();
-
-        Node root = doc.getChildNodes().item(0);
+        root.normalize();
 
         NodeList chaptersList = root.getChildNodes();
         for (int i = 0; i < chaptersList.getLength(); i++)
@@ -70,43 +69,15 @@ public class TemplateLibrary
 
     private void parseTemplateDefinition(ParsingContext parentContext, Node templateItem)
     {
-        if (!templateItem.hasAttributes())
-            return; // TODO: Throw error
-
-        TemplateDefinition page = new TemplateDefinition();
-
-        NamedNodeMap attributes = templateItem.getAttributes();
-        Node n = attributes.getNamedItem("id");
-        if (n == null)
-            return;
-
-        templates.put(n.getTextContent(), page);
-
-        var context = new ParsingContext()
+        ParsingContext.Wrapper context = new ParsingContext.Wrapper(parentContext)
         {
             @Override
-            public Predicate<ConditionContext> getCondition(String name)
+            public BookDocument document()
             {
                 return null;
             }
-
-            @Override
-            public boolean loadedFromConfigFolder()
-            {
-                return parentContext.loadedFromConfigFolder();
-            }
-
-            @Override
-            public DocumentBuilder xmlDocumentBuilder()
-            {
-                return parentContext.xmlDocumentBuilder();
-            }
         };
-
-        BookDocument.parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
-
-        attributes.removeNamedItem("id");
-        page.attributes = attributes;
+        BookDocumentParser.parseTemplateDefinition(context, templateItem, templates);
     }
 
     public static Map<String, TemplateLibrary> LIBRARIES = Maps.newHashMap();
@@ -163,7 +134,7 @@ public class TemplateLibrary
         return lib;
     }
 
-    public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Document doc)
+    public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Node doc)
     {
         TemplateLibrary lib = LIBRARIES.get(path.toString());
         if (lib == null)

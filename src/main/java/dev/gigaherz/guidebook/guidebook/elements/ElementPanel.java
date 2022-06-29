@@ -2,14 +2,14 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
-import dev.gigaherz.guidebook.guidebook.util.Point;
+import dev.gigaherz.guidebook.guidebook.util.Point2I;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.resources.model.Material;
@@ -82,7 +82,7 @@ public class ElementPanel extends Element
     @Override
     public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
-        BookDocument.parseChildElements(context, childNodes, innerElements, templates, true, defaultStyle);
+        BookDocumentParser.parseChildElements(context, childNodes, innerElements, templates, true, defaultStyle);
     }
 
     @Override
@@ -112,10 +112,10 @@ public class ElementPanel extends Element
     {
         List<VisualElement> visuals = Lists.newArrayList();
 
-        Point adjustedPosition = applyPosition(bounds.position, bounds.position);
+        Point2I adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
-        int top = adjustedPosition.y;
+        int top = adjustedPosition.y();
         if (mode == PanelMode.DEFAULT)
         {
             for (Element element : innerElements)
@@ -125,7 +125,7 @@ public class ElementPanel extends Element
                     element.reflow(visuals, nav, adjustedBounds, pageBounds);
                 }
             }
-            top += adjustedBounds.size.height;
+            top += adjustedBounds.size.height();
         }
         else
         {
@@ -133,8 +133,8 @@ public class ElementPanel extends Element
             {
                 if (element.conditionResult)
                 {
-                    Point tempPos = new Point(adjustedPosition.x, top);
-                    Size tempSize = new Size(adjustedBounds.size.width, adjustedBounds.size.height - (top - adjustedPosition.y));
+                    Point2I tempPos = new Point2I(adjustedPosition.x(), top);
+                    Size tempSize = new Size(adjustedBounds.size.width(), adjustedBounds.size.height() - (top - adjustedPosition.y()));
                     Rect tempBounds = new Rect(tempPos, tempSize);
 
                     top = element.reflow(visuals, nav, tempBounds, pageBounds);
@@ -142,18 +142,18 @@ public class ElementPanel extends Element
             }
         }
 
-        if (position != POS_RELATIVE)
+        if (position != Position.RELATIVE)
         {
-            top = bounds.position.y;
+            top = bounds.position.y();
         }
         else if (space != null)
         {
-            top = adjustedPosition.y + (asPercent ? (space * bounds.size.height / 100) : space);
+            top = adjustedPosition.y() + (asPercent ? (space * bounds.size.height() / 100) : space);
         }
 
         if (visuals.size() > 0)
         {
-            Size size = new Size(bounds.size.width, top - adjustedPosition.y);
+            Size size = new Size(bounds.size.width(), top - adjustedPosition.y());
 
             VisualPanel p = new VisualPanel(size, position, baseline, verticalAlignment);
 

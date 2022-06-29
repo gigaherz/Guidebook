@@ -1,6 +1,6 @@
 package dev.gigaherz.guidebook.client;
 
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.client.GuidebookScreen;
 import net.minecraft.client.Minecraft;

@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.drawing;
 
 import com.google.common.collect.Lists;
-import dev.gigaherz.guidebook.guidebook.SectionRef;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
 
 import java.util.List;
 

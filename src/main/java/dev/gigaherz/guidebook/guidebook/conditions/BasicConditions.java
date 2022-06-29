@@ -13,11 +13,11 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
 {
     public static void register()
     {
-        ConditionManager.register("true", (doc, node) -> new True());
-        ConditionManager.register("false", (doc, node) -> new False());
-        ConditionManager.register("mod-loaded", (doc, node) -> new ModLoaded(parseModId(node)));
-        ConditionManager.register("item-exists", (doc, node) -> new ItemExists(parseItemName(node)));
-        ConditionManager.register("condition", (doc, node) -> new Ref(parseConditionId(node)));
+        ConditionManager.register("true", (node) -> new True());
+        ConditionManager.register("false", (node) -> new False());
+        ConditionManager.register("mod-loaded", (node) -> new ModLoaded(parseModId(node)));
+        ConditionManager.register("item-exists", (node) -> new ItemExists(parseItemName(node)));
+        ConditionManager.register("condition", (node) -> new Ref(parseConditionId(node)));
     }
 
     public static class True extends BasicConditions

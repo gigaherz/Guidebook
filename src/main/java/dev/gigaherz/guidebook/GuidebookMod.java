@@ -18,11 +18,10 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
 import net.minecraftforge.registries.RegisterEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Mod(GuidebookMod.MODID)
 public class GuidebookMod
@@ -35,7 +34,7 @@ public class GuidebookMod
     @ObjectHolder(value = "gbook:guidebook", registryName = "item")
     public static GuidebookItem guidebook;
 
-    public static final Logger logger = LogManager.getLogger(MODID);
+    public static final Logger logger = LoggerFactory.getLogger(MODID);
 
     public static final CreativeModeTab tabGuidebooks = new CreativeModeTab(MODID)
     {

@@ -2,12 +2,16 @@ package dev.gigaherz.guidebook.guidebook.elements;
 
 import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ElementSpan extends ElementInline
@@ -33,9 +37,11 @@ public class ElementSpan extends ElementInline
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
-        super.parse(context, attributes);
+        List<ElementInline> elementList = Lists.newArrayList();
+        BookDocumentParser.parseRunElements(context, childNodes, elementList, defaultStyle);
+        inlines.addAll(elementList);
     }
 
     @Override

@@ -1,12 +1,12 @@
 package dev.gigaherz.guidebook.jei;
-/*
+
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.GuidebookItem;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 
 @JeiPlugin
 public class JEIPlugin implements IModPlugin
@@ -22,18 +22,15 @@ public class JEIPlugin implements IModPlugin
     @Override
     public void registerItemSubtypes(ISubtypeRegistration subtypeRegistry)
     {
-        subtypeRegistry.registerSubtypeInterpreter(GuidebookMod.guidebook, (ingredient, context) -> {
+        subtypeRegistry.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, GuidebookMod.guidebook, (ingredient, context) -> {
 
             if (ingredient.getItem() instanceof GuidebookItem item)
             {
-                ItemStack stack = new ItemStack(item);
-                stack.setTag(ingredient.getTag());
-                var key = item.getBookLocation(stack);
+                var key = item.getBookLocation(ingredient);
                 return key == null ? "" : "book_" + key;
             }
 
             return "";
         });
     }
-
-}*/
+}

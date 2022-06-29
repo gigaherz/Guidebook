@@ -1,7 +1,8 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.IParseable;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualImage;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
@@ -53,9 +54,9 @@ public class ElementImage extends ElementInline
         VisualImage element = getVisual();
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
-        if (position != POS_RELATIVE)
-            return bounds.position.y;
-        return bounds.position.y + element.size.height;
+        if (position != Position.RELATIVE)
+            return bounds.position.y();
+        return bounds.position.y() + element.size.height();
     }
 
     @Override
@@ -70,12 +71,12 @@ public class ElementImage extends ElementInline
     {
         super.parse(context, attributes);
 
-        tx = getAttribute(attributes, "tx", tx);
-        ty = getAttribute(attributes, "ty", ty);
-        tw = getAttribute(attributes, "tw", tw);
-        th = getAttribute(attributes, "th", th);
-        textureLocation = getAttribute(attributes, "src", textureLocation);
-        scale = getAttribute(attributes, "scale", scale);
+        tx = IParseable.getAttribute(attributes, "tx", tx);
+        ty = IParseable.getAttribute(attributes, "ty", ty);
+        tw = IParseable.getAttribute(attributes, "tw", tw);
+        th = IParseable.getAttribute(attributes, "th", th);
+        textureLocation = IParseable.getAttribute(attributes, "src", textureLocation);
+        scale = IParseable.getAttribute(attributes, "scale", scale);
     }
 
     @Override

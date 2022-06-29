@@ -6,6 +6,7 @@
     "text.gbook.actions.copy_to_clipboard.line1": "The book wants to put text in your clipboard.",
     "text.gbook.actions.copy_to_clipboard.line2": "Are you sure you want to allow this?",
     "text.gbook.actions.copy_to_clipboard.success": "Text successfully copied.",
+    "text.gbook.actions.copy_to_chat.window_open": "Temporary chat window open, press ESCAPE to cancel.",
 
     "cmd.gbook.guide.done": "Reloading complete",
 

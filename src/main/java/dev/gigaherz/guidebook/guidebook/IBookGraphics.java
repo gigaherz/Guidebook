@@ -1,7 +1,10 @@
 package dev.gigaherz.guidebook.guidebook;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -61,7 +64,7 @@ public interface IBookGraphics
 
     Size measure(FormattedText text);
 
-    List<VisualElement> measure(FormattedText text, int width, int firstLineWidth, float scale, int position, float baseline, int verticalAlignment);
+    List<VisualElement> measure(FormattedText text, int width, int firstLineWidth, float scale, Element.Position position, float baseline, Element.VerticalAlignment verticalAlignment);
 
     int getActualBookHeight();
 

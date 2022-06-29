@@ -1,9 +1,9 @@
 package dev.gigaherz.guidebook.guidebook.recipe;
 
 import com.google.common.collect.Maps;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
@@ -14,14 +14,16 @@ public class RecipeLayoutProviders
 
     private static final Map<ResourceLocation, IRecipeLayoutProvider> registry = Maps.newHashMap();
 
-    public static void register(RecipeType<?> type, VanillaRecipeLayoutProvider provider)
+    public static void register(RecipeType<?> type, IRecipeLayoutProvider provider)
     {
-        ResourceLocation id = Registry.RECIPE_TYPE.getKey(type);
-        registry.put(id, provider);
+        ResourceLocation id = ForgeRegistries.RECIPE_TYPES.getKey(type);
+        registerAlias(id, provider);
     }
 
-    public static void registerAlias(ResourceLocation id, VanillaRecipeLayoutProvider provider)
+    public static void registerAlias(ResourceLocation id, IRecipeLayoutProvider provider)
     {
+        if (registry.containsKey(id))
+            throw new IllegalArgumentException("Duplicate recipe layout provider for " + id);
         registry.put(id, provider);
     }
 

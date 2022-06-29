@@ -1,12 +1,15 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.ParsingContext;
+import dev.gigaherz.guidebook.guidebook.book.IParseable;
+import dev.gigaherz.guidebook.guidebook.book.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
+import dev.gigaherz.guidebook.guidebook.util.Color;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 
@@ -15,7 +18,7 @@ import java.util.List;
 public class ElementText extends ElementInline
 {
     public final String text;
-    public int color;
+    public Color color;
     public boolean bold;
     public boolean italics;
     public boolean underline;
@@ -29,19 +32,28 @@ public class ElementText extends ElementInline
     {
         super(isFirstElement, isLastElement);
         this.text = compactString(text, isFirstElement, isLastElement);
-        color = style.color;
-        bold = style.bold;
-        italics = style.italics;
-        underline = style.underline;
-        strikethrough = style.strikethrough;
-        obfuscated = style.obfuscated;
-        font = style.font;
-        scale = style.scale;
+        color = style.color();
+        bold = style.bold();
+        italics = style.italics();
+        underline = style.underline();
+        strikethrough = style.strikethrough();
+        obfuscated = style.obfuscated();
+        font = style.font();
+        scale = style.scale();
     }
 
     private FormattedText getStringWithFormat(FormattedText text)
     {
-        return Component.literal(text.getString()).withStyle(style -> style
+        MutableComponent mutable;
+        if (text instanceof Component)
+        {
+            mutable = ((Component) text).copy();
+        }
+        else
+        {
+            mutable = Component.literal(text.getString());
+        }
+        return mutable.withStyle(style -> style
                 .withBold(bold)
                 .withItalic(italics)
                 .withUnderlined(underline)
@@ -61,9 +73,8 @@ public class ElementText extends ElementInline
         List<VisualElement> elements = nav.measure(getStringWithFormat(getActualString()), width, firstLineWidth, scale, position, baseline, verticalAlignment);
         for (VisualElement text : elements)
         {
-            if (text instanceof VisualText)
+            if (text instanceof VisualText visualText)
             {
-                VisualText visualText = (VisualText) text;
                 visualText.color = color;
             }
         }
@@ -87,7 +98,7 @@ public class ElementText extends ElementInline
     public void parse(ParsingContext context, NamedNodeMap attributes)
     {
         super.parse(context, attributes);
-        scale = getAttribute(attributes, "scale", scale);
+        scale = IParseable.getAttribute(attributes, "scale", scale);
     }
 
     @Override

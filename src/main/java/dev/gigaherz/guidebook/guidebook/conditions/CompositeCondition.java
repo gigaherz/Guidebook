@@ -1,6 +1,6 @@
 package dev.gigaherz.guidebook.guidebook.conditions;
 
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocumentParser;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -16,9 +16,9 @@ public abstract class CompositeCondition implements Predicate<ConditionContext>
 
     public static void register()
     {
-        IDisplayConditionFactory any = (doc, node) -> new Any(BookDocument.parseChildConditions(doc, node));
-        IDisplayConditionFactory all = (doc, node) -> new All(BookDocument.parseChildConditions(doc, node));
-        IDisplayConditionFactory not = (doc, node) -> new Not(BookDocument.parseChildConditions(doc, node));
+        IDisplayConditionFactory any = (node) -> new Any(BookDocumentParser.parseChildConditions(node));
+        IDisplayConditionFactory all = (node) -> new All(BookDocumentParser.parseChildConditions(node));
+        IDisplayConditionFactory not = (node) -> new Not(BookDocumentParser.parseChildConditions(node));
         ConditionManager.register("any", any);
         ConditionManager.register("or", any);
         ConditionManager.register("all", all);

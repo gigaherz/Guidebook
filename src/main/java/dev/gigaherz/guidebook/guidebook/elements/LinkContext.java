@@ -1,6 +1,6 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
-import dev.gigaherz.guidebook.guidebook.SectionRef;
+import dev.gigaherz.guidebook.guidebook.book.SectionRef;
 
 public class LinkContext
 {
@@ -18,6 +18,6 @@ public class LinkContext
         link.colorHover = colorHover;
         link.textTarget = textTarget;
         link.textAction = textAction;
-        return null;
+        return link;
     }
 }

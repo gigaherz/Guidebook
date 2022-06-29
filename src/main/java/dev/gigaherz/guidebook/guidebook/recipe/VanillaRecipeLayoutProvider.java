@@ -18,8 +18,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 
 /**
- * @author joazlazer
  * A class designed to provide both shaped and shapeless crafting recipes for display in Guidebooks
+ * @author joazlazer
  */
 public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
 {
@@ -71,9 +71,8 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         else
         {
             int gridHeight;
-            if (recipe instanceof IShapedRecipe)
+            if (recipe instanceof IShapedRecipe<?> shapedRecipe)
             {
-                IShapedRecipe<?> shapedRecipe = (IShapedRecipe<?>) recipe;
                 gridWidth = shapedRecipe.getRecipeWidth();
                 gridHeight = shapedRecipe.getRecipeHeight();
             }
@@ -84,18 +83,12 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
                 gridHeight = Mth.ceil(ingredients / (double) gridWidth);
             }
 
-            switch (Math.max(gridWidth, gridHeight))
+            recipeGraphic = switch (Math.max(gridWidth, gridHeight))
             {
-                case 1:
-                    recipeGraphic = 3;
-                    break;
-                case 2:
-                    recipeGraphic = 1;
-                    break;
-                default:
-                    recipeGraphic = 0;
-                    break;
-            }
+                case 1 -> 3;
+                case 2 -> 1;
+                default -> 0;
+            };
         }
 
         ArrayList<ElementStack> stackComponents = new ArrayList<>();
@@ -110,9 +103,9 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
             if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
             // Copy each stack
-            for (int j = 0; j < matching.length; ++j)
+            for (ItemStack itemStack : matching)
             {
-                inputSlot.stacks.add(matching[j].copy());
+                inputSlot.stacks.add(itemStack.copy());
             }
 
             int posX = i % gridWidth;

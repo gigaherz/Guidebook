@@ -1,4 +1,4 @@
-package dev.gigaherz.guidebook.guidebook;
+package dev.gigaherz.guidebook.guidebook.book;
 
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;

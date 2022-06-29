@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.conditions;
 
 import com.google.common.collect.Maps;
-import dev.gigaherz.guidebook.guidebook.BookDocument;
+import dev.gigaherz.guidebook.guidebook.book.BookDocument;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -16,11 +16,11 @@ public class ConditionManager
         REGISTRY.put(id, factory);
     }
 
-    public static Predicate<ConditionContext> parseCondition(BookDocument document, Node node)
+    public static Predicate<ConditionContext> parseCondition(Node node)
     {
         IDisplayConditionFactory factory = REGISTRY.get(node.getNodeName());
         if (factory == null)
             return null;
-        return factory.parse(document, node);
+        return factory.parse(node);
     }
 }
