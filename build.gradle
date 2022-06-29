@@ -109,8 +109,8 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.19-41.0.17'
 
 
-    compileOnly fg.deobf("mezz.jei:jei-1.18.2-common-api:10.0.0.191")
-    //runtimeOnly fg.deobf("mezz.jei:jei-1.19-forge:10.0.0.191")
+    compileOnly fg.deobf("mezz.jei:jei-1.19-common-api:11.0.0.206")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.19-forge:11.0.0.206")
 
     implementation fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.19:9.0.1")
     implementation fg.deobf( "net.darkhax.bookshelf:Bookshelf-Forge-1.19:14.0.2")
