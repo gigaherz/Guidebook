@@ -119,7 +119,7 @@ public class ElementGrid extends Element
                         }
                         else
                         {
-                            if (colNode.getNodeType() == Node.ELEMENT_NODE)
+                            if (Element.isContentNode(colNode))
                                 throw new BookParsingException("Only 'col' elements are allowed inside a row tag.");
                         }
                     }
@@ -134,7 +134,7 @@ public class ElementGrid extends Element
             }
             else
             {
-                if (rowNode.getNodeType() == Node.ELEMENT_NODE)
+                if (Element.isContentNode(rowNode))
                     throw new BookParsingException("Only 'row' elements are allowed inside a grid tag.");
             }
         }
@@ -176,6 +176,16 @@ public class ElementGrid extends Element
 
         int top = adjustedPosition.y;
 
+        var explicitHeight = 0;
+        for (var row : rows)
+        {
+            if (row.height != null && !row.heightPercent)
+            {
+                row.computedHeight = row.height;
+                explicitHeight += row.computedHeight;
+            }
+        }
+        var flexHeight = adjustedBounds.size.height - explicitHeight;
         var accHeight = 0;
         for (var row : rows)
         {
@@ -402,5 +412,13 @@ public class ElementGrid extends Element
                 height = Ints.tryParse(t);
             }
         }
+    }
+
+    public record NumberWithUnits(float number, SizeUnits units){}
+
+    public enum SizeUnits {
+        PIXELS,
+        PERCENT,
+
     }
 }
