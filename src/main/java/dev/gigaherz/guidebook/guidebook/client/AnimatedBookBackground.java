@@ -17,7 +17,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraftforge.client.model.CompositeModel;
-import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.model.data.ModelData;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
@@ -26,7 +26,10 @@ import java.util.Random;
 
 public class AnimatedBookBackground implements IAnimatedBookBackground
 {
-    public static final ResourceLocation BOOK_BACKGROUND = GuidebookMod.location("gui/animated_book");
+    public static final ResourceLocation BOOK_BACKGROUND0 = GuidebookMod.location("gui/animated_book0");
+    public static final ResourceLocation BOOK_BACKGROUND30 = GuidebookMod.location("gui/animated_book30");
+    public static final ResourceLocation BOOK_BACKGROUND60 = GuidebookMod.location("gui/animated_book60");
+    public static final ResourceLocation BOOK_BACKGROUND90 = GuidebookMod.location("gui/animated_book90");
 
     public static final RandomSource RANDOM = RandomSource.create();
 
@@ -82,15 +85,10 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
         float angleX = progress * ANGLE_PER_TICK;
 
-        BakedModel unbakedModel = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND);
-        if (!(unbakedModel instanceof CompositeModel))
-            return;
-
-        CompositeModel parts = (CompositeModel) unbakedModel;
-        BakedModel book00 = parts.getPart("0");
-        BakedModel book30 = parts.getPart("30");
-        BakedModel book60 = parts.getPart("60");
-        BakedModel book90 = parts.getPart("90");
+        BakedModel book00 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND0);
+        BakedModel book30 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND30);
+        BakedModel book60 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND60);
+        BakedModel book90 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND90);
 
         float blend;
         if (angleX <= 0)
@@ -169,7 +167,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         VertexConsumer worldrenderer = src.getBuffer(ClientHandlers.brightSolid(TextureAtlas.LOCATION_BLOCKS));
         Lighting.setupForEntityInInventory();
 
-        List<BakedQuad> quads = model.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
+        List<BakedQuad> quads = model.getQuads(null, null, RANDOM, ModelData.EMPTY, null);
         for (BakedQuad quad : quads)
         {
             worldrenderer.putBulkData(matrixStack.last(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0x00F000F0, OverlayTexture.NO_OVERLAY, true);
@@ -184,8 +182,8 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         VertexConsumer worldrenderer = src.getBuffer(ClientHandlers.brightSolid(TextureAtlas.LOCATION_BLOCKS));
         Lighting.setupForEntityInInventory();
 
-        List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
-        List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, RANDOM, EmptyModelData.INSTANCE);
+        List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, RANDOM, ModelData.EMPTY, null);
+        List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, RANDOM, ModelData.EMPTY, null);
 
         int length = DefaultVertexFormat.BLOCK.getVertexSize();
 

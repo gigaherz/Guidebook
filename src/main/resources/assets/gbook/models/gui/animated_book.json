@@ -1,9 +1,0 @@
-{
-  "loader": "forge:composite",
-  "parts": {
-    "0": { "loader": "forge:obj", "model": "gbook:models/gui/book.obj", "detectCullableFaces": false },
-    "30": { "loader": "forge:obj", "model": "gbook:models/gui/book30.obj", "detectCullableFaces": false },
-    "60": { "loader": "forge:obj", "model": "gbook:models/gui/book60.obj", "detectCullableFaces": false },
-    "90": { "loader": "forge:obj", "model": "gbook:models/gui/book90.obj", "detectCullableFaces": false }
-  }
-}

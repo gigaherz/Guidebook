@@ -1,0 +1,5 @@
+{
+  "loader": "forge:obj",
+  "model": "gbook:models/gui/book.obj",
+  "detectCullableFaces": false
+}

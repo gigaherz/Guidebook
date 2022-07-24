@@ -7,7 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -26,7 +26,7 @@ public class GuidebookExample
     {
     }
 
-    public static void checkGbookGiven(EntityJoinWorldEvent event)
+    public static void checkGbookGiven(EntityJoinLevelEvent event)
     {
         if (MY_BOOK.get().getCount() > 0)
         {

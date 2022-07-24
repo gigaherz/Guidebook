@@ -1,4 +1,3 @@
 {
-  "_parent": "item/default",
-  "loader": "gbook:special_model"
+  "parent": "builtin/entity"
 }

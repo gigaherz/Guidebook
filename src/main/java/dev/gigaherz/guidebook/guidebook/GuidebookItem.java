@@ -22,7 +22,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.IItemRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
@@ -127,14 +127,14 @@ public class GuidebookItem extends Item
     }
 
     @Override
-    public void initializeClient(Consumer<IItemRenderProperties> consumer)
+    public void initializeClient(Consumer<IClientItemExtensions> consumer)
     {
-        consumer.accept(new IItemRenderProperties()
+        consumer.accept(new IClientItemExtensions()
         {
             private final NonNullLazy<BlockEntityWithoutLevelRenderer> ister = NonNullLazy.of(() -> new BookItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
 
             @Override
-            public BlockEntityWithoutLevelRenderer getItemStackRenderer()
+            public BlockEntityWithoutLevelRenderer getCustomRenderer()
             {
                 return ister.get();
             }

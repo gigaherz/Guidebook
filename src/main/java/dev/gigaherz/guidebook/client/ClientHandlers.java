@@ -6,7 +6,6 @@ import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.client.AnimatedBookBackground;
 import dev.gigaherz.guidebook.guidebook.client.BookBakedModel;
-import dev.gigaherz.guidebook.guidebook.client.SpecialBakedModel;
 import dev.gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import dev.gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import dev.gigaherz.guidebook.guidebook.conditions.CompositeCondition;
@@ -19,11 +18,9 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.client.model.ForgeModelBakery;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -60,20 +57,26 @@ public class ClientHandlers
         }
 
         @SubscribeEvent
-        public static void clientInit(ParticleFactoryRegisterEvent event)
+        public static void clientInit(RegisterParticleProvidersEvent event)
         {
             ClientHandlers.clientInit();
         }
 
         @SubscribeEvent
-        public static void modelRegistry(ModelRegistryEvent event)
+        public static void modelRegistry(ModelEvent.RegisterGeometryLoaders event)
         {
-            ModelLoaderRegistry.registerLoader(GuidebookMod.location("special_model"), new SpecialBakedModel.ModelLoader());
-            ModelLoaderRegistry.registerLoader(GuidebookMod.location("book_model"), new BookBakedModel.ModelLoader());
+            event.register("book_model", new BookBakedModel.ModelLoader());
+        }
 
+        @SubscribeEvent
+        public static void specialModels(ModelEvent.RegisterAdditional event)
+        {
             // Ensures that the OBJ models used by the book GUI background, and all referenced textures, are loaded
-            ForgeModelBakery.addSpecialModel(AnimatedBookBackground.BOOK_BACKGROUND);
-            ForgeModelBakery.addSpecialModel(BookItemRenderer.MODEL_HELPER);
+            event.register(AnimatedBookBackground.BOOK_BACKGROUND0);
+            event.register(AnimatedBookBackground.BOOK_BACKGROUND30);
+            event.register(AnimatedBookBackground.BOOK_BACKGROUND60);
+            event.register(AnimatedBookBackground.BOOK_BACKGROUND90);
+            event.register(BookItemRenderer.MODEL_HELPER);
         }
 
         @SubscribeEvent

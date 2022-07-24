@@ -90,7 +90,7 @@ public class GuidebookMod
 
     private void playerLogIn(PlayerEvent.PlayerLoggedInEvent event)
     {
-        Player e = event.getPlayer();
+        Player e = event.getEntity();
         if (!e.level.isClientSide)
         {
             for (String g : ConfigValues.giveOnFirstJoin)
