@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
@@ -86,27 +87,14 @@ public class LinkHelper
 
                 if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)
                 {
-                    String s = this.input.getValue().trim();
-
-                    if (!s.isEmpty())
-                    {
-                        this.sendMessage(s);
+                    if (this.handleChatInput(this.input.getValue(), true)) {
+                        mc.popGuiLayer();
                     }
 
-                    mc.popGuiLayer();
                     return true;
                 }
 
                 return super.keyPressed(keyCode, p_keyPressed_2_, p_keyPressed_3_);
-            }
-
-            private void sendMessage(String s1)
-            {
-                if (s1.startsWith("/")) {
-                    mc.player.command(s1.substring(1));
-                } else {
-                    mc.player.chat(s1);
-                }
             }
         });
     }
