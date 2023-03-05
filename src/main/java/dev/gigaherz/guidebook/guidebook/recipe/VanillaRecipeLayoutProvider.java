@@ -4,6 +4,7 @@ import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.elements.ElementImage;
 import dev.gigaherz.guidebook.guidebook.elements.ElementStack;
+import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -43,7 +44,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
     public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ItemStack targetOutput, int recipeIndex)
     {
         Recipe<?> recipe = world.getRecipeManager().getRecipes().stream()
-                .filter(r -> !r.isSpecial() && ItemStack.isSameIgnoreDurability(targetOutput, r.getResultItem()))
+                .filter(r -> !r.isSpecial() && ItemStack.isSame(targetOutput, r.getResultItem()))
                 .skip(recipeIndex)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for provided output item: %s", targetOutput)));
@@ -105,7 +106,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         NonNullList<Ingredient> ingredients = recipe.getIngredients();
         for (int i = 0; i < ingredients.size(); ++i)
         {
-            ElementStack inputSlot = new ElementStack(false, false);
+            ElementStack inputSlot = new ElementStack(false, false, TextStyle.DEFAULT);
             ItemStack[] matching = ingredients.get(i).getItems();
             if (matching.length == 0) continue; // If the recipe area is blank, continue and ignore
 
@@ -123,7 +124,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         }
 
         // Set up output slot element
-        ElementStack outputSlot = new ElementStack(false, false);
+        ElementStack outputSlot = new ElementStack(false, false, TextStyle.DEFAULT);
         stackComponents.add(outputSlot);
         ItemStack undamaged = unDamage(recipe.getResultItem());
         outputSlot.stacks.add(undamaged);

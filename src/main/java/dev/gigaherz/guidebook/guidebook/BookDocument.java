@@ -236,9 +236,16 @@ public class BookDocument
                 {
                     var text = n.getTextContent();
                     if (text.contains("#"))
-                        bookModel = new ModelResourceLocation(text);
+                    {
+                        var parts = text.split("#");
+                        var loc = new ResourceLocation(parts[0]);
+                        var variant = parts[1];
+                        bookModel = new ModelResourceLocation(loc, variant);
+                    }
                     else
+                    {
                         bookModel = new ResourceLocation(text);
+                    }
                 }
                 n = attributes.getNamedItem("background");
                 if (n != null)
@@ -809,7 +816,7 @@ public class BookDocument
         }
         else if (nodeName.equals("stack"))
         {
-            ElementStack s = new ElementStack(isFirstElement, isLastElement);
+            ElementStack s = new ElementStack(isFirstElement, isLastElement, defaultStyle);
 
             if (elementItem.hasAttributes())
             {

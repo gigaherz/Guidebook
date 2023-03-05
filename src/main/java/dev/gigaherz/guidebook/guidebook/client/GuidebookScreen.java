@@ -84,22 +84,22 @@ public class GuidebookScreen extends Screen
         }
 
         // Positions set below in repositionButtons();
-        this.addRenderableWidget(this.buttonHome = new SpriteButton(0, 0, 6, this::onHomeClicked));
-        this.addRenderableWidget(this.buttonBack = new SpriteButton(0, 0, 2, this::onBackClicked));
-        this.addRenderableWidget(this.buttonClose = new SpriteButton(0, 0, 3, this::onCloseClicked));
+        this.addRenderableWidget(this.buttonHome = new SpriteButton(0, 0, 6, Component.literal("Home"), this::onHomeClicked));
+        this.addRenderableWidget(this.buttonBack = new SpriteButton(0, 0, 2, Component.literal("Back"),this::onBackClicked));
+        this.addRenderableWidget(this.buttonClose = new SpriteButton(0, 0, 3, Component.literal("Close"),this::onCloseClicked));
         if (ConfigValues.useNaturalArrows)
         {
-            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 1, this::onPrevPageClicked));
-            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 0, this::onNextPageClicked));
-            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 5, this::onPrevChapterClicked));
-            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 4, this::onNextChapterClicked));
+            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 1, Component.literal("Previous Page"),this::onPrevPageClicked));
+            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 0, Component.literal("Next Page"),this::onNextPageClicked));
+            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 5, Component.literal("Previous Chapter"),this::onPrevChapterClicked));
+            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 4, Component.literal("Next Chapter"),this::onNextChapterClicked));
         }
         else
         {
-            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 0, this::onPrevPageClicked));
-            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 1, this::onNextPageClicked));
-            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 4, this::onPrevChapterClicked));
-            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 5, this::onNextChapterClicked));
+            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 0, Component.literal("Previous Page"),this::onPrevPageClicked));
+            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 1, Component.literal("Next Page"),this::onNextPageClicked));
+            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 4, Component.literal("Previous Chapter"), this::onPrevChapterClicked));
+            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 5, Component.literal("Next Chapter"),this::onNextChapterClicked));
         }
 
         updateButtonStates();
@@ -196,23 +196,23 @@ public class GuidebookScreen extends Screen
         int topTop = top - 16 + (int) (8 * bookScale);
         int bottomBottom = bottom - 4;
 
-        buttonHome.x = leftLeft;
-        buttonHome.y = topTop;
-        buttonBack.x = leftLeft + 18;
-        buttonBack.y = topTop + 3;
+        buttonHome.setX(leftLeft);
+        buttonHome.setY(topTop);
+        buttonBack.setX(leftLeft + 18);
+        buttonBack.setY(topTop + 3);
 
-        buttonClose.x = rightRight - 16;
-        buttonClose.y = topTop;
+        buttonClose.setX(rightRight - 16);
+        buttonClose.setY(topTop);
 
-        buttonPreviousPage.x = leftLeft + 22;
-        buttonPreviousPage.y = bottomBottom;
-        buttonPreviousChapter.x = leftLeft;
-        buttonPreviousChapter.y = bottomBottom;
+        buttonPreviousPage.setX(leftLeft + 22);
+        buttonPreviousPage.setY(bottomBottom);
+        buttonPreviousChapter.setX(leftLeft);
+        buttonPreviousChapter.setY(bottomBottom);
 
-        buttonNextPage.x = rightRight - 16 - 18 - 4;
-        buttonNextPage.y = bottomBottom;
-        buttonNextChapter.x = rightRight - 16 - 4;
-        buttonNextChapter.y = bottomBottom;
+        buttonNextPage.setX(rightRight - 16 - 18 - 4);
+        buttonNextPage.setY(bottomBottom);
+        buttonNextChapter.setX(rightRight - 16 - 4);
+        buttonNextChapter.setY(bottomBottom);
     }
 
     @Override
@@ -324,19 +324,19 @@ public class GuidebookScreen extends Screen
     {
         private final int whichIcon;
 
-        public SpriteButton(int x, int y, int iconIndex, OnPress press)
+        public SpriteButton(int x, int y, int iconIndex, Component narratorText, OnPress press)
         {
-            super(x, y, xSize[iconIndex], ySize[iconIndex], Component.literal(""), press);
+            super(x, y, xSize[iconIndex], ySize[iconIndex], narratorText, press, DEFAULT_NARRATION);
             this.whichIcon = iconIndex;
         }
 
         @Override
         public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
         {
-            boolean hover = mouseX >= this.x &&
-                    mouseY >= this.y &&
-                    mouseX < this.x + this.width &&
-                    mouseY < this.y + this.height;
+            boolean hover = mouseX >= this.getX() &&
+                    mouseY >= this.getY() &&
+                    mouseX < this.getX() + this.width &&
+                    mouseY < this.getY() + this.height;
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -352,7 +352,7 @@ public class GuidebookScreen extends Screen
                 x += 25;
             }
 
-            this.blit(matrixStack, this.x, this.y, x, y, w, h);
+            this.blit(matrixStack, this.getX(), this.getY(), x, y, w, h);
         }
     }
 }

@@ -64,12 +64,11 @@ public class ElementParagraph extends Element
             if (pieces.size() < 1)
                 continue;
 
-            for (int i = 0; i < pieces.size(); i++)
+            for (VisualElement current : pieces)
             {
-                VisualElement current = pieces.get(i);
                 Size size = current.size;
 
-                boolean isLineBreak = "\n".equals(current.getText());
+                boolean isLineBreak = "\n".equals(current.getText().getString());
 
                 if (isLineBreak || (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
                 {
@@ -119,17 +118,12 @@ public class ElementParagraph extends Element
         if (paragraph.size() <= firstInLine)
             return;
 
-        int realWidth = currentLineLeft;
-        int leftOffset = 0;
-        switch (alignment)
-        {
-            case ALIGN_CENTER:
-                leftOffset = (width - realWidth) / 2;
-                break;
-            case ALIGN_RIGHT:
-                leftOffset = width - realWidth;
-                break;
-        }
+        int leftOffset = switch (alignment)
+                {
+                    case ALIGN_CENTER -> (width - currentLineLeft) / 2;
+                    case ALIGN_RIGHT -> width - currentLineLeft;
+                    default -> 0;
+                };
 
         int yMin = Integer.MAX_VALUE;
         int yMax = Integer.MIN_VALUE;
@@ -142,7 +136,7 @@ public class ElementParagraph extends Element
                 e.position = new Point(e.position.x + leftOffset, e.position.y);
 
                 yMin = Math.min(yMin, e.position.y);
-                yMax = Math.min(yMax, e.position.y + e.size.height);
+                yMax = Math.max(yMax, e.position.y + e.size.height);
                 yBaseline = Math.min(yBaseline, e.position.y + (int) (e.size.height * e.baseline));
             }
         }

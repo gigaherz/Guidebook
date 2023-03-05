@@ -1,39 +1,44 @@
 package dev.gigaherz.guidebook.guidebook;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.logging.LogUtils;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateLibrary;
+import net.minecraft.FileUtil;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.LanguageManager;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.FolderPackResources;
+import net.minecraft.server.packs.AbstractPackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackCompatibility;
-import net.minecraft.server.packs.repository.RepositorySource;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.resources.*;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class BookRegistry
 {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public static final Set<ResourceLocation> REGISTRY = Sets.newHashSet();
 
     private static boolean booksLoaded = false;
@@ -259,48 +264,92 @@ public class BookRegistry
         if (mc == null)
             return;
 
-        File resourcesFolder = new File(new File(new File(mc.gameDirectory, "config"), "books"), "resources");
+        Path resourcesFolder = mc.gameDirectory.toPath().resolve("config/books/resources");
 
-        if (!resourcesFolder.exists())
+        if (!Files.exists(resourcesFolder))
         {
-            if (!resourcesFolder.mkdirs())
+            try
+            {
+                Files.createDirectories(resourcesFolder);
+            }
+            catch (IOException e)
             {
                 return;
             }
         }
 
-        if (!resourcesFolder.exists() || !resourcesFolder.isDirectory())
+        if (!Files.exists(resourcesFolder) || !Files.isDirectory(resourcesFolder))
         {
             return;
         }
 
         final String id = "guidebook_config_folder_resources";
-        final Component name = Component.literal("Guidebook Config Folder Virtual Resource Pack");
-        final Component description = Component.literal("Provides book resources placed in the config/books/resources folder");
-        final PackResources pack = new FolderPackResources(resourcesFolder)
+        final Component name = Component.literal("Guidebook Config Folder Resources");
+        final String description = "For config/books/resources folder";
+        final PackResources pack = new AbstractPackResources("special:guidebook_config_folder", true)
         {
             String prefix = "assets/" + GuidebookMod.MODID + "/";
 
+            final Path root = resourcesFolder;
+
+            @org.jetbrains.annotations.Nullable
             @Override
-            protected InputStream getResource(String name) throws IOException
+            public IoSupplier<InputStream> getRootResource(String... paths)
             {
-                if ("pack.mcmeta".equals(name))
+                if (paths.length == 1 && "pack.mcmeta".equals(paths[0]))
                 {
-                    return new ByteArrayInputStream(("{\"pack\":{\"description\": \"dummy\",\"pack_format\": 5}}").getBytes(StandardCharsets.UTF_8));
+                    //noinspection deprecation
+                    return () -> new ByteArrayInputStream(("{\"pack\":{\"description\": \""+description+"\",\"pack_format\": "+ SharedConstants.RESOURCE_PACK_FORMAT +"}}").getBytes(StandardCharsets.UTF_8));
                 }
-                if (!name.startsWith(prefix))
-                    throw new FileNotFoundException(name);
-                return super.getResource(name.substring(prefix.length()));
+
+                if (paths.length >= 2 && paths[0].equals("assets") && paths[1].equals(GuidebookMod.MODID))
+                {
+                    FileUtil.validatePath(paths);
+                    var paths1 = Arrays.copyOfRange(paths, 2, paths.length);
+                    Path path = FileUtil.resolvePath(this.root, List.of(paths1));
+                    return Files.exists(path) ? IoSupplier.create(path) : null;
+                }
+                return null;
             }
 
+            @org.jetbrains.annotations.Nullable
             @Override
-            protected boolean hasResource(String name)
+            public IoSupplier<InputStream> getResource(PackType packType, ResourceLocation resourceLocation)
             {
-                if ("pack.mcmeta".equals(name))
-                    return true;
-                if (!name.startsWith(prefix))
-                    return false;
-                return super.hasResource(name.substring(prefix.length()));
+                if (packType == PackType.CLIENT_RESOURCES && resourceLocation.getNamespace().equals(GuidebookMod.MODID))
+                {
+                    var path = root.resolve(resourceLocation.getPath());
+                    return Files.exists(path) ? IoSupplier.create(path) : null;
+                }
+                return null;
+            }
+
+            private static final Joiner PATH_JOINER = Joiner.on("/");
+            @Override
+            public void listResources(PackType type, String namespace, String path, ResourceOutput resourceOutput)
+            {
+                if (type == PackType.CLIENT_RESOURCES && namespace.equals(GuidebookMod.MODID))
+                {
+                    try(var stream = Files.find(root.resolve(path), Integer.MAX_VALUE, (file, attributes) -> attributes.isRegularFile()))
+                    {
+                        stream.forEach(file -> {
+                            var s = PATH_JOINER.join(root.relativize(file));
+                            var rl = ResourceLocation.tryBuild(namespace, s);
+                            if (rl != null)
+                            {
+                                resourceOutput.accept(rl, IoSupplier.create(file));
+                            }
+                        });
+                    }
+                    catch(FileNotFoundException | NoSuchFileException e)
+                    {
+                        // ignore
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
@@ -308,20 +357,16 @@ public class BookRegistry
             {
                 return Collections.singleton(GuidebookMod.MODID);
             }
+
+            @Override
+            public void close()
+            {
+            }
         };
 
-        Minecraft.getInstance().getResourcePackRepository().addPackFinder(new RepositorySource()
-        {
-            @Override
-            public void loadPacks(Consumer<Pack> infoConsumer, Pack.PackConstructor infoFactory)
-            {
-                infoConsumer.accept(
-                        new Pack(id, true, () -> pack,
-                                name, description, PackCompatibility.COMPATIBLE, Pack.Position.BOTTOM,
-                                true, text -> text, true)
-                );
-            }
-        });
+        Minecraft.getInstance().getResourcePackRepository().addPackFinder(infoConsumer -> infoConsumer.accept(
+                Pack.readMetaAndCreate(id, name, true, path1 -> pack, PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN)
+        ));
     }
 
     public static ResourceLocation[] gatherBookModels()

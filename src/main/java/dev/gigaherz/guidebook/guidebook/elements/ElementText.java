@@ -61,9 +61,8 @@ public class ElementText extends ElementInline
         List<VisualElement> elements = nav.measure(getStringWithFormat(getActualString()), width, firstLineWidth, scale, position, baseline, verticalAlignment);
         for (VisualElement text : elements)
         {
-            if (text instanceof VisualText)
+            if (text instanceof VisualText visualText)
             {
-                VisualText visualText = (VisualText) text;
                 visualText.color = color;
             }
         }

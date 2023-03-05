@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Quaternion;
+import com.mojang.math.Axis;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.client.ClientHandlers;
 import net.minecraft.client.Minecraft;
@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraftforge.client.model.CompositeModel;
 import net.minecraftforge.client.model.data.ModelData;
+import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
@@ -136,12 +137,12 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         matrixStack.pushPose();
         {
             matrixStack.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
-            matrixStack.mulPose(Quaternion.fromXYZ(0, (float) Math.toRadians(180), 0));
-            matrixStack.mulPose(Quaternion.fromXYZ((float) Math.toRadians(-130), 0, 0));
+            matrixStack.mulPose(Axis.YP.rotationDegrees(180));
+            matrixStack.mulPose(Axis.XP.rotationDegrees(-130));
             float scaleValue = 2.6f;//2.16f;
             matrixStack.scale(2.46f * scalingFactor, 2.0f * scalingFactor, 2.9f * scalingFactor);
 
-            matrixStack.mulPose(Quaternion.fromXYZ(0, 0, (float) Math.toRadians(angleX * 1.1f)));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(angleX * 1.1f));
 
             if (blend > 0 && modelBookB != null)
             {

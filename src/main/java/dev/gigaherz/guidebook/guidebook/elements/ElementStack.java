@@ -6,60 +6,77 @@ import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualStack;
+import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import joptsimple.internal.Strings;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class ElementStack extends ElementInline
 {
-    public static final String WILDCARD = "*";
-
     public final NonNullList<ItemStack> stacks = NonNullList.create();
 
     public float scale = 1.0f;
 
-    public ElementStack(boolean isFirstElement, boolean isLastElement)
+    public LabelPosition labelPosition = LabelPosition.NONE;
+    public int labelColor;
+
+    public ElementStack(boolean isFirstElement, boolean isLastElement, TextStyle style)
     {
         super(isFirstElement, isLastElement);
         // default size
         w = 16;
         h = 16;
+        labelColor = style.color;
     }
 
-    private Size getVisualSize()
+    private VisualStack getVisual(IBookGraphics nav)
     {
         int width = (int) (w * scale);
         int height = (int) (h * scale);
-        return new Size(width, height);
-    }
+        var iconSize = new Size(width, height);
 
-    private VisualStack getVisual()
-    {
-        return new VisualStack(stacks, getVisualSize(), position, baseline, verticalAlignment, scale, z);
+        var size = iconSize;
+        if (labelPosition != LabelPosition.NONE)
+        {
+            var labelText = stacks.get(0).getHoverName();
+            var labelSize = nav.measure(labelText);
+
+            switch (labelPosition)
+            {
+                case LEFT, RIGHT -> size = new Size(iconSize.width + labelSize.width, Math.max(iconSize.height, labelSize.height));
+                case ABOVE, BELOW -> size = new Size(Math.max(iconSize.width, labelSize.width), iconSize.height + labelSize.height);
+            }
+        }
+
+        return new VisualStack(stacks, size, position, baseline, verticalAlignment, scale, z, iconSize, labelPosition, labelColor);
     }
 
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        return Collections.singletonList(getVisual());
+        return List.of(getVisual(nav));
     }
 
     @Override
     public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
-        VisualStack element = getVisual();
+        var element = getVisual(nav);
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
         if (position != POS_RELATIVE)
@@ -77,7 +94,34 @@ public class ElementStack extends ElementInline
 
         scale = getAttribute(attributes, "scale", scale);
 
-        Node attr = attributes.getNamedItem("item");
+        Node attr = attributes.getNamedItem("tag");
+        if (attr != null)
+        {
+            try
+            {
+                tag = TagParser.parseTag(attr.getTextContent());
+            }
+            catch (CommandSyntaxException e)
+            {
+                GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
+            }
+        }
+
+        attr = attributes.getNamedItem("count");
+        if (attr != null)
+        {
+            stackSize = Integer.parseInt(attr.getTextContent());
+        }
+
+        String name = null;
+
+        attr = attributes.getNamedItem("name");
+        if (attr != null)
+        {
+            name = attr.getTextContent();
+        }
+
+        attr = attributes.getNamedItem("item");
         if (attr != null)
         {
             String itemName = attr.getTextContent();
@@ -89,39 +133,20 @@ public class ElementStack extends ElementInline
                 ItemStack stack = new ItemStack(item, stackSize);
                 stack.setTag(tag);
                 stacks.add(stack);
+                if (!Strings.isNullOrEmpty(name))
+                {
+                    stack.setHoverName(Component.literal(name));
+                }
             }
         }
 
-        attr = attributes.getNamedItem("count");
+        attr = attributes.getNamedItem("labelPosition");
         if (attr != null)
         {
-            stackSize = Ints.tryParse(attr.getTextContent());
-        }
+            if (stacks.size() != 1)
+                throw new RuntimeException("stack labels cannot be used with multi-stack elements!");
 
-        attr = attributes.getNamedItem("tag");
-        if (attr != null)
-        {
-            try
-            {
-                tag = TagParser.parseTag(attr.getTextContent());
-            }
-            catch (CommandSyntaxException e)
-            {
-                GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
-            }
-        }
-
-        attr = attributes.getNamedItem("name");
-        if (attr != null)
-        {
-            try
-            {
-                tag = TagParser.parseTag(attr.getTextContent());
-            }
-            catch (CommandSyntaxException e)
-            {
-                GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
-            }
+            labelPosition = Enum.valueOf(LabelPosition.class, attr.getTextContent().toUpperCase(Locale.ROOT));
         }
 
         // TODO: Tags
@@ -179,8 +204,10 @@ public class ElementStack extends ElementInline
     @Override
     public ElementInline copy()
     {
-        ElementStack newStack = super.copy(new ElementStack(isFirstElement, isLastElement));
+        ElementStack newStack = super.copy(new ElementStack(isFirstElement, isLastElement, TextStyle.DEFAULT));
         newStack.scale = scale;
+        newStack.labelPosition = labelPosition;
+        newStack.labelColor = labelColor;
         for (ItemStack stack : stacks)
         {
             newStack.stacks.add(stack.copy());

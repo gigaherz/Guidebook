@@ -41,14 +41,14 @@ public class BookBakedModel implements BakedModel
     private final TextureAtlasSprite particle;
     private final ItemOverrides overrideList;
 
-    public BookBakedModel(BakedModel baseModel, ModelBakery bakery, Function<ResourceLocation, UnbakedModel> modelGetter,
+    public BookBakedModel(BakedModel baseModel, ModelBaker bakery, Function<ResourceLocation, UnbakedModel> modelGetter,
                           Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemTransforms cameraTransforms,
                           Map<ResourceLocation, BakedModel> bookModels, Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle, ItemOverrides originalOverrides)
     {
         this.particle = particle;
         this.isSideLit = isSideLit;
         this.cameraTransforms = cameraTransforms;
-        this.overrideList = new ItemOverrides(bakery, null, modelGetter, spriteGetter, Collections.emptyList())
+        this.overrideList = new ItemOverrides()
         {
             @Nullable
             @Override
@@ -65,7 +65,8 @@ public class BookBakedModel implements BakedModel
                         if (modelLocation != null)
                         {
                             BakedModel bakedModel = bookModels.get(modelLocation);
-                            return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
+                            if (bakedModel != null)
+                                return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
                         }
                         else
                         {
@@ -74,7 +75,8 @@ public class BookBakedModel implements BakedModel
                             if (cover != null)
                             {
                                 BakedModel bakedModel = coverModels.get(cover);
-                                return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
+                                if (bakedModel != null)
+                                    return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
                             }
                         }
                     }
@@ -147,9 +149,9 @@ public class BookBakedModel implements BakedModel
         }
 
         @Override
-        public BakedModel bake(IGeometryBakingContext owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation)
+        public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation)
         {
-            Material particleLocation = owner.getMaterial("particle");
+            Material particleLocation = context.getMaterial("particle");
             TextureAtlasSprite part = spriteGetter.apply(particleLocation);
 
             Map<ResourceLocation, BakedModel> bakedBookModels = ImmutableMap.copyOf(Maps.transformEntries(bookModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k)));
@@ -157,23 +159,15 @@ public class BookBakedModel implements BakedModel
 
             return new BookBakedModel(
                     baseModel.bake(bakery, baseModel, spriteGetter, modelTransform, modelLocation, true),
-                    bakery, bakery::getModel, spriteGetter, owner.useBlockLight(), owner.getTransforms(), bakedBookModels, bakedCoverModels, part, overrides);
+                    bakery, bakery::getModel, spriteGetter, context.useBlockLight(), context.getTransforms(), bakedBookModels, bakedCoverModels, part, overrides);
         }
 
         @Override
-        public Collection<Material> getMaterials(IGeometryBakingContext owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+        public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context)
         {
-            Set<Material> textures = Sets.newHashSet();
-
-            textures.addAll(baseModel.getMaterials(modelGetter, missingTextureErrors));
-
             for (ResourceLocation bookModel : BookRegistry.gatherBookModels())
             {
-                bookModels.computeIfAbsent(bookModel, (loc) -> {
-                    UnbakedModel mdl = modelGetter.apply(loc);
-                    textures.addAll(mdl.getMaterials(modelGetter, missingTextureErrors));
-                    return mdl;
-                });
+                bookModels.computeIfAbsent(bookModel, modelGetter);
             }
 
             for (ResourceLocation bookCover : BookRegistry.gatherBookCovers())
@@ -182,20 +176,13 @@ public class BookBakedModel implements BakedModel
                     BlockModel mdl = new BlockModel(
                             new ResourceLocation(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
                             Collections.emptyList(),
-                            ImmutableMap.of("cover", Either.<Material, String>left(new Material(TextureAtlas.LOCATION_BLOCKS, bookCover))),
-                            true, owner.useBlockLight() ? BlockModel.GuiLight.SIDE : BlockModel.GuiLight.FRONT, ItemTransforms.NO_TRANSFORMS, Collections.emptyList());
+                            ImmutableMap.of("cover", Either.left(new Material(TextureAtlas.LOCATION_BLOCKS, bookCover))),
+                            true, context.useBlockLight() ? BlockModel.GuiLight.SIDE : BlockModel.GuiLight.FRONT, ItemTransforms.NO_TRANSFORMS, Collections.emptyList());
                     mdl.parent = baseModel;
-                    textures.addAll(mdl.getMaterials(modelGetter, missingTextureErrors));
+                    mdl.resolveParents(modelGetter);
                     return mdl;
                 });
             }
-
-            for (BookDocument renderer : BookRegistry.getLoadedBooks().values())
-            {
-                renderer.findTextures(textures);
-            }
-
-            return textures;
         }
     }
 

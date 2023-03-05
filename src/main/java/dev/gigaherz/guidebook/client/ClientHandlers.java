@@ -9,7 +9,6 @@ import dev.gigaherz.guidebook.guidebook.client.BookBakedModel;
 import dev.gigaherz.guidebook.guidebook.conditions.AdvancementCondition;
 import dev.gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import dev.gigaherz.guidebook.guidebook.conditions.CompositeCondition;
-import dev.gigaherz.guidebook.guidebook.conditions.GameStageCondition;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -37,8 +36,8 @@ public class ClientHandlers
         BasicConditions.register();
         CompositeCondition.register();
         AdvancementCondition.register();
-        if (ModList.get().isLoaded("gamestages"))
-            GameStageCondition.register();
+        /*if (ModList.get().isLoaded("gamestages"))
+            GameStageCondition.register();*/
 
         MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
 
@@ -82,7 +81,7 @@ public class ClientHandlers
         @SubscribeEvent
         public static void shaderRegistry(RegisterShadersEvent event) throws IOException
         {
-            event.registerShader(new ShaderInstance(event.getResourceManager(), new ResourceLocation("gbook:rendertype_bright_solid"), DefaultVertexFormat.NEW_ENTITY), shaderInstance -> {
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("gbook:rendertype_bright_solid"), DefaultVertexFormat.NEW_ENTITY), shaderInstance -> {
                 CustomRenderTypes.brightSolidShader = shaderInstance;
             });
         }

@@ -48,7 +48,7 @@ project.afterEvaluate {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'official', version: '1.19.1'
+    mappings channel: 'official', version: '1.19.3'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -88,15 +88,17 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.1-42.0.0'
+    minecraft 'net.minecraftforge:forge:1.19.3-44.0.11'
 
-    compileOnly fg.deobf("mezz.jei:jei-1.19-common-api:11.1.0.235")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.19-common:11.1.0.235")
-    compileOnly fg.deobf("mezz.jei:jei-1.19-forge-api:11.1.0.235")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.19-forge:11.1.0.235")
+    /*
+    compileOnly fg.deobf("mezz.jei:jei-1.19.2-common-api:11.2.0.256")
+    //runtimeOnly fg.deobf("mezz.jei:jei-1.19.2-common:11.2.0.256")
+    compileOnly fg.deobf("mezz.jei:jei-1.19.2-forge-api:11.2.0.256")
+    //runtimeOnly fg.deobf("mezz.jei:jei-1.19.2-forge:11.2.0.256")
 
-    compileOnly fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.19:9.0.1")
-    compileOnly fg.deobf( "net.darkhax.bookshelf:Bookshelf-Forge-1.19:14.0.2")
+    compileOnly fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")
+    compileOnly fg.deobf( "net.darkhax.bookshelf:Bookshelf-Forge-1.19.2:16.1.4")
+     */
 }
 
 jar {

@@ -1,5 +1,5 @@
 {
   "loader": "forge:obj",
   "model": "gbook:models/gui/book60.obj",
-  "detectCullableFaces": false
+  "automatic_culling": false
 }

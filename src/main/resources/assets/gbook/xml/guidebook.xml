@@ -187,6 +187,15 @@
       <p space="8">By using the stack-links feature, you can make certain stacks turn into links to a section. As an example, the stack below will lead to the recipes section in this book.</p>
       <p indent="8" space="8">&lt;stack item=&quot;minecraft:coal&quot; meta=&quot;0&quot; count=&quot;2&quot; /&gt;</p>
       <stack item="minecraft:coal" meta="0" count="2" />
+      <stack item="minecraft:coal" meta="0" count="2" labelPosition="left" />
+      <stack item="minecraft:coal" meta="0" count="2" labelPosition="right" />
+      <stack item="minecraft:coal" meta="0" count="2" labelPosition="above" />
+      <stack item="minecraft:coal" meta="0" count="2" labelPosition="below" />
+      <p>None: <stack item="minecraft:coal" meta="0" count="2" /></p>
+      <p>Left: <stack item="minecraft:coal" meta="0" count="2" labelPosition="left" /></p>
+      <p>Right: <stack item="minecraft:coal" meta="0" count="2" labelPosition="right" /></p>
+      <p>Above: <stack item="minecraft:coal" meta="0" count="2" labelPosition="above" /></p>
+      <p>Below: <stack item="minecraft:coal" meta="0" count="2" labelPosition="below" /></p>
     </section>
   </chapter>
   <chapter id="recipes">

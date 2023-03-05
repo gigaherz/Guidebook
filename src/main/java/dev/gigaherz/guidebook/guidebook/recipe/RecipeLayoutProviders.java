@@ -2,6 +2,7 @@ package dev.gigaherz.guidebook.guidebook.recipe;
 
 import com.google.common.collect.Maps;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 
@@ -16,7 +17,7 @@ public class RecipeLayoutProviders
 
     public static void register(RecipeType<?> type, VanillaRecipeLayoutProvider provider)
     {
-        ResourceLocation id = Registry.RECIPE_TYPE.getKey(type);
+        ResourceLocation id = BuiltInRegistries.RECIPE_TYPE.getKey(type);
         registry.put(id, provider);
     }
 
