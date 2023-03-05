@@ -26,6 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -269,12 +270,11 @@ public class BookDocument
                 {
                     for (String s : n.getTextContent().split(","))
                     {
-                        // TODO
-                        /*if (!Loader.isModLoaded(s))
+                        if (!ModList.get().isLoaded(s))
                         {
                             initializeWithLoadError("Dependency not loaded: " + s);
                             return false;
-                        }*/
+                        }
                     }
                 }
             }
