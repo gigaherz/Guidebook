@@ -83,8 +83,6 @@ public class BookRegistry
     {
         booksLoaded = true;
 
-        TemplateLibrary.clear();
-
         LOADED_BOOKS.clear();
 
         Set<ResourceLocation> toLoad = Sets.newHashSet(REGISTRY);

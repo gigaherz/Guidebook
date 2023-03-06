@@ -39,10 +39,6 @@ public class ClientHandlers
         /*if (ModList.get().isLoaded("gamestages"))
             GameStageCondition.register();*/
 
-        MinecraftForge.EVENT_BUS.post(new BookRegistryEvent());
-
-        // TODO: ClientCommandHandler.instance.registerCommand(new GbookCommand());
-
         BookRegistry.initClientResourceListener((ReloadableResourceManager) Minecraft.getInstance().getResourceManager());
     }
 

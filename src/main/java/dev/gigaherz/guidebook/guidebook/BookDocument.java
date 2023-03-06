@@ -23,7 +23,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
@@ -289,6 +288,7 @@ public class BookDocument
     }
 
     private static final Map<ResourceLocation, Document> includeCache = new HashMap<>();
+    private static final Map<ResourceLocation, Document> includeCacheNoConfig = new HashMap<>();
 
     private void parseDocumentLevelElements(ParsingContext context, NodeList firstLevel)
     {
@@ -315,7 +315,7 @@ public class BookDocument
                 var includeRoot = document.getDocumentElement();
                 if (includeRoot.getTagName().equals("library"))
                 {
-                    TemplateLibrary tpl = TemplateLibrary.get(context, resLoc, document);
+                    TemplateLibrary tpl = TemplateLibrary.get(context, document);
                     templates.putAll(tpl.templates);
                 }
                 else
@@ -346,8 +346,14 @@ public class BookDocument
         Node n = attributes.getNamedItem("ref");
 
         ResourceLocation id = new ResourceLocation(n.getTextContent());
-        Document include = includeCache.computeIfAbsent(id, resLoc -> {
+        Document include = context.loadedFromConfigFolder() ? parseIncludeFromConfig(context, id) : parseIncludeFromResources(context, id);;
 
+        includeAction.accept(id, include);
+    }
+
+    private static Document parseIncludeFromConfig(ParsingContext context, ResourceLocation id)
+    {
+        return includeCache.computeIfAbsent(id, resLoc -> {
             // Prevents loading includes from config folder if the book was found in resource packs.
             if (context.loadedFromConfigFolder() && resLoc.getNamespace().equals("gbook"))
             {
@@ -374,6 +380,13 @@ public class BookDocument
                 }
             }
 
+            return parseIncludeFromResources(context, resLoc);
+        });
+    }
+
+    private static Document parseIncludeFromResources(ParsingContext context, ResourceLocation resLoc)
+    {
+        return includeCacheNoConfig.computeIfAbsent(resLoc, resLoc2 -> {
             try
             {
                 var res = Minecraft.getInstance().getResourceManager().getResourceOrThrow(resLoc);
@@ -395,8 +408,6 @@ public class BookDocument
                 throw new UncheckedIOException(e);
             }
         });
-
-        includeAction.accept(id, include);
     }
 
     private void parseConditions(Node node)
@@ -477,8 +488,14 @@ public class BookDocument
 
         parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
 
-        attributes.removeNamedItem("id");
-        page.attributes = attributes;
+
+        for(var i =0;i<attributes.getLength();i++)
+        {
+            var attr = attributes.item(i);
+            var key = attr.getNodeName();
+            if (!key.equals("id"))
+                page.attributes.put(key, attr);
+        }
     }
 
     private void parseChapter(ParsingContext context, int chapterNumber, Node chapterItem)
@@ -699,12 +716,12 @@ public class BookDocument
 
             parsedElement = t;
         }
-        else if (templates.containsKey(nodeName))
+        else if (elementItem.getNodeType() == Node.ELEMENT_NODE && templates.containsKey(nodeName))
         {
             TemplateDefinition tDef = templates.get(nodeName);
 
             ElementPanel t = new ElementPanel();
-            t.parse(context, tDef.attributes);
+            t.parse(context, tDef);
 
             if (elementItem.hasAttributes())
             {

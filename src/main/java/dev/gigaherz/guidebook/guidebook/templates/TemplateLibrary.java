@@ -6,6 +6,7 @@ import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
+import io.netty.util.AttributeMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -26,27 +27,14 @@ public class TemplateLibrary
 {
     public final Map<String, TemplateDefinition> templates = Maps.newHashMap();
 
+    @Deprecated(forRemoval = true)
     public void parseLibrary(ParsingContext context, InputStream stream) throws ParserConfigurationException, IOException, SAXException
     {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(stream);
 
-        doc.getDocumentElement().normalize();
-
-        Node root = doc.getChildNodes().item(0);
-
-        NodeList chaptersList = root.getChildNodes();
-        for (int i = 0; i < chaptersList.getLength(); i++)
-        {
-            Node chapterItem = chaptersList.item(i);
-
-            String nodeName = chapterItem.getNodeName();
-            if (nodeName.equals("template"))
-            {
-                parseTemplateDefinition(context, chapterItem);
-            }
-        }
+        parseLibrary(context, doc);
     }
 
     public void parseLibrary(ParsingContext context, Document doc) throws ParserConfigurationException, IOException, SAXException
@@ -105,81 +93,79 @@ public class TemplateLibrary
 
         BookDocument.parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
 
-        attributes.removeNamedItem("id");
-        page.attributes = attributes;
+        for(var i =0;i<attributes.getLength();i++)
+        {
+            var attr = attributes.item(i);
+            var key = attr.getNodeName();
+            if (!key.equals("id"))
+                page.attributes.put(key, attr);
+        }
     }
 
-    public static Map<String, TemplateLibrary> LIBRARIES = Maps.newHashMap();
-
-    public static void clear()
-    {
-        LIBRARIES.clear();
-    }
-
+    @Deprecated(forRemoval = true)
     public static TemplateLibrary get(ParsingContext context, String path, boolean useConfigFolder)
     {
-        TemplateLibrary lib = LIBRARIES.get(path);
-        if (lib == null)
+        try
         {
-            try
+            ResourceLocation loc = new ResourceLocation(path);
+
+            // Prevents loading libraries from config folder if the book was found in resource packs.
+            if (useConfigFolder && loc.getNamespace().equals("gbook"))
             {
-                lib = new TemplateLibrary();
-
-                ResourceLocation loc = new ResourceLocation(path);
-
-                // Prevents loading libraries from config folder if the book was found in resource packs.
-                if (useConfigFolder && loc.getNamespace().equals("gbook"))
+                File booksFolder = BookRegistry.getBooksFolder();
+                File file = new File(booksFolder, loc.getPath());
+                if (file.exists() && file.isFile())
                 {
-                    File booksFolder = BookRegistry.getBooksFolder();
-                    File file = new File(booksFolder, loc.getPath());
-                    if (file.exists() && file.isFile())
+                    try (InputStream stream = new FileInputStream(file))
                     {
-                        try (InputStream stream = new FileInputStream(file))
-                        {
-                            lib.parseLibrary(context, stream);
-                            LIBRARIES.put(path, lib);
-                            return lib;
-                        }
-                        catch (FileNotFoundException e)
-                        {
-                            // WUT? continue and try to load from resource pack
-                        }
+                        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                        Document doc = dBuilder.parse(stream);
+
+                        return get(context, doc);
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        // WUT? continue and try to load from resource pack
                     }
                 }
-
-                Resource res = Minecraft.getInstance().getResourceManager().getResourceOrThrow(loc);
-                try (InputStream stream = res.open())
-                {
-                    lib.parseLibrary(context, stream);
-                    LIBRARIES.put(path, lib);
-                }
             }
-            catch (IOException | ParserConfigurationException | SAXException e)
+
+            Resource res = Minecraft.getInstance().getResourceManager().getResourceOrThrow(loc);
+            try (InputStream stream = res.open())
             {
-                // TODO: Fail
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(stream);
+
+                return get(context, doc);
             }
         }
-
-        return lib;
+        catch (IOException | ParserConfigurationException | SAXException e)
+        {
+            // TODO: Fail
+            return new TemplateLibrary();
+        }
     }
 
+    @Deprecated(forRemoval = true)
     public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Document doc)
     {
-        TemplateLibrary lib = LIBRARIES.get(path.toString());
-        if (lib == null)
-        {
-            try
-            {
-                lib = new TemplateLibrary();
-                lib.parseLibrary(context, doc);
-                LIBRARIES.put(path.toString(), lib);
-            }
-            catch (IOException | ParserConfigurationException | SAXException e)
-            {
-                // TODO: Fail
-            }
-        }
+        return get(context, doc);
+    }
 
-        return lib;
+    public static TemplateLibrary get(ParsingContext context, Document doc)
+    {
+        try
+        {
+            var lib = new TemplateLibrary();
+            lib.parseLibrary(context, doc);
+            return lib;
+        }
+        catch (IOException | ParserConfigurationException | SAXException e)
+        {
+            // TODO: Fail
+            return new TemplateLibrary();
+        }
     }
 }
