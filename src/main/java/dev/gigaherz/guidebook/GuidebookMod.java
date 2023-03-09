@@ -61,7 +61,7 @@ public class GuidebookMod
     {
         event.registerCreativeModeTab(location("guidebook_books"), builder -> builder
                 .icon(() -> new ItemStack(guidebook))
-                .title(Component.translatable("itemGroup.guidebook"))
+                .title(Component.translatable("itemGroup.gbook"))
                 .displayItems((featureFlags, output, hasOp) -> {
                     for (ResourceLocation resourceLocation : BookRegistry.getBooksList())
                     {
