@@ -714,8 +714,8 @@ public class BookRendering implements IBookGraphics
         viewModelPose.mulPoseMatrix(matrixStack.last().pose());
         viewModelPose.translate(-8, -8, z);
         RenderSystem.applyModelViewMatrix();
-        renderer.renderAndDecorateItem(stack, 8, 8);
-        renderer.renderGuiItemDecorations(mc.font, stack, 8, 8, "");
+        renderer.renderAndDecorateItem(matrixStack, stack, 8, 8);
+        renderer.renderGuiItemDecorations(matrixStack, mc.font, stack, 8, 8, "");
         viewModelPose.popPose();
         RenderSystem.applyModelViewMatrix();
 

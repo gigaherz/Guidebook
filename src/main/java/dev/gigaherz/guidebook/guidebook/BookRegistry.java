@@ -110,7 +110,7 @@ public class BookRegistry
 
         loadRawBookFiles();
 
-        var lang = Minecraft.getInstance().getLanguageManager().getSelected().getCode();
+        var lang = Minecraft.getInstance().getLanguageManager().getSelected();
         
         for (ResourceLocation loc : toLoad)
         {

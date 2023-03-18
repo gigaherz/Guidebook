@@ -15,6 +15,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.ForgeRenderTypes;
@@ -40,15 +41,15 @@ public class BookItemRenderer extends BlockEntityWithoutLevelRenderer
     }
 
     @Override
-    public void renderByItem(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack matrixStack, MultiBufferSource buffers, int combinedLight, int combinedOverlay)
+    public void renderByItem(ItemStack stack, ItemDisplayContext transformType, PoseStack matrixStack, MultiBufferSource buffers, int combinedLight, int combinedOverlay)
     {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(MODEL_HELPER);
         BakedModel bookModel = model.getOverrides().resolve(model, stack, null, null, 0);
         if (bookModel == null)
             bookModel = model;
 
-        boolean leftHand = (transformType == ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)
-                || (transformType == ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND);
+        boolean leftHand = (transformType == ItemDisplayContext.FIRST_PERSON_LEFT_HAND)
+                || (transformType == ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
 
         matrixStack.pushPose();
         matrixStack.translate(0.5D, 0.5D, 0.5D);

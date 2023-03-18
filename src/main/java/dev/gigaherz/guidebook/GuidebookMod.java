@@ -62,7 +62,7 @@ public class GuidebookMod
         event.registerCreativeModeTab(location("guidebook_books"), builder -> builder
                 .icon(() -> new ItemStack(guidebook))
                 .title(Component.translatable("itemGroup.gbook"))
-                .displayItems((featureFlags, output, hasOp) -> {
+                .displayItems((featureFlags, output) -> {
                     for (ResourceLocation resourceLocation : BookRegistry.getBooksList())
                     {
                         output.accept(guidebook.of(resourceLocation));

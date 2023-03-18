@@ -5,6 +5,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.elements.ElementImage;
 import dev.gigaherz.guidebook.guidebook.elements.ElementStack;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -44,7 +45,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
     public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ItemStack targetOutput, int recipeIndex)
     {
         Recipe<?> recipe = world.getRecipeManager().getRecipes().stream()
-                .filter(r -> !r.isSpecial() && ItemStack.isSame(targetOutput, r.getResultItem()))
+                .filter(r -> !r.isSpecial() && ItemStack.isSame(targetOutput, r.getResultItem(world.registryAccess())))
                 .skip(recipeIndex)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for provided output item: %s", targetOutput)));
@@ -126,7 +127,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         // Set up output slot element
         ElementStack outputSlot = new ElementStack(false, false, TextStyle.DEFAULT);
         stackComponents.add(outputSlot);
-        ItemStack undamaged = unDamage(recipe.getResultItem());
+        ItemStack undamaged = unDamage(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
         outputSlot.stacks.add(undamaged);
         outputSlot.x = OUTPUT_SLOT_X[recipeGraphic] + LEFT_OFFSET;
         outputSlot.y = OUTPUT_SLOT_Y[recipeGraphic];

@@ -331,7 +331,7 @@ public class GuidebookScreen extends Screen
         }
 
         @Override
-        public void renderButton(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
+        public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
         {
             boolean hover = mouseX >= this.getX() &&
                     mouseY >= this.getY() &&
