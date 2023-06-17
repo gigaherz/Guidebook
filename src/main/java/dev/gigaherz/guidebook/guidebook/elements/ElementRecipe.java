@@ -6,12 +6,14 @@ import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.recipe.IRecipeLayoutProvider;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayout;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayoutProviders;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
+import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -21,6 +23,7 @@ import org.w3c.dom.NodeList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +58,7 @@ public class ElementRecipe extends Element
     }
 
     @Override
-    public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect pageBounds)
+    public int reflow(List<VisualElement> list0, IBookGraphics nav, Rect bounds, Rect pageBounds)
     {
         try
         {
@@ -80,6 +83,7 @@ public class ElementRecipe extends Element
             }
 
             ElementImage background = recipeLayout.background;
+            @org.jetbrains.annotations.Nullable
             VisualElement additionalRenderer = recipeLayout.delegate;
             ElementStack[] ingredients = recipeLayout.recipeComponents;
             int height = h != 0 ? h : recipeLayout.height;
@@ -87,22 +91,43 @@ public class ElementRecipe extends Element
             Point adjustedPosition = applyPosition(bounds.position, bounds.position);
             Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
+            var list1 = new ArrayList<VisualElement>();
+
+            background.reflow(list1, nav, adjustedBounds, pageBounds);
+
             for (ElementStack ingredient : ingredients)
             {
-                ingredient.reflow(list, nav, adjustedBounds, pageBounds);
+                ingredient.reflow(list1, nav, adjustedBounds, pageBounds);
             }
 
-            background.reflow(list, nav, adjustedBounds, pageBounds);
             if (additionalRenderer != null)
-                list.add(additionalRenderer);
+                list1.add(additionalRenderer);
+
+            int x1 = Integer.MAX_VALUE;
+            int y1 = Integer.MAX_VALUE;
+            int x2 = Integer.MIN_VALUE;
+            int y2 = Integer.MIN_VALUE;
+            for(var e : list1)
+            {
+                x1 = Math.min(x1, e.position.x());
+                y1 = Math.min(y1, e.position.y());
+                x2 = Math.max(x2, e.position.x()+e.size.width());
+                y2 = Math.max(y2, e.position.y()+e.size.height());
+            }
+
+            var panel = new VisualPanel(new Size(x2-x1,y2-y1), 0, 0, 0);
+            panel.position=new Point(x1,y1);
+            panel.children.addAll(list1);
+            list0.add(panel);
+
             if (position != POS_RELATIVE)
-                return bounds.position.y;
-            return adjustedPosition.y + height;
+                return bounds.position.y();
+            return adjustedPosition.y() + height;
         }
         catch (Exception e)
         {
             ElementSpan s = ElementSpan.of(e.getMessage(), TextStyle.ERROR);
-            return s.reflow(list, nav, bounds, pageBounds);
+            return s.reflow(list0, nav, bounds, pageBounds);
         }
     }
 

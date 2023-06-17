@@ -7,10 +7,7 @@ import com.google.common.primitives.Floats;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionManager;
-import dev.gigaherz.guidebook.guidebook.drawing.VisualChapter;
-import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
-import dev.gigaherz.guidebook.guidebook.drawing.VisualPage;
-import dev.gigaherz.guidebook.guidebook.drawing.VisualPageBreak;
+import dev.gigaherz.guidebook.guidebook.drawing.*;
 import dev.gigaherz.guidebook.guidebook.elements.*;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateElement;
@@ -22,6 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -646,7 +644,7 @@ public class BookDocument
                 Node childNode = childList.item(q);
                 ElementInline parsedChild = parseParagraphElement(context, childNode, childNode.getNodeName(), isFirstElement, isLastElement, paragraphDefautls);
 
-                if (parsedChild == null)
+                if (parsedChild == null && childNode.getNodeType() != Node.TEXT_NODE)
                 {
                     GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
                 }
@@ -1030,7 +1028,7 @@ public class BookDocument
         }
     }
 
-    public class PageData
+    public static class PageData
     {
         public final SectionRef ref;
         public String id;
@@ -1048,6 +1046,14 @@ public class BookDocument
         {
             VisualPage page = new VisualPage(ref);
             Rect pageBounds = new Rect(new Point(), pageSize);
+
+            if (VisualDebugArea.INJECT_DEBUG)
+            {
+                var area = new VisualDebugArea(pageSize, 0, 0, 0, Component.literal("page"));
+                area.position = new Point();
+
+                page.children.add(area);
+            }
 
             int top = 0;
             for (Element element : elements)
@@ -1098,7 +1104,7 @@ public class BookDocument
      * </chapter>
      * </book>
      */
-    public class PageGroup extends PageData
+    public static class PageGroup extends PageData
     {
         public PageGroup(SectionRef ref)
         {
@@ -1113,17 +1119,25 @@ public class BookDocument
             VisualPage page = new VisualPage(ref);
             Rect pageBounds = new Rect(new Point(0, 0), pageSize);
 
-            int top = pageBounds.position.y;
+            if (VisualDebugArea.INJECT_DEBUG)
+            {
+                var area = new VisualDebugArea(pageSize, 0, 0, 0, Component.literal("page"));
+                area.position = new Point();
+
+                page.children.add(area);
+            }
+
+            int top = pageBounds.position.y();
             for (Element element : elements)
             {
                 if (element.conditionResult)
-                    top = element.reflow(page.children, rendering, new Rect(new Point(pageBounds.position.x, top), pageBounds.size), pageBounds);
+                    top = element.reflow(page.children, rendering, new Rect(new Point(pageBounds.position.x(), top), pageBounds.size), pageBounds);
             }
 
             boolean needsRepagination = false;
             for (VisualElement child : page.children)
             {
-                if (child instanceof VisualPageBreak || (child.position.y + child.size.height > (pageBounds.position.y + pageBounds.size.height)))
+                if (child instanceof VisualPageBreak || (child.position.y() + child.size.height()) > (pageBounds.position.y() + pageBounds.size.height()))
                 {
                     needsRepagination = true;
                     break;
@@ -1134,18 +1148,35 @@ public class BookDocument
             {
                 VisualPage page2 = new VisualPage(ref);
 
+                if (VisualDebugArea.INJECT_DEBUG)
+                {
+                    var area2 = new VisualDebugArea(pageSize, 0, 0, 0, Component.literal("page"));
+                    area2.position = new Point();
+
+                    page2.children.add(area2);
+                }
+
                 int offsetY = 0;
                 boolean pageBreakRequired = false;
                 for (VisualElement child : page.children)
                 {
-                    int cpy = child.position.y + offsetY;
-                    if (pageBreakRequired || (cpy + child.size.height > (pageBounds.position.y + pageBounds.size.height)
-                            && child.position.y > pageBounds.position.y))
+                    int cpy = child.position.y() + offsetY;
+                    if (pageBreakRequired || (cpy + child.size.height()) > (pageBounds.position.y() + pageBounds.size.height())
+                            && (child.position.y() > pageBounds.position.y()))
                     {
+                        page2.updateDebugIndices();
                         pages.add(page2);
                         page2 = new VisualPage(ref);
 
-                        offsetY = pageBounds.position.y - child.position.y;
+                        if (VisualDebugArea.INJECT_DEBUG)
+                        {
+                            var area3 = new VisualDebugArea(pageSize, 0, 0, 0, Component.literal("page"));
+                            area3.position = new Point();
+
+                            page2.children.add(area3);
+                        }
+
+                        offsetY = pageBounds.position.y() - child.position.y();
                         pageBreakRequired = false;
                     }
 
@@ -1155,17 +1186,17 @@ public class BookDocument
                     }
                     else
                     {
-                        child.position = new Point(
-                                child.position.x,
-                                child.position.y + offsetY);
+                        child.move(0,offsetY);
                         page2.children.add(child);
                     }
                 }
 
+                page2.updateDebugIndices();
                 pages.add(page2);
             }
             else
             {
+                page.updateDebugIndices();
                 pages.add(page);
             }
 

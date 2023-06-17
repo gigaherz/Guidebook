@@ -548,8 +548,8 @@ public class BookRendering implements IBookGraphics
         mY -= offset.y;
         for (VisualElement e : pg.children)
         {
-            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
-                    mY >= e.position.y && mY <= (e.position.y + e.size.height))
+            if (mX >= e.position.x() && mX <= (e.position.x() + e.size.width()) &&
+                    mY >= e.position.y() && mY <= (e.position.y() + e.size.height()))
             {
                 e.click(this);
                 return true;
@@ -618,8 +618,8 @@ public class BookRendering implements IBookGraphics
 
         for (VisualElement e : pg.children)
         {
-            if (mX >= e.position.x && mX <= (e.position.x + e.size.width) &&
-                    mY >= e.position.y && mY <= (e.position.y + e.size.height))
+            if (mX >= e.position.x() && mX <= (e.position.x() + e.size.width()) &&
+                    mY >= e.position.y() && mY <= (e.position.y() + e.size.height()))
             {
                 if (e.wantsHover())
                     return e;
@@ -693,7 +693,7 @@ public class BookRendering implements IBookGraphics
         Component cnt = Component.literal(String.valueOf(ch.startPair * 2 + page + 1));
         Size sz = measure(cnt);
 
-        addString(matrixStack, (pageWidth - sz.width) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
+        addString(matrixStack, (pageWidth - sz.width()) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
 
         matrixStack.popPose();
     }
@@ -709,15 +709,8 @@ public class BookRendering implements IBookGraphics
 
         ItemRenderer renderer = gui.getMinecraft().getItemRenderer();
 
-        PoseStack viewModelPose = RenderSystem.getModelViewStack();
-        viewModelPose.pushPose();
-        viewModelPose.mulPoseMatrix(matrixStack.last().pose());
-        viewModelPose.translate(-8, -8, z);
-        RenderSystem.applyModelViewMatrix();
-        renderer.renderAndDecorateItem(matrixStack, stack, 8, 8);
-        renderer.renderGuiItemDecorations(matrixStack, mc.font, stack, 8, 8, "");
-        viewModelPose.popPose();
-        RenderSystem.applyModelViewMatrix();
+        renderer.renderAndDecorateItem(matrixStack, stack, 0, 0);
+        renderer.renderGuiItemDecorations(matrixStack, mc.font, stack, 0, 0, "");
 
         RenderSystem.disableDepthTest();
 
@@ -782,6 +775,12 @@ public class BookRendering implements IBookGraphics
     public void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y)
     {
         gui.drawTooltip(matrixStack, stack, x, y);
+    }
+
+    @Override
+    public void drawTooltip(PoseStack matrixStack, Component text, int x, int y)
+    {
+        gui.drawTooltip(matrixStack, text, x, y);
     }
 
     @Override

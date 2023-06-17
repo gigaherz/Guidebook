@@ -115,7 +115,7 @@ public class ElementPanel extends Element
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
         Rect adjustedBounds = new Rect(adjustedPosition, bounds.size);
 
-        int top = adjustedPosition.y;
+        int top = adjustedPosition.y();
         if (mode == PanelMode.DEFAULT)
         {
             for (Element element : innerElements)
@@ -125,7 +125,7 @@ public class ElementPanel extends Element
                     element.reflow(visuals, nav, adjustedBounds, pageBounds);
                 }
             }
-            top += adjustedBounds.size.height;
+            top += adjustedBounds.size.height();
         }
         else
         {
@@ -133,8 +133,8 @@ public class ElementPanel extends Element
             {
                 if (element.conditionResult)
                 {
-                    Point tempPos = new Point(adjustedPosition.x, top);
-                    Size tempSize = new Size(adjustedBounds.size.width, adjustedBounds.size.height - (top - adjustedPosition.y));
+                    Point tempPos = new Point(adjustedPosition.x(), top);
+                    Size tempSize = new Size(adjustedBounds.size.width(), adjustedBounds.size.height() - (top - adjustedPosition.y()));
                     Rect tempBounds = new Rect(tempPos, tempSize);
 
                     top = element.reflow(visuals, nav, tempBounds, pageBounds);
@@ -144,20 +144,29 @@ public class ElementPanel extends Element
 
         if (position != POS_RELATIVE)
         {
-            top = bounds.position.y;
+            top = bounds.position.y();
         }
         else if (space != null)
         {
-            top = adjustedPosition.y + (asPercent ? (space * bounds.size.height / 100) : space);
+            top = adjustedPosition.y() + (asPercent ? (space * bounds.size.height() / 100) : space);
         }
 
         if (visuals.size() > 0)
         {
-            Size size = new Size(bounds.size.width, top - adjustedPosition.y);
+            int x1 = Integer.MAX_VALUE;
+            int y1 = Integer.MAX_VALUE;
+            int x2 = Integer.MIN_VALUE;
+            int y2 = Integer.MIN_VALUE;
+            for(var e : visuals)
+            {
+                x1 = Math.min(x1, e.position.x());
+                y1 = Math.min(y1, e.position.y());
+                x2 = Math.max(x2, e.position.x()+e.size.width());
+                y2 = Math.max(y2, e.position.y()+e.size.height());
+            }
 
-            VisualPanel p = new VisualPanel(size, position, baseline, verticalAlignment);
-
-            p.position = adjustedPosition;
+            VisualPanel p = new VisualPanel(new Size(x2-x1,y2-y1), position, baseline, verticalAlignment);
+            p.position = new Point(x1,y1);
 
             p.children.addAll(visuals);
 

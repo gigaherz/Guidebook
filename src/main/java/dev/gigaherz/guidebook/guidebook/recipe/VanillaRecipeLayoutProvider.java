@@ -15,6 +15,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.crafting.IShapedRecipe;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -101,7 +102,8 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         }
 
         ArrayList<ElementStack> stackComponents = new ArrayList<>();
-        VisualElement additionalRenderer = VisualElement.EMPTY;
+        @Nullable
+        VisualElement additionalRenderer = null;
 
         // Set up input slots
         NonNullList<Ingredient> ingredients = recipe.getIngredients();

@@ -25,6 +25,6 @@ public class Rect
 
     public Rect copy()
     {
-        return new Rect(position.x, position.y, size.width, size.height);
+        return new Rect(position.x(), position.y(), size.width(), size.height());
     }
 }

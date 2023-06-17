@@ -32,9 +32,8 @@
         <title>Index</title>
       </page_title>
       <link ref="API">1. Adding new Books</link>
-      <link indent="8" ref="API:registry">1.1. Book Registry (for mods)</link>
-      <link indent="8" ref="API:respack">1.2. Resource Packs (for adv. maps)</link>
-      <link indent="8" ref="API:configuration">1.3. Config. Folder (for modpacks)</link>
+      <link indent="8" ref="API:respack">1.1. Via Resource Packs</link>
+      <link indent="8" ref="API:configuration">1.2. Via Config Folder</link>
       <link ref="XML">2. Structure of the book</link>
       <link indent="8" ref="XML:pages">2.1. Chapters and Pages</link>
       <link indent="8" ref="XML:text">2.2. Paragraphs and titles</link>
@@ -49,41 +48,21 @@
       <page_title>
         <title>Adding new books</title>
       </page_title>
-      <p>Guidebook has 3 ways to declare new books, designed for different purposes.</p>
-      <p space="8">For modders: <link ref=":registry">the book registry API.</link></p>
-      <p space="8">For adventure map authors: <link ref=":respack">resource packs.</link></p>
+      <p>Guidebook has two ways to declare new books, designed for different purposes.</p>
+      <p space="8">For modders and adventure map authors: <link ref=":respack">resource packs.</link></p>
       <p space="8">For modpack authors: <link ref=":configuration">the configuration folder.</link></p>
       <p space="8">Afterward, you can give the books to the player by using the creative menu, or using a command (command-block) with</p>
-      <p space="8">/give @p gbook:guidebook 1 0 {Book:"gbook:xml/book.xml"}</p>
+      <p space="8">/give @p gbook:guidebook{Book:"gbook:xml/guidebook.xml"}</p>
       <p>Finally, you can make the mod give new players one or more books the first time they join (applies retroactively to existing players if enabled).</p>
       <p>This is available in the configuration file.</p>
-    </section>
-    <section id="registry">
-      <page_title>
-        <title>Book Registry</title>
-      </page_title>
-      <p space="8">The preferred way to access the registry is through the BookRegistryEvent. An example of use is provided below:</p>
-      <p>@Optional.Method(modid="gbook")</p>
-      <p>@SubscribeEvent</p>
-      <p>public static void registerBook</p>
-      <p indent="24">(BookRegistryEvent event)</p>
-      <p>{</p>
-      <p indent="8">event.register(</p>
-      <p indent="16">new ResourceLocation(</p>
-      <p indent="24">"modid:xml/book.xml"));</p>
-      <p space="8">}</p>
-      <p>The Optional annotation is needed to prevent a hard-dependency on the mod. The event parameter has a register method, that can be used to perform the registration.</p>
-      <p>In order for this event to run, you need to annotate the class with @Mod.EventBusSubscriber.</p>
     </section>
     <section id="respack">
       <page_title>
         <title>Resource Packs</title>
       </page_title>
-      <p space="8">The final way to provide books is to use a resource pack. This is useful for adventure map developers, and users who just want some extra books without unnecessary hassle.</p>
-      <p space="8">Books will be placed as resources inside a resourcepack resource domain. That is, in a folder like `assets/gbook/` or similar. Note that it must be lowercase.</p>
+      <p space="8">The primary way to provide books is to use a resource pack. This is useful for modders and adventure map developers, and users who just want some extra books without unnecessary hassle.</p>
+      <p space="8">Books will be placed as resources inside a resourcepack resource domain. That is, in a folder like assets/gbook/ or similar. Note that it must be lowercase.</p>
       <p>If you don't know what resource domain to use, the preferred fallback should always be 'gbook' and not 'minecraft'. This is to avoid any potential future conflicts if Mojang ever decides to add resource-based custom books to the game.</p>
-    </section>
-    <section>
       <p>An example of structure is as follows:</p>
       <p indent="8">assets/</p>
       <p indent="16">gbook/</p>
@@ -204,13 +183,13 @@
         <p>Recipes</p>
       </page_title>
       <p space="8">Recipe tags let you display the recipe(s) for a specified item or block inside the guidebook.</p>
-      <p space="8" color="505050">They have three attributes: type, which specifies the type of recipe to use; indent, (same as paragraph); index, (See Recipe Indices). </p>
+      <p space="8" color="#505050">They have three attributes: type, which specifies the type of recipe to use; indent, (same as paragraph); index, (See Recipe Indices). </p>
       <p space="12">Finally, to specify the desired output item, simply include a Stack tag inside of a &lt;recipe.result&gt; sub-tag as follows:</p>
-      <p indent="0" color="505050">&lt;recipe type="crafting"&gt;</p>
-      <p indent="6" color="505050">&lt;recipe.result&gt;</p>
-      <p indent="12" color="505050">&lt;stack item="minecraft:comparator"/&gt;</p>
-      <p indent="6" color="505050">&lt;/recipe.result&gt;</p>
-      <p indent="0" color="505050">&lt;/recipe&gt;</p>
+      <p indent="0" color="#505050">&lt;recipe type="crafting"&gt;</p>
+      <p indent="6" color="#505050">&lt;recipe.result&gt;</p>
+      <p indent="12" color="#505050">&lt;stack item="minecraft:comparator"/&gt;</p>
+      <p indent="6" color="#505050">&lt;/recipe.result&gt;</p>
+      <p indent="0" color="#505050">&lt;/recipe&gt;</p>
       <section-break/>
       <p space="6">Which produces the following RecipePanel:</p>
       <recipe type="crafting">
@@ -220,8 +199,8 @@
       </recipe>
       <space height="3"/>
       <divider/>
-      <p indent="8" color="505050">type="shapeless"</p>
-      <p indent="8" color="505050">item="minecraft:ender_eye"</p>
+      <p indent="8" color="#505050">type="shapeless"</p>
+      <p indent="8" color="#505050">item="minecraft:ender_eye"</p>
       <space height="4"/>
       <recipe type="crafting">
         <recipe.result>
@@ -230,8 +209,8 @@
       </recipe>
       <space height="3"/>
       <divider/>
-      <p indent="8" color="505050">type="furnace"</p>
-      <p indent="8" color="505050">item="minecraft:iron_nugget"</p>
+      <p indent="8" color="#505050">type="furnace"</p>
+      <p indent="8" color="#505050">item="minecraft:iron_nugget"</p>
       <space height="4"/>
       <recipe type="smelting">
         <recipe.result>
@@ -244,30 +223,30 @@
         <p>Recipe Keys</p>
       </page_title>
       <p space="12">Another way to declare a recipe is to use its registry name. Simply use the key attribute and specify the domain ("minecraft" by default) as well as the path for the json file that the recipe was contained in. For example, the following XML:</p>
-      <p space="12" indent="8" color="505050">&lt;recipe type="crafting" key="minecraft:fire_charge"/&gt;</p>
+      <p space="12" indent="8" color="#505050">&lt;recipe type="crafting" key="minecraft:fire_charge"/&gt;</p>
       <recipe type="crafting" key="minecraft:fire_charge"/>
     </section>
     <section>
-      <p indent="8" color="505050">type="crafting"</p>
-      <p space="12" indent="8" color="1E50A0">key="minecraft:red_terracotta"</p>
+      <p indent="8" color="#505050">type="crafting"</p>
+      <p space="12" indent="8" color="#1E50A0">key="minecraft:red_terracotta"</p>
       <recipe type="crafting" key="minecraft:red_terracotta"/>
       <space height="12"/>
       <divider/>
       <space height="6"/>
-      <p color="8C3321">Warning: This feature will NOT work with recipe systems that have recipes without a registry key. This may be the case with custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
+      <p color="#8C3321">Warning: This feature will NOT work with recipe systems that have recipes without a registry key. This may be the case with custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
     </section>
     <section id="recipe_indices">
       <page_title>
         <p>Recipe Indices</p>
       </page_title>
       <p space="10">Recipe indices let you specify to the recipe search to use a particular occurrence of the target result.</p>
-      <p space="10" color="505050">This becomes useful when an item has more than one recipe which produces it.</p>
+      <p space="10" color="#505050">This becomes useful when an item has more than one recipe which produces it.</p>
       <p>For example, searching for a shaped recipe which produces a gold ingot will result in two possible recipes: One that converts from nuggets to ingots; and another that converts from blocks to ingots. Using the recipe index allows book authors to specify only one of these:</p>
     </section>
     <section>
-      <p indent="8" color="505050">type="crafting"</p>
-      <p indent="8" color="1E50A0">index="0"</p>
-      <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
+      <p indent="8" color="#505050">type="crafting"</p>
+      <p indent="8" color="#1E50A0">index="0"</p>
+      <p indent="8" color="#505050">item="minecraft:gold_ingot"</p>
       <space height="8"/>
       <recipe type="crafting" index="0">
         <recipe.result>
@@ -277,9 +256,9 @@
       <space height="7"/>
       <divider/>
       <space height="5"/>
-      <p indent="8" color="505050">type="crafting"</p>
-      <p indent="8" color="1E50A0">index="1"</p>
-      <p indent="8" color="505050">item="minecraft:gold_ingot"</p>
+      <p indent="8" color="#505050">type="crafting"</p>
+      <p indent="8" color="#1E50A0">index="1"</p>
+      <p indent="8" color="#505050">item="minecraft:gold_ingot"</p>
       <space height="8"/>
       <recipe type="crafting" index="1">
         <recipe.result>

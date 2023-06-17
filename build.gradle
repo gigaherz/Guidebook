@@ -40,7 +40,7 @@ repositories {
     mavenLocal()
 }
 
-version = "3.7.3"
+version = "3.8.0"
 group = "dev.gigaherz.guidebook"
 archivesBaseName = "Guidebook-UNKNOWN"
 
@@ -92,12 +92,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.4-45.0.9'
+    minecraft 'net.minecraftforge:forge:1.19.4-45.1.0'
 
-    compileOnly fg.deobf("mezz.jei:jei-1.19.3-common-api:12.3.0.18")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.19.3-common:12.3.0.18")
-    compileOnly fg.deobf("mezz.jei:jei-1.19.3-forge-api:12.3.0.18")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.19.3-forge:12.3.0.18")
+    compileOnly fg.deobf("mezz.jei:jei-1.19.4-common-api:13.1.0.6")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.19.4-common:13.1.0.6")
+    compileOnly fg.deobf("mezz.jei:jei-1.19.4-forge-api:13.1.0.6")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.19.4-forge:13.1.0.6")
 
     /*
     compileOnly fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")

@@ -54,8 +54,8 @@ public class ElementImage extends ElementInline
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
         if (position != POS_RELATIVE)
-            return bounds.position.y;
-        return bounds.position.y + element.size.height;
+            return bounds.position.y();
+        return bounds.position.y() + element.size.height();
     }
 
     @Override

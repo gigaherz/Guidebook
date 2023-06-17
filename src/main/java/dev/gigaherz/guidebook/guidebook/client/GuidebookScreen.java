@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
@@ -38,13 +37,13 @@ public class GuidebookScreen extends Screen
     private ItemModelShaper mesher = Minecraft.getInstance().getItemRenderer().getItemModelShaper();
     private TextureManager renderEngine = Minecraft.getInstance().textureManager;
 
-    private BookRendering book;
+    private BookRendering rendering;
     private IAnimatedBookBackground background;
 
-    public GuidebookScreen(ResourceLocation book)
+    public GuidebookScreen(ResourceLocation rendering)
     {
         super(Component.translatable("text.gbook.book.title"));
-        bookLocation = book;
+        bookLocation = rendering;
     }
 
     @Override
@@ -60,27 +59,27 @@ public class GuidebookScreen extends Screen
         ConditionContext conditionContext = new ConditionContext();
         conditionContext.setPlayer(player);
 
-        if (book == null)
+        if (rendering == null)
         {
             BookDocument theBook = BookRegistry.get(bookLocation);
-            book = (BookRendering) theBook.getRendering();
+            rendering = (BookRendering) theBook.getRendering();
 
             boolean conditions = theBook.reevaluateConditions(conditionContext);
-            if (book == null)
+            if (rendering == null)
             {
-                book = new BookRendering(theBook, this);
-                theBook.setRendering(book);
+                rendering = new BookRendering(theBook, this);
+                theBook.setRendering(rendering);
             }
             else
             {
-                book.setGui(this);
-                if (conditions || book.refreshScalingFactor())
+                rendering.setGui(this);
+                if (conditions || rendering.refreshScalingFactor())
                 {
-                    book.resetRendering(conditions);
+                    rendering.resetRendering(conditions);
                 }
             }
 
-            background = book.createBackground(this);
+            background = rendering.createBackground(this);
         }
 
         // Positions set below in repositionButtons();
@@ -111,21 +110,21 @@ public class GuidebookScreen extends Screen
     {
         this.width = minecraft.getWindow().getGuiScaledWidth();
         this.height = minecraft.getWindow().getGuiScaledHeight();
-        if (book.refreshScalingFactor())
+        if (rendering.refreshScalingFactor())
         {
-            book.resetRendering(false);
+            rendering.resetRendering(false);
         }
     }
 
     private void updateButtonStates()
     {
         buttonClose.visible = background.isFullyOpen();
-        buttonHome.visible = background.isFullyOpen() && book.getBook().home != null;
-        buttonBack.visible = background.isFullyOpen() && book.canGoBack();
-        buttonNextPage.visible = background.isFullyOpen() && book.canGoNextPage();
-        buttonPreviousPage.visible = background.isFullyOpen() && book.canGoPrevPage();
-        buttonNextChapter.visible = background.isFullyOpen() && book.canGoNextChapter();
-        buttonPreviousChapter.visible = background.isFullyOpen() && book.canGoPrevChapter();
+        buttonHome.visible = background.isFullyOpen() && rendering.getBook().home != null;
+        buttonBack.visible = background.isFullyOpen() && rendering.canGoBack();
+        buttonNextPage.visible = background.isFullyOpen() && rendering.canGoNextPage();
+        buttonPreviousPage.visible = background.isFullyOpen() && rendering.canGoPrevPage();
+        buttonNextChapter.visible = background.isFullyOpen() && rendering.canGoNextChapter();
+        buttonPreviousChapter.visible = background.isFullyOpen() && rendering.canGoPrevChapter();
     }
 
     @Override
@@ -149,7 +148,7 @@ public class GuidebookScreen extends Screen
         }
         else if (keyCode == GLFW.GLFW_KEY_BACKSPACE)
         {
-            book.navigateBack();
+            rendering.navigateBack();
             return true;
         }
 
@@ -168,12 +167,12 @@ public class GuidebookScreen extends Screen
         while (deltaAcc >= 1.0)
         {
             deltaAcc -= 1.0;
-            if (book.canGoPrevPage()) book.prevPage();
+            if (rendering.canGoPrevPage()) rendering.prevPage();
         }
         while (deltaAcc <= -1.0)
         {
             deltaAcc += 1.0;
-            if (book.canGoNextPage()) book.nextPage();
+            if (rendering.canGoNextPage()) rendering.nextPage();
         }
         return true;
     }
@@ -182,7 +181,7 @@ public class GuidebookScreen extends Screen
     {
         setupConditionsAndPosition();
 
-        double bookScale = book.getScalingFactor() / book.getBook().getFontSize();
+        double bookScale = rendering.getScalingFactor() / rendering.getBook().getFontSize();
         double bookWidth = (BookRendering.DEFAULT_BOOK_WIDTH) * bookScale;
         double bookHeight = (BookRendering.DEFAULT_BOOK_HEIGHT) * bookScale;
 
@@ -218,7 +217,7 @@ public class GuidebookScreen extends Screen
     @Override
     public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
     {
-        double backgroundScale = book.getScalingFactor() / book.getBook().getFontSize();
+        double backgroundScale = rendering.getScalingFactor() / rendering.getBook().getFontSize();
         double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
 
         renderBackground(matrixStack);
@@ -227,14 +226,14 @@ public class GuidebookScreen extends Screen
 
         if (background.isFullyOpen())
         {
-            book.drawCurrentPages(matrixStack);
+            rendering.drawCurrentPages(matrixStack);
         }
 
         super.render(matrixStack, mouseX, mouseY, partialTicks);
 
         if (background.isFullyOpen())
         {
-            book.mouseHover(matrixStack, mouseX, mouseY);
+            rendering.mouseHover(matrixStack, mouseX, mouseY);
         }
     }
 
@@ -243,15 +242,20 @@ public class GuidebookScreen extends Screen
         renderTooltip(matrixStack, stack, x, y);
     }
 
+    public void drawTooltip(PoseStack matrixStack, Component text, int x, int y)
+    {
+        renderTooltip(matrixStack, text, x, y);
+    }
+
     @Override
     public boolean mouseClicked(double x, double y, int mouseButton)
     {
-        if (book.mouseClicked((int) x, (int) y, mouseButton))
+        if (rendering.mouseClicked((int) x, (int) y, mouseButton))
             return true;
 
         if (mouseButton == 3)
         {
-            book.navigateBack();
+            rendering.navigateBack();
             return true;
         }
 
@@ -280,25 +284,25 @@ public class GuidebookScreen extends Screen
 
     private void onPrevPageClicked(Button btn)
     {
-        book.prevPage();
+        rendering.prevPage();
         updateButtonStates();
     }
 
     private void onNextPageClicked(Button btn)
     {
-        book.nextPage();
+        rendering.nextPage();
         updateButtonStates();
     }
 
     private void onPrevChapterClicked(Button btn)
     {
-        book.prevChapter();
+        rendering.prevChapter();
         updateButtonStates();
     }
 
     private void onNextChapterClicked(Button btn)
     {
-        book.nextChapter();
+        rendering.nextChapter();
         updateButtonStates();
     }
 
@@ -310,13 +314,13 @@ public class GuidebookScreen extends Screen
 
     private void onBackClicked(Button btn)
     {
-        book.navigateBack();
+        rendering.navigateBack();
         updateButtonStates();
     }
 
     private void onHomeClicked(Button btn)
     {
-        book.navigateHome();
+        rendering.navigateHome();
         updateButtonStates();
     }
 

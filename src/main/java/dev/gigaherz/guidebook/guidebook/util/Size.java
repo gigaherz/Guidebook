@@ -1,18 +1,9 @@
 package dev.gigaherz.guidebook.guidebook.util;
 
-public class Size
+public record Size(int width, int height)
 {
-    public final int width;
-    public final int height;
-
     public Size()
     {
-        this.width = this.height = 0;
-    }
-
-    public Size(int width, int height)
-    {
-        this.width = width;
-        this.height = height;
+        this(0,0);
     }
 }

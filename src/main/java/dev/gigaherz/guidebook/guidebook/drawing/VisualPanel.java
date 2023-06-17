@@ -18,6 +18,13 @@ public class VisualPanel extends VisualElement
     }
 
     @Override
+    public void move(int offsetX, int offsetY)
+    {
+        super.move(offsetX, offsetY);
+        children.forEach(e -> e.move(offsetX, offsetY));
+    }
+
+    @Override
     public void draw(IBookGraphics nav, PoseStack matrixStack)
     {
         super.draw(nav, matrixStack);
@@ -35,10 +42,10 @@ public class VisualPanel extends VisualElement
         for (VisualElement child : children)
         {
             if (child.wantsHover()
-                    && x >= child.position.x
-                    && y >= child.position.y
-                    && (x - child.position.x) < child.size.width
-                    && (y - child.position.y) < child.size.height)
+                    && x >= child.position.x()
+                    && y >= child.position.y()
+                    && (x - child.position.x()) < child.size.width()
+                    && (y - child.position.y()) < child.size.height())
             {
                 newOver = child;
                 break;
@@ -79,5 +86,16 @@ public class VisualPanel extends VisualElement
     public boolean wantsHover()
     {
         return children.stream().anyMatch(e -> e.wantsHover());
+    }
+
+    @Override
+    public void updateDebugIndices(int index, int indent)
+    {
+        super.updateDebugIndices(index, indent);
+
+        for(int i=0;i<children.size();i++)
+        {
+            children.get(i).updateDebugIndices(i,indent + 20);
+        }
     }
 }

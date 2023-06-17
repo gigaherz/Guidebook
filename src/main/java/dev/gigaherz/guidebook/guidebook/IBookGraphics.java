@@ -8,6 +8,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 
@@ -56,6 +57,8 @@ public interface IBookGraphics
     void drawImage(PoseStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
 
     void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y);
+
+    void drawTooltip(PoseStack matrixStack, Component text, int x, int y);
 
     Object owner();
 

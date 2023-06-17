@@ -1,28 +1,60 @@
 package dev.gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.client.BookRendering;
+import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public abstract class VisualElement extends Rect
 {
-    public static final VisualElement EMPTY = new VisualElement(new Size(), 0, 0, 0)
-    {
-    };
-    ;
-
     // Only position modes 1 and 2 are valid here, mode 0 will have been handled by reflow
-    public int positionMode = 1;
+    public int positionMode;
+    public int verticalAlign;
+    public float baseline;
 
-    public int verticalAlign = 1;
+    private final int debugColor = 0x3f000000 | ThreadLocalRandom.current().nextInt(0xFFFFFF);
+    public int debugIndex = 0;
+    public int debugIndexIndent = 0;
 
-    public float baseline = 0;
+    private void renderDebug(PoseStack poseStack)
+    {
+        GuiComponent.fill(poseStack, this.position.x() + debugIndexIndent, this.position.y(), this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(), debugColor);
+        GuiComponent.drawString(poseStack, Minecraft.getInstance().font, Integer.toString(debugIndex),
+                this.position.x() + debugIndexIndent, this.position.y(), 0xff000000 | debugColor);
+        GuiComponent.drawString(poseStack, Minecraft.getInstance().font, Integer.toString(debugIndex),
+                this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(), 0xff000000 | debugColor);
+        /*line(poseStack,
+                this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(),
+                this.position.x() + this.size.width(), this.position.y() + this.size.height(),
+                debugColor);*/
+    }
+
+    private static void line(PoseStack pose, int x0, int y0, int x1, int y1, int color)
+    {
+        var matrix = pose.last().pose();
+        var normal = pose.last().normal();
+        BufferBuilder builder = Tesselator.getInstance().getBuilder();
+        RenderSystem.enableBlend();
+        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+        RenderSystem.lineWidth((float) Minecraft.getInstance().getWindow().getGuiScale());
+        builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        builder.vertex(matrix, x0, y0, 0).color(color).normal(normal, 0,0,-1).endVertex();
+        builder.vertex(matrix, x1, y1, 0).color(color).normal(normal, 0,0,-1).endVertex();
+        BufferUploader.drawWithShader(builder.end());
+        RenderSystem.disableBlend();
+        RenderSystem.lineWidth(1);
+    }
 
     public VisualElement(Size size, int positionMode, float baseline, int verticalAlign)
     {
@@ -36,7 +68,7 @@ public abstract class VisualElement extends Rect
     {
         if (BookRendering.DEBUG_DRAW_BOUNDS)
         {
-            GuiComponent.fill(matrixStack, this.position.x, this.position.y, this.position.x + this.size.width, this.position.y + this.size.height, 0x3f000000);
+            renderDebug(matrixStack);
         }
     }
 
@@ -60,5 +92,18 @@ public abstract class VisualElement extends Rect
     public FormattedText getText()
     {
         return Component.literal("");
+    }
+
+    public void move(int offsetX, int offsetY)
+    {
+        position = new Point(
+                position.x() + offsetX,
+                position.y() + offsetY);
+    }
+
+    public void updateDebugIndices(int index, int indent)
+    {
+        this.debugIndex = index;
+        this.debugIndexIndent = indent;
     }
 }

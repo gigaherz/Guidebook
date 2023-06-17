@@ -12,7 +12,6 @@ import net.minecraft.network.chat.FormattedText;
 public class VisualText extends VisualElement implements LinkHelper.ILinkable
 {
     public Component text;
-    public int color;
     public float scale;
 
     public LinkContext linkContext = null;
@@ -29,9 +28,9 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     {
         super.draw(nav, matrixStack);
         if (linkContext != null)
-            nav.addString(matrixStack, position.x, position.y, text, linkContext.isHovering ? linkContext.colorHover : color, scale);
+            nav.addString(matrixStack, position.x(), position.y(), text, linkContext.isHovering ? linkContext.colorHover : -1, scale);
         else
-            nav.addString(matrixStack, position.x, position.y, text, color, scale);
+            nav.addString(matrixStack, position.x(), position.y(), text, -1, scale);
     }
 
     @Override

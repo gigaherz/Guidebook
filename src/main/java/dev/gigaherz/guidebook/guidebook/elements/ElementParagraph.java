@@ -4,14 +4,18 @@ import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
+import dev.gigaherz.guidebook.guidebook.drawing.VisualDebugArea;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.network.chat.Component;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,18 +51,20 @@ public class ElementParagraph extends Element
     public int reflow(List<VisualElement> paragraph, IBookGraphics nav, Rect bounds, Rect page)
     {
         Point adjustedPosition = applyPosition(bounds.position, bounds.position);
-        int currentLineTop = adjustedPosition.y;
+        int currentLineTop = adjustedPosition.y();
         int currentLineLeft = indentFirstLine;
-        int currentLineHeight = 0;
         int currentIndent = indentFirstLine;
 
-        int firstInLine = paragraph.size();
+        var list = new ArrayList<VisualElement>();
+
+        int maxWidth = 0;
+
 
         for (Element element : inlines)
         {
-            int firstLineWidth = bounds.size.width - currentLineLeft - indent - indentFirstLine;
+            int firstLineWidth = bounds.size.width() - currentLineLeft - indent - indentFirstLine;
             List<VisualElement> pieces = element.measure(nav,
-                    bounds.size.width - indent,
+                    bounds.size.width() - indent,
                     firstLineWidth);
 
             if (pieces.size() < 1)
@@ -70,54 +76,79 @@ public class ElementParagraph extends Element
 
                 boolean isLineBreak = "\n".equals(current.getText().getString());
 
-                if (isLineBreak || (currentLineLeft + size.width > bounds.size.width && currentLineLeft > 0))
+                if (isLineBreak || (currentLineLeft + size.width() > bounds.size.width() && currentLineLeft > 0))
                 {
-                    processAlignment(paragraph, bounds.size.width - currentIndent, currentLineLeft, firstInLine);
+                    var pos = processAlignment(list, bounds.size.width() - currentIndent, currentLineLeft, currentLineTop, 0);
 
-                    currentLineTop += currentLineHeight;
+                    var line = new VisualPanel(new Size(currentLineLeft, pos.y()), 0, 0, 0/*, Component.literal("Paragraph line")*/);
+                    line.position = new Point(pos.x() + indent, currentLineTop);
+                    line.children.addAll(list);
+                    list.clear();
+
+                    paragraph.add(line);
+
+                    maxWidth = Math.max(maxWidth, currentLineLeft + pos.x() + indent);
+
+                    currentLineTop += pos.y();
                     currentLineLeft = 0;
-                    currentLineHeight = 0;
                     currentIndent = indent;
-
-                    firstInLine = paragraph.size();
                 }
 
                 if (isLineBreak)
                     continue;
 
-                if (size.height > currentLineHeight)
-                    currentLineHeight = size.height;
+                current.position = element.applyPosition(new Point(adjustedPosition.x() + currentLineLeft + indent, currentLineTop), bounds.position);
 
-                current.position = element.applyPosition(new Point(adjustedPosition.x + currentLineLeft + indent, currentLineTop), bounds.position);
+                if (size.width() > 0)
+                    currentLineLeft += size.width();
 
-                if (size.width > 0)
-                    currentLineLeft += size.width;
-
-                if (currentLineLeft > bounds.size.width)
+                if (currentLineLeft > bounds.size.width())
                 {
-                    currentLineTop += currentLineHeight;
-                    currentLineLeft = 0;
-                    currentLineHeight = 0;
+                    var pos = processAlignment(list, bounds.size.width() - currentIndent, currentLineLeft, currentLineTop, 0);
 
-                    firstInLine = paragraph.size();
+                    var line = new VisualPanel(new Size(currentLineLeft, pos.y()), 0, 0, 0/*, Component.literal("Paragraph line")*/);
+                    line.position = new Point(pos.x() + indent, currentLineTop);
+                    line.children.addAll(list);
+                    list.clear();
+
+                    paragraph.add(line);
+
+                    maxWidth = Math.max(maxWidth, currentLineLeft + pos.x() + indent);
+
+                    currentLineTop += pos.y();
+                    currentLineLeft = 0;
                 }
 
-                paragraph.add(current);
+                list.add(current);
             }
         }
 
-        processAlignment(paragraph, bounds.size.width - currentIndent, currentLineLeft, firstInLine);
+        var pos = processAlignment(list, bounds.size.width() - currentIndent, currentLineLeft, currentLineTop, 0);
+
+        var line = new VisualPanel(new Size(currentLineLeft, pos.y()), 0, 0, 0/*, Component.literal("Paragraph line")*/);
+        line.position = new Point(pos.x() + indent, currentLineTop);
+        line.children.addAll(list);
+        list.clear();
+
+        paragraph.add(line);
+
+        maxWidth = Math.max(maxWidth, currentLineLeft + pos.x() + indent);
+
+        if (VisualDebugArea.INJECT_DEBUG)
+        {
+            var area2 = new VisualDebugArea(new Size(maxWidth, currentLineTop + pos.y() - adjustedPosition.y()), 0, 0, 0, Component.literal("Paragraph"));
+            area2.position = new Point(adjustedPosition.x(), adjustedPosition.y());
+
+            paragraph.add(area2);
+        }
 
         if (position != POS_RELATIVE)
-            return bounds.position.y;
-        return currentLineTop + currentLineHeight + space;
+            return bounds.position.y();
+        return currentLineTop + pos.y() + space;
     }
 
-    private void processAlignment(List<VisualElement> paragraph, int width, int currentLineLeft, int firstInLine)
+    private Point processAlignment(List<VisualElement> paragraph, int width, int currentLineLeft, int currentLineTop, int firstInLine)
     {
-        if (paragraph.size() <= firstInLine)
-            return;
-
         int leftOffset = switch (alignment)
                 {
                     case ALIGN_CENTER -> (width - currentLineLeft) / 2;
@@ -127,17 +158,17 @@ public class ElementParagraph extends Element
 
         int yMin = Integer.MAX_VALUE;
         int yMax = Integer.MIN_VALUE;
-        int yBaseline = Integer.MIN_VALUE; // the biggest height difference from top to baseline.
+        int yBaseline = Integer.MAX_VALUE; // the biggest height difference from top to baseline.
         for (int i = firstInLine; i < paragraph.size(); i++)
         {
             VisualElement e = paragraph.get(i);
             if (e.positionMode == 0)
             {
-                e.position = new Point(e.position.x + leftOffset, e.position.y);
+                e.position = new Point(e.position.x() + leftOffset, e.position.y());
 
-                yMin = Math.min(yMin, e.position.y);
-                yMax = Math.max(yMax, e.position.y + e.size.height);
-                yBaseline = Math.min(yBaseline, e.position.y + (int) (e.size.height * e.baseline));
+                yMin = Math.min(yMin, e.position.y());
+                yMax = Math.max(yMax, e.position.y() + e.size.height());
+                yBaseline = Math.min(yBaseline, e.position.y() + (int) (e.size.height() * e.baseline));
             }
         }
 
@@ -150,33 +181,38 @@ public class ElementParagraph extends Element
             {
                 if (e.verticalAlign == VA_MIDDLE)
                 {
-                    e.position = new Point(e.position.x, yMin + (yHeight - e.size.height) / 2);
+                    e.position = new Point(e.position.x(), yMin + (yHeight - e.size.height()) / 2);
                 }
                 else if (e.verticalAlign == VA_BASELINE)
                 {
-                    e.position = new Point(e.position.x, yBaseline - (int) (e.size.height * e.baseline));
+                    e.position = new Point(e.position.x(), yBaseline - (int) (e.size.height() * e.baseline));
                 }
                 else if (e.verticalAlign == VA_BOTTOM)
                 {
-                    e.position = new Point(e.position.x, yMax - e.size.height);
+                    e.position = new Point(e.position.x(), yMax - e.size.height());
                 }
 
-                yMin2 = Math.min(yMin2, e.position.y);
+                yMin2 = Math.min(yMin2, e.position.y());
             }
         }
 
-        if (yMin2 != yMin && yMin2 != Integer.MAX_VALUE)
+        int yMax2 = yMax;
+        if (yMin2 != currentLineTop && yMin2 != Integer.MAX_VALUE)
         {
-            int yOffset = yMin - yMin2;
+            yMax2=Integer.MIN_VALUE;
+            int yOffset = currentLineTop - yMin2;
             for (int i = firstInLine; i < paragraph.size(); i++)
             {
                 VisualElement e = paragraph.get(i);
                 if (e.positionMode == 0)
                 {
-                    e.position = new Point(e.position.x, e.position.y + yOffset);
+                    e.position = new Point(e.position.x(), e.position.y() + yOffset);
+                    yMax2 = Math.max(yMax2, e.position.y() + e.size.height());
                 }
             }
         }
+
+        return new Point(leftOffset, yMax2 - currentLineTop);
     }
 
     @Override

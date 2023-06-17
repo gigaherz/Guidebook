@@ -59,8 +59,8 @@ public class ElementStack extends ElementInline
 
             switch (labelPosition)
             {
-                case LEFT, RIGHT -> size = new Size(iconSize.width + labelSize.width, Math.max(iconSize.height, labelSize.height));
-                case ABOVE, BELOW -> size = new Size(Math.max(iconSize.width, labelSize.width), iconSize.height + labelSize.height);
+                case LEFT, RIGHT -> size = new Size(iconSize.width() + labelSize.width(), Math.max(iconSize.height(), labelSize.height()));
+                case ABOVE, BELOW -> size = new Size(Math.max(iconSize.width(), labelSize.width()), iconSize.height() + labelSize.height());
             }
         }
 
@@ -80,8 +80,8 @@ public class ElementStack extends ElementInline
         element.position = applyPosition(bounds.position, bounds.position);
         paragraph.add(element);
         if (position != POS_RELATIVE)
-            return bounds.position.y;
-        return bounds.position.y + element.size.height;
+            return bounds.position.y();
+        return bounds.position.y() + element.size.height();
     }
 
     @Override

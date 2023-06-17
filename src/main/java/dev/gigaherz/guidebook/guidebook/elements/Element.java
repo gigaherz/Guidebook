@@ -121,14 +121,14 @@ public abstract class Element
         switch (position)
         {
             case POS_RELATIVE:
-                return new Point(point.x + x, point.y + y);
+                return new Point(point.x() + x, point.y() + y);
             case POS_ABSOLUTE:
-                return new Point(parent.x + x, parent.y + y);
+                return new Point(parent.x() + x, parent.y() + y);
             case POS_FIXED:
                 return new Point(x, y);
         }
 
-        return new Point(point.x, point.y);
+        return new Point(point.x(), point.y());
     }
 
     protected <T extends Element> T copy(T other)

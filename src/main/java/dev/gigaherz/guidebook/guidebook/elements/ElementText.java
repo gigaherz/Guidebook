@@ -47,6 +47,7 @@ public class ElementText extends ElementInline
                 .withUnderlined(underline)
                 .withStrikethrough(strikethrough)
                 .withObfuscated(obfuscated)
+                .withColor(color)
                 .withFont(font));
     }
 
@@ -58,15 +59,7 @@ public class ElementText extends ElementInline
     @Override
     public List<VisualElement> measure(IBookGraphics nav, int width, int firstLineWidth)
     {
-        List<VisualElement> elements = nav.measure(getStringWithFormat(getActualString()), width, firstLineWidth, scale, position, baseline, verticalAlignment);
-        for (VisualElement text : elements)
-        {
-            if (text instanceof VisualText visualText)
-            {
-                visualText.color = color;
-            }
-        }
-        return elements;
+        return nav.measure(getStringWithFormat(getActualString()), width, firstLineWidth, scale, position, baseline, verticalAlignment);
     }
 
     private ElementParagraph temporaryParagraph = null;
@@ -113,9 +106,11 @@ public class ElementText extends ElementInline
     {
         if (text == null)
             return null;
-        String temp = text.replaceAll("[\n\r]+", "").replaceAll("[ \t]+", " ");
-        if (trimLeft) temp = temp.replaceAll("^[ \t]+", "");
-        if (trimRight) temp = temp.replaceAll("[ \t]+$", "");
+        String temp = text.replaceAll("[ \t\n\r]+", " ");
+        if (trimLeft)
+            temp = temp.replaceAll("^[ \t\n\r]+", "");
+        if (trimRight)
+            temp = temp.replaceAll("[ \t\n\r]+$", "");
         return temp;
     }
 }

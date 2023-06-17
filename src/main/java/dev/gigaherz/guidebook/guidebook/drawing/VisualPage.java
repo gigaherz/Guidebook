@@ -14,4 +14,12 @@ public class VisualPage
     {
         this.ref = ref;
     }
+
+    public void updateDebugIndices()
+    {
+        for(int i=0;i<children.size();i++)
+        {
+            children.get(i).updateDebugIndices(i,0);
+        }
+    }
 }

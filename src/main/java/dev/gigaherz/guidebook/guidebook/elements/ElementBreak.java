@@ -14,7 +14,7 @@ public class ElementBreak extends Element
     public int reflow(List<VisualElement> list, IBookGraphics nav, Rect bounds, Rect page)
     {
         list.add(new VisualPageBreak(new Size()));
-        return bounds.position.y;
+        return bounds.position.y();
     }
 
     @Override

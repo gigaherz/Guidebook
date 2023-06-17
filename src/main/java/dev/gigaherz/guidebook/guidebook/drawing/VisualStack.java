@@ -48,7 +48,7 @@ public class VisualStack extends VisualElement
         {
             if (labelPosition == LabelPosition.NONE)
             {
-                nav.drawItemStack(matrixStack, position.x, position.y, z, stack, 0xFFFFFFFF, scale);
+                nav.drawItemStack(matrixStack, position.x(), position.y(), z, stack, 0xFFFFFFFF, scale);
             }
             else            
             {
@@ -59,42 +59,42 @@ public class VisualStack extends VisualElement
                 {
                     case LEFT -> {
                         nav.addString(matrixStack,
-                                position.x,
-                                position.y + (size.height - labelSize.height)/2,
+                                position.x(),
+                                position.y() + (size.height() - labelSize.height())/2,
                                 labelText, 0xFFFFFFFF, scale);
                         nav.drawItemStack(matrixStack,
-                                position.x + labelSize.width,
-                                position.y + (size.height - iconSize.height)/2,
+                                position.x() + labelSize.width(),
+                                position.y() + (size.height() - iconSize.height())/2,
                                 z, stack, 0xFFFFFFFF, scale);
                     }
                     case RIGHT -> {
                         nav.drawItemStack(matrixStack,
-                                position.x,
-                                position.y + (size.height - iconSize.height)/2,
+                                position.x(),
+                                position.y() + (size.height() - iconSize.height())/2,
                                 z, stack, 0xFFFFFFFF, scale);
                         nav.addString(matrixStack,
-                                position.x + iconSize.width,
-                                position.y + (size.height - labelSize.height)/2,
+                                position.x() + iconSize.width(),
+                                position.y() + (size.height() - labelSize.height())/2,
                                 labelText, 0xFFFFFFFF, scale);
                     }
                     case ABOVE -> {
                         nav.addString(matrixStack,
-                                position.x + (size.width - labelSize.width)/2,
-                                position.y,
+                                position.x() + (size.width() - labelSize.width())/2,
+                                position.y(),
                                 labelText, 0xFFFFFFFF, scale);
                         nav.drawItemStack(matrixStack,
-                                position.x + (size.width - iconSize.width)/2,
-                                position.y + labelSize.height,
+                                position.x() + (size.width() - iconSize.width())/2,
+                                position.y() + labelSize.height(),
                                 z, stack, 0xFFFFFFFF, scale);
                     }
                     case BELOW -> {
                         nav.drawItemStack(matrixStack,
-                                position.x + (size.width - iconSize.width)/2,
-                                position.y,
+                                position.x() + (size.width() - iconSize.width())/2,
+                                position.y(),
                                 z, stack, 0xFFFFFFFF, scale);
                         nav.addString(matrixStack,
-                                position.x + (size.width - labelSize.width)/2,
-                                position.y + iconSize.height,
+                                position.x() + (size.width() - labelSize.width())/2,
+                                position.y() + iconSize.height(),
                                 labelText, 0xFFFFFFFF, scale);
                     }
                 }
