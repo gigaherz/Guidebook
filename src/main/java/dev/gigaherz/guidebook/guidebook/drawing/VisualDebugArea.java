@@ -1,16 +1,11 @@
 package dev.gigaherz.guidebook.guidebook.drawing;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
-import dev.gigaherz.guidebook.guidebook.client.BookRendering;
 import dev.gigaherz.guidebook.guidebook.util.Size;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class VisualDebugArea extends VisualElement
 {
@@ -26,17 +21,17 @@ public class VisualDebugArea extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
-        super.draw(nav, matrixStack);
+        super.draw(nav, graphics);
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, GuiGraphics graphics)
     {
         if (SHOW_DEBUG)
         {
-            nav.drawTooltip(matrixStack, text, hoverContext.mouseX, hoverContext.mouseY);
+            graphics.renderTooltip(nav.getFont(), text, hoverContext.mouseX, hoverContext.mouseY);
         }
     }
 

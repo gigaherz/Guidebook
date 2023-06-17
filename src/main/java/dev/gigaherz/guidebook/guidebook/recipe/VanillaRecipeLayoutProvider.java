@@ -46,7 +46,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
     public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ItemStack targetOutput, int recipeIndex)
     {
         Recipe<?> recipe = world.getRecipeManager().getRecipes().stream()
-                .filter(r -> !r.isSpecial() && ItemStack.isSame(targetOutput, r.getResultItem(world.registryAccess())))
+                .filter(r -> !r.isSpecial() && ItemStack.isSameItem(targetOutput, r.getResultItem(world.registryAccess())))
                 .skip(recipeIndex)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for provided output item: %s", targetOutput)));

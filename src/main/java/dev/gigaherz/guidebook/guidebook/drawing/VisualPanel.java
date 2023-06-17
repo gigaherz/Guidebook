@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.List;
 
@@ -25,16 +26,16 @@ public class VisualPanel extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
-        super.draw(nav, matrixStack);
-        children.forEach(e -> e.draw(nav, matrixStack));
+        super.draw(nav, graphics);
+        children.forEach(e -> e.draw(nav, graphics));
     }
 
     private VisualElement lastMouseOver = null;
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, GuiGraphics graphics)
     {
         double x = hoverContext.mouseScaledX;
         double y = hoverContext.mouseScaledY;
@@ -59,7 +60,7 @@ public class VisualPanel extends VisualElement
 
         if (newOver != null)
         {
-            newOver.mouseOver(nav, hoverContext, matrixStack);
+            newOver.mouseOver(nav, hoverContext, graphics);
         }
 
         lastMouseOver = newOver;

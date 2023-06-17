@@ -9,6 +9,7 @@ import com.mojang.math.Axis;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.client.ClientHandlers;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -75,7 +76,7 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
     }
 
     @Override
-    public void draw(PoseStack matrixStack, float partialTicks, int bookHeight, float scalingFactor)
+    public void draw(GuiGraphics graphics, float partialTicks, int bookHeight, float scalingFactor)
     {
         BakedModel modelBookA, modelBookB;
 
@@ -134,26 +135,27 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
         Lighting.setupForEntityInInventory();
 
-        matrixStack.pushPose();
+        var pose = graphics.pose();
+        pose.pushPose();
         {
-            matrixStack.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
-            matrixStack.mulPose(Axis.YP.rotationDegrees(180));
-            matrixStack.mulPose(Axis.XP.rotationDegrees(-130));
+            pose.translate(gui.width * 0.5 * (1 + angleX / 130.0f), gui.height * 0.5 * (1 + angleX / 110.0f) + bookHeight * 0.53, -200);
+            pose.mulPose(Axis.YP.rotationDegrees(180));
+            pose.mulPose(Axis.XP.rotationDegrees(-130));
             float scaleValue = 2.6f;//2.16f;
-            matrixStack.scale(2.46f * scalingFactor, 2.0f * scalingFactor, 2.9f * scalingFactor);
+            pose.scale(2.46f * scalingFactor, 2.0f * scalingFactor, 2.9f * scalingFactor);
 
-            matrixStack.mulPose(Axis.ZP.rotationDegrees(angleX * 1.1f));
+            pose.mulPose(Axis.ZP.rotationDegrees(angleX * 1.1f));
 
             if (blend > 0 && modelBookB != null)
             {
-                renderModelInterpolate(matrixStack, modelBookA, modelBookB, blend);
+                renderModelInterpolate(pose, modelBookA, modelBookB, blend);
             }
             else
             {
-                renderModel(matrixStack, modelBookA);
+                renderModel(pose, modelBookA);
             }
         }
-        matrixStack.popPose();
+        pose.popPose();
 
         Lighting.setupForFlatItems();
 

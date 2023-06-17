@@ -52,7 +52,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
     //mappings channel: 'official', version: '1.19.4'
-    mappings channel: 'parchment', version: '1.19.3-2023.03.12-1.19.4'
+    mappings channel: 'parchment', version: '1.19.3-2023.03.12-1.20.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -92,12 +92,12 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.4-45.1.0'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.0.3'
 
-    compileOnly fg.deobf("mezz.jei:jei-1.19.4-common-api:13.1.0.6")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.19.4-common:13.1.0.6")
-    compileOnly fg.deobf("mezz.jei:jei-1.19.4-forge-api:13.1.0.6")
-    runtimeOnly fg.deobf("mezz.jei:jei-1.19.4-forge:13.1.0.6")
+    compileOnly fg.deobf("mezz.jei:jei-1.20-common-api:14.0.0.4")
+    //runtimeOnly fg.deobf("mezz.jei:jei-1.20-common:14.0.0.4")
+    compileOnly fg.deobf("mezz.jei:jei-1.20-forge-api:14.0.0.4")
+    //runtimeOnly fg.deobf("mezz.jei:jei-1.20-forge:14.0.0.4")
 
     /*
     compileOnly fg.deobf( "net.darkhax.gamestages:GameStages-Forge-1.19.2:11.0.2")

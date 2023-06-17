@@ -6,6 +6,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.elements.LinkContext;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 
@@ -24,13 +25,13 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
-        super.draw(nav, matrixStack);
+        super.draw(nav, graphics);
         if (linkContext != null)
-            nav.addString(matrixStack, position.x(), position.y(), text, linkContext.isHovering ? linkContext.colorHover : -1, scale);
+            nav.addString(graphics, position.x(), position.y(), text, linkContext.isHovering ? linkContext.colorHover : -1, scale);
         else
-            nav.addString(matrixStack, position.x(), position.y(), text, -1, scale);
+            nav.addString(graphics, position.x(), position.y(), text, -1, scale);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class VisualText extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, GuiGraphics graphics)
     {
         linkContext.isHovering = true;
     }

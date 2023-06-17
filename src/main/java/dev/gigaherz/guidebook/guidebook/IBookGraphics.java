@@ -1,14 +1,14 @@
 package dev.gigaherz.guidebook.guidebook;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 
@@ -42,23 +42,21 @@ public interface IBookGraphics
 
     void navigateBack();
 
-    int addString(PoseStack matrixStack, int left, int top, Component s, int color, float scale);
+    int addString(GuiGraphics graphics, int left, int top, Component s, int color, float scale);
 
     boolean mouseClicked(int mouseX, int mouseY, int mouseButton);
 
-    boolean mouseHover(PoseStack matrixStack, int mouseX, int mouseY);
+    boolean mouseHover(GuiGraphics graphics, int mouseX, int mouseY);
 
-    void drawCurrentPages(PoseStack matrixStack);
+    void drawCurrentPages(GuiGraphics graphics);
 
     BookDocument getBook();
 
-    void drawItemStack(PoseStack matrixStack, int left, int top, int z, ItemStack stack, int color, float scale);
+    void drawItemStack(GuiGraphics graphics, int left, int top, int z, ItemStack stack, int color, float scale);
 
-    void drawImage(PoseStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
+    void drawImage(GuiGraphics graphics, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale);
 
-    void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y);
-
-    void drawTooltip(PoseStack matrixStack, Component text, int x, int y);
+    Font getFont();
 
     Object owner();
 

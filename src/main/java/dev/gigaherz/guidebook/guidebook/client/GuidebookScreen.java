@@ -9,6 +9,7 @@ import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 public class GuidebookScreen extends Screen
@@ -84,21 +84,21 @@ public class GuidebookScreen extends Screen
 
         // Positions set below in repositionButtons();
         this.addRenderableWidget(this.buttonHome = new SpriteButton(0, 0, 6, Component.literal("Home"), this::onHomeClicked));
-        this.addRenderableWidget(this.buttonBack = new SpriteButton(0, 0, 2, Component.literal("Back"),this::onBackClicked));
-        this.addRenderableWidget(this.buttonClose = new SpriteButton(0, 0, 3, Component.literal("Close"),this::onCloseClicked));
+        this.addRenderableWidget(this.buttonBack = new SpriteButton(0, 0, 2, Component.literal("Back"), this::onBackClicked));
+        this.addRenderableWidget(this.buttonClose = new SpriteButton(0, 0, 3, Component.literal("Close"), this::onCloseClicked));
         if (ConfigValues.useNaturalArrows)
         {
-            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 1, Component.literal("Previous Page"),this::onPrevPageClicked));
-            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 0, Component.literal("Next Page"),this::onNextPageClicked));
-            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 5, Component.literal("Previous Chapter"),this::onPrevChapterClicked));
-            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 4, Component.literal("Next Chapter"),this::onNextChapterClicked));
+            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 1, Component.literal("Previous Page"), this::onPrevPageClicked));
+            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 0, Component.literal("Next Page"), this::onNextPageClicked));
+            this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 5, Component.literal("Previous Chapter"), this::onPrevChapterClicked));
+            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 4, Component.literal("Next Chapter"), this::onNextChapterClicked));
         }
         else
         {
-            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 0, Component.literal("Previous Page"),this::onPrevPageClicked));
-            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 1, Component.literal("Next Page"),this::onNextPageClicked));
+            this.addRenderableWidget(this.buttonPreviousPage = new SpriteButton(0, 0, 0, Component.literal("Previous Page"), this::onPrevPageClicked));
+            this.addRenderableWidget(this.buttonNextPage = new SpriteButton(0, 0, 1, Component.literal("Next Page"), this::onNextPageClicked));
             this.addRenderableWidget(this.buttonPreviousChapter = new SpriteButton(0, 0, 4, Component.literal("Previous Chapter"), this::onPrevChapterClicked));
-            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 5, Component.literal("Next Chapter"),this::onNextChapterClicked));
+            this.addRenderableWidget(this.buttonNextChapter = new SpriteButton(0, 0, 5, Component.literal("Next Chapter"), this::onNextChapterClicked));
         }
 
         updateButtonStates();
@@ -215,36 +215,26 @@ public class GuidebookScreen extends Screen
     }
 
     @Override
-    public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
     {
         double backgroundScale = rendering.getScalingFactor() / rendering.getBook().getFontSize();
         double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
 
-        renderBackground(matrixStack);
+        renderBackground(graphics);
 
-        background.draw(matrixStack, partialTicks, (int) bookHeight, (float) backgroundScale);
-
-        if (background.isFullyOpen())
-        {
-            rendering.drawCurrentPages(matrixStack);
-        }
-
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        background.draw(graphics, partialTicks, (int) bookHeight, (float) backgroundScale);
 
         if (background.isFullyOpen())
         {
-            rendering.mouseHover(matrixStack, mouseX, mouseY);
+            rendering.drawCurrentPages(graphics);
         }
-    }
 
-    public void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y)
-    {
-        renderTooltip(matrixStack, stack, x, y);
-    }
+        super.render(graphics, mouseX, mouseY, partialTicks);
 
-    public void drawTooltip(PoseStack matrixStack, Component text, int x, int y)
-    {
-        renderTooltip(matrixStack, text, x, y);
+        if (background.isFullyOpen())
+        {
+            rendering.mouseHover(graphics, mouseX, mouseY);
+        }
     }
 
     @Override
@@ -324,7 +314,7 @@ public class GuidebookScreen extends Screen
         updateButtonStates();
     }
 
-    class SpriteButton extends Button
+    static class SpriteButton extends Button
     {
         private final int whichIcon;
 
@@ -335,16 +325,12 @@ public class GuidebookScreen extends Screen
         }
 
         @Override
-        public void renderWidget(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
+        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
         {
             boolean hover = mouseX >= this.getX() &&
                     mouseY >= this.getY() &&
                     mouseX < this.getX() + this.width &&
                     mouseY < this.getY() + this.height;
-
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShaderTexture(0, BOOK_GUI_TEXTURES);
 
             int x = xPixel[whichIcon];
             int y = yPixel[whichIcon];
@@ -356,7 +342,8 @@ public class GuidebookScreen extends Screen
                 x += 25;
             }
 
-            this.blit(matrixStack, this.getX(), this.getY(), x, y, w, h);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            graphics.blit(BOOK_GUI_TEXTURES, this.getX(), this.getY(), x, y, w, h);
         }
     }
 }

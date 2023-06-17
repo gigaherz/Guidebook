@@ -6,6 +6,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.SectionRef;
 import dev.gigaherz.guidebook.guidebook.elements.LabelPosition;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 
@@ -40,15 +41,15 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
-        super.draw(nav, matrixStack);
+        super.draw(nav, graphics);
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
             if (labelPosition == LabelPosition.NONE)
             {
-                nav.drawItemStack(matrixStack, position.x(), position.y(), z, stack, 0xFFFFFFFF, scale);
+                nav.drawItemStack(graphics, position.x(), position.y(), z, stack, 0xFFFFFFFF, scale);
             }
             else            
             {
@@ -58,41 +59,41 @@ public class VisualStack extends VisualElement
                 switch (labelPosition)
                 {
                     case LEFT -> {
-                        nav.addString(matrixStack,
+                        nav.addString(graphics,
                                 position.x(),
                                 position.y() + (size.height() - labelSize.height())/2,
                                 labelText, 0xFFFFFFFF, scale);
-                        nav.drawItemStack(matrixStack,
+                        nav.drawItemStack(graphics,
                                 position.x() + labelSize.width(),
                                 position.y() + (size.height() - iconSize.height())/2,
                                 z, stack, 0xFFFFFFFF, scale);
                     }
                     case RIGHT -> {
-                        nav.drawItemStack(matrixStack,
+                        nav.drawItemStack(graphics,
                                 position.x(),
                                 position.y() + (size.height() - iconSize.height())/2,
                                 z, stack, 0xFFFFFFFF, scale);
-                        nav.addString(matrixStack,
+                        nav.addString(graphics,
                                 position.x() + iconSize.width(),
                                 position.y() + (size.height() - labelSize.height())/2,
                                 labelText, 0xFFFFFFFF, scale);
                     }
                     case ABOVE -> {
-                        nav.addString(matrixStack,
+                        nav.addString(graphics,
                                 position.x() + (size.width() - labelSize.width())/2,
                                 position.y(),
                                 labelText, 0xFFFFFFFF, scale);
-                        nav.drawItemStack(matrixStack,
+                        nav.drawItemStack(graphics,
                                 position.x() + (size.width() - iconSize.width())/2,
                                 position.y() + labelSize.height(),
                                 z, stack, 0xFFFFFFFF, scale);
                     }
                     case BELOW -> {
-                        nav.drawItemStack(matrixStack,
+                        nav.drawItemStack(graphics,
                                 position.x() + (size.width() - iconSize.width())/2,
                                 position.y(),
                                 z, stack, 0xFFFFFFFF, scale);
-                        nav.addString(matrixStack,
+                        nav.addString(graphics,
                                 position.x() + (size.width() - labelSize.width())/2,
                                 position.y() + iconSize.height(),
                                 labelText, 0xFFFFFFFF, scale);
@@ -110,12 +111,12 @@ public class VisualStack extends VisualElement
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, GuiGraphics graphics)
     {
         ItemStack stack = getCurrentStack();
         if (stack.getCount() > 0)
         {
-            nav.drawTooltip(matrixStack, stack, hoverContext.mouseX, hoverContext.mouseY);
+            graphics.renderTooltip(nav.getFont(), stack, hoverContext.mouseX, hoverContext.mouseY);
         }
     }
 

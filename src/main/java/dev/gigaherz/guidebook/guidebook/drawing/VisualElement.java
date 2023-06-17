@@ -9,7 +9,7 @@ import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
@@ -27,12 +27,12 @@ public abstract class VisualElement extends Rect
     public int debugIndex = 0;
     public int debugIndexIndent = 0;
 
-    private void renderDebug(PoseStack poseStack)
+    private void renderDebug(GuiGraphics graphics)
     {
-        GuiComponent.fill(poseStack, this.position.x() + debugIndexIndent, this.position.y(), this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(), debugColor);
-        GuiComponent.drawString(poseStack, Minecraft.getInstance().font, Integer.toString(debugIndex),
+        graphics.fill(this.position.x() + debugIndexIndent, this.position.y(), this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(), debugColor);
+        graphics.drawString(Minecraft.getInstance().font, Integer.toString(debugIndex),
                 this.position.x() + debugIndexIndent, this.position.y(), 0xff000000 | debugColor);
-        GuiComponent.drawString(poseStack, Minecraft.getInstance().font, Integer.toString(debugIndex),
+        graphics.drawString(Minecraft.getInstance().font, Integer.toString(debugIndex),
                 this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(), 0xff000000 | debugColor);
         /*line(poseStack,
                 this.position.x() + this.size.width() + debugIndexIndent, this.position.y() + this.size.height(),
@@ -40,10 +40,10 @@ public abstract class VisualElement extends Rect
                 debugColor);*/
     }
 
-    private static void line(PoseStack pose, int x0, int y0, int x1, int y1, int color)
+    private static void line(GuiGraphics graphics, int x0, int y0, int x1, int y1, int color)
     {
-        var matrix = pose.last().pose();
-        var normal = pose.last().normal();
+        var matrix = graphics.pose().last().pose();
+        var normal = graphics.pose().last().normal();
         BufferBuilder builder = Tesselator.getInstance().getBuilder();
         RenderSystem.enableBlend();
         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
@@ -64,15 +64,15 @@ public abstract class VisualElement extends Rect
         this.verticalAlign = verticalAlign;
     }
 
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
         if (BookRendering.DEBUG_DRAW_BOUNDS)
         {
-            renderDebug(matrixStack);
+            renderDebug(graphics);
         }
     }
 
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, GuiGraphics graphics)
     {
     }
 

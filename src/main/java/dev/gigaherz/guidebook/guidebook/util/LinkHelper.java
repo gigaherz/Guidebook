@@ -7,6 +7,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.elements.LinkContext;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
@@ -68,13 +69,13 @@ public class LinkHelper
         mc.pushGuiLayer(new ChatScreen(textTarget)
         {
             @Override
-            public void render(PoseStack matrixStack, int mouseX, int mouseY, float partialTicks)
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks)
             {
                 String text = "Temporary chat window open, press ESCAPE to cancel.";
                 int textWidth = Math.max(font.width(text) + 40, width / 2);
-                fill(matrixStack, (width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
-                drawCenteredString(matrixStack, font, text, width / 2, (height - font.lineHeight) / 2, 0xFFFFFFFF);
-                super.render(matrixStack, mouseX, mouseY, partialTicks);
+                graphics.fill((width - textWidth) / 2, height / 4, (width + textWidth) / 2, height * 3 / 4, 0x7F000000);
+                graphics.drawCenteredString(font, text, width / 2, (height - font.lineHeight) / 2, 0xFFFFFFFF);
+                super.render(graphics, mouseX, mouseY, partialTicks);
             }
 
             @Override

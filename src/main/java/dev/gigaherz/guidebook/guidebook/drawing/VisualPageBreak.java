@@ -1,8 +1,8 @@
 package dev.gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class VisualPageBreak extends VisualElement
 {
@@ -12,7 +12,7 @@ public class VisualPageBreak extends VisualElement
     }
 
     @Override
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
         // not a drawableelement
     }

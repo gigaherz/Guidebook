@@ -1,6 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public interface IAnimatedBookBackground
 {
@@ -10,5 +11,5 @@ public interface IAnimatedBookBackground
 
     boolean update();
 
-    void draw(PoseStack matrixStack, float partialTicks, int bookHeight, float backgroundScale);
+    void draw(GuiGraphics graphics, float partialTicks, int bookHeight, float backgroundScale);
 }

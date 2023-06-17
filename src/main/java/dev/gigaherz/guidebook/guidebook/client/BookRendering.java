@@ -17,13 +17,11 @@ import dev.gigaherz.guidebook.guidebook.util.PointD;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -472,9 +470,9 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public int addString(PoseStack matrixStack, int left, int top, Component text, int color, float scale)
+    public int addString(GuiGraphics graphics, int left, int top, Component text, int color, float scale)
     {
-        Font fontRenderer = gui.getFontRenderer();
+        Font font = gui.getFontRenderer();
 
         double left0 = left;
         double top0 = top;
@@ -488,20 +486,21 @@ public class BookRendering implements IBookGraphics
         // Does scaling need to be performed?
         if ((hasScale && ConfigValues.flexibleScale) || !(Mth.equal(scale, 1.0f)))
         {
-            matrixStack.pushPose();
+            var pose = graphics.pose();
+            pose.pushPose();
             {
-                matrixStack.translate(left0, top0, 0);
-                matrixStack.scale(scale, scale, 1f);
-                fontRenderer.draw(matrixStack, text, 0, 0, color);
+                pose.translate(left0, top0, 0);
+                pose.scale(scale, scale, 1f);
+                graphics.drawString(font, text, 0, 0, color, false);
             }
-            matrixStack.popPose();
+            pose.popPose();
         }
         else
         {
-            fontRenderer.draw(matrixStack, text, left, top, color);
+            graphics.drawString(font, text, left, top, color, false);
         }
 
-        return fontRenderer.lineHeight;
+        return font.lineHeight;
     }
 
     @Override
@@ -559,7 +558,7 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public boolean mouseHover(PoseStack matrixStack, int mouseX, int mouseY)
+    public boolean mouseHover(GuiGraphics graphics, int mouseX, int mouseY)
     {
         VisualChapter ch = getVisualChapter(currentChapter);
 
@@ -588,7 +587,7 @@ public class BookRendering implements IBookGraphics
 
             if (hovering != null)
             {
-                hovering.mouseOver(this, hoverContext, matrixStack);
+                hovering.mouseOver(this, hoverContext, graphics);
                 return true;
             }
         }
@@ -630,27 +629,28 @@ public class BookRendering implements IBookGraphics
     }
 
     @Override
-    public void drawCurrentPages(PoseStack matrixStack)
+    public void drawCurrentPages(GuiGraphics graphics)
     {
+        var pose = graphics.pose();
         if (hasScale)
         {
-            matrixStack.pushPose();
-            matrixStack.scale(scalingFactor, scalingFactor, scalingFactor);
+            pose.pushPose();
+            pose.scale(scalingFactor, scalingFactor, scalingFactor);
         }
 
         if (DEBUG_DRAW_BOUNDS)
         {
             int l = (int) ((scaledWidth - bookWidth) / 2);
             int t = (int) ((scaledHeight - bookHeight) / 2);
-            GuiComponent.fill(matrixStack, l, t, l + bookWidth, t + bookHeight, 0x2f000000);
+            graphics.fill(l, t, l + bookWidth, t + bookHeight, 0x2f000000);
         }
 
-        drawPage(matrixStack, currentPair * 2);
-        drawPage(matrixStack, currentPair * 2 + 1);
+        drawPage(graphics, currentPair * 2);
+        drawPage(graphics, currentPair * 2 + 1);
 
         if (hasScale)
         {
-            matrixStack.popPose();
+            pose.popPose();
         }
     }
 
@@ -663,7 +663,7 @@ public class BookRendering implements IBookGraphics
         return new PointD(leftPage ? left : right, top);
     }
 
-    private void drawPage(PoseStack matrixStack, int page)
+    private void drawPage(GuiGraphics graphics, int page)
     {
         VisualChapter ch = getVisualChapter(currentChapter);
         if (page >= ch.pages.size())
@@ -674,51 +674,51 @@ public class BookRendering implements IBookGraphics
         VisualPage pg = ch.pages.get(page);
 
         PointD offset = getPageOffset(currentDrawingPage);
-        matrixStack.pushPose();
+        var pose = graphics.pose();
+        pose.pushPose();
         if (ConfigValues.flexibleScale)
-            matrixStack.translate(offset.x, offset.y, 0);
+            pose.translate(offset.x, offset.y, 0);
         else
-            matrixStack.translate((int) offset.x, (int) offset.y, 0);
+            pose.translate((int) offset.x, (int) offset.y, 0);
 
         if (DEBUG_DRAW_BOUNDS)
         {
-            GuiComponent.fill(matrixStack, 0, 0, pageWidth, pageHeight, 0x3f000000);
+            graphics.fill(0, 0, pageWidth, pageHeight, 0x3f000000);
         }
 
         for (VisualElement e : pg.children)
         {
-            e.draw(this, matrixStack);
+            e.draw(this, graphics);
         }
 
         Component cnt = Component.literal(String.valueOf(ch.startPair * 2 + page + 1));
         Size sz = measure(cnt);
 
-        addString(matrixStack, (pageWidth - sz.width()) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
+        addString(graphics, (pageWidth - sz.width()) / 2, pageHeight + 8, cnt, 0xFF000000, 1.0f);
 
-        matrixStack.popPose();
+        pose.popPose();
     }
 
     @Override
-    public void drawItemStack(PoseStack matrixStack, int left, int top, int z, ItemStack stack, int color, float scale)
+    public void drawItemStack(GuiGraphics graphics, int left, int top, int z, ItemStack stack, int color, float scale)
     {
+        var pose = graphics.pose();
+        pose.pushPose();
+        pose.translate(left, top, z);
+        pose.scale(scale, scale, scale);
+
         RenderSystem.enableDepthTest();
 
-        matrixStack.pushPose();
-        matrixStack.translate(left, top, z);
-        matrixStack.scale(scale, scale, scale);
-
-        ItemRenderer renderer = gui.getMinecraft().getItemRenderer();
-
-        renderer.renderAndDecorateItem(matrixStack, stack, 0, 0);
-        renderer.renderGuiItemDecorations(matrixStack, mc.font, stack, 0, 0, "");
+        graphics.renderItem(stack, 0, 0);
+        graphics.renderItemDecorations(mc.font, stack, 0, 0, "");
 
         RenderSystem.disableDepthTest();
 
-        matrixStack.popPose();
+        pose.popPose();
     }
 
     @Override
-    public void drawImage(PoseStack matrixStack, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
+    public void drawImage(GuiGraphics graphics, ResourceLocation loc, int x, int y, int tx, int ty, int w, int h, int tw, int th, float scale)
     {
         int sw = tw != 0 ? tw : 256;
         int sh = th != 0 ? th : 256;
@@ -735,7 +735,13 @@ public class BookRendering implements IBookGraphics
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        drawFlexible(matrixStack, x, y, tx, ty, w, h, sw, sh, scale);
+        drawFlexible(graphics.pose(), x, y, tx, ty, w, h, sw, sh, scale);
+    }
+
+    @Override
+    public Font getFont()
+    {
+        return gui.getFontRenderer();
     }
 
     private static void drawFlexible(PoseStack matrixStack, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
@@ -769,18 +775,6 @@ public class BookRendering implements IBookGraphics
                 .uv(tx * tsw, ty * tsh)
                 .endVertex();
         tessellator.end();
-    }
-
-    @Override
-    public void drawTooltip(PoseStack matrixStack, ItemStack stack, int x, int y)
-    {
-        gui.drawTooltip(matrixStack, stack, x, y);
-    }
-
-    @Override
-    public void drawTooltip(PoseStack matrixStack, Component text, int x, int y)
-    {
-        gui.drawTooltip(matrixStack, text, x, y);
     }
 
     @Override

@@ -6,6 +6,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.elements.LinkContext;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
 import dev.gigaherz.guidebook.guidebook.util.Size;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 public class VisualImage extends VisualElement implements LinkHelper.ILinkable
@@ -36,10 +37,10 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void draw(IBookGraphics nav, PoseStack matrixStack)
+    public void draw(IBookGraphics nav, GuiGraphics graphics)
     {
-        super.draw(nav, matrixStack);
-        nav.drawImage(matrixStack, textureLocation, position.x(), position.y(), tx, ty, w, h, tw, th, scale);
+        super.draw(nav, graphics);
+        nav.drawImage(graphics, textureLocation, position.x(), position.y(), tx, ty, w, h, tw, th, scale);
     }
 
     //public int colorHover = 0xFF77cc66;
@@ -51,7 +52,7 @@ public class VisualImage extends VisualElement implements LinkHelper.ILinkable
     }
 
     @Override
-    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, PoseStack matrixStack)
+    public void mouseOver(IBookGraphics nav, HoverContext hoverContext, GuiGraphics graphics)
     {
         if (linkContext != null)
         {

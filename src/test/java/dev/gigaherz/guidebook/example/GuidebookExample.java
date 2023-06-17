@@ -33,7 +33,7 @@ public class GuidebookExample
             final Entity entity = event.getEntity();
             final String bookPlayerTag = "MODID:someTagLikeGbookGiven";
 
-            if (entity instanceof Player player && !entity.level.isClientSide && !entity.getTags().contains(bookPlayerTag))
+            if (entity instanceof Player player && !entity.level().isClientSide && !entity.getTags().contains(bookPlayerTag))
             {
                 ItemHandlerHelper.giveItemToPlayer(player, MY_BOOK.get().copy());
                 entity.addTag(bookPlayerTag);

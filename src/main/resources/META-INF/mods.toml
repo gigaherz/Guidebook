@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[45,)"
+loaderVersion="[46,)"
 license="BSD (3 clause)"
 issueTrackerURL="https://github.com/gigaherz/Guidebook/issues"
 
@@ -18,12 +18,12 @@ authors="gigaherz"
 [[dependencies.gbook]]
     modId="forge"
     mandatory=true
-    versionRange="[45.1.0,)"
+    versionRange="[46.0.12,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.gbook]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.4,1.20)"
+    versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
