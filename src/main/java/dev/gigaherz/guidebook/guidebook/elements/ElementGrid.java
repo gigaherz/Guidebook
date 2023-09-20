@@ -10,6 +10,7 @@ import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -33,14 +34,14 @@ public class ElementGrid extends Element
     public List<Column> cols = new ArrayList<>();
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
 
-        Node attr = attributes.getNamedItem("height");
+        String attr = attributes.getAttribute("height");
         if (attr != null)
         {
-            String t = attr.getTextContent();
+            String t = attr;
             if (t.endsWith("%"))
             {
                 heightPercent = true;
@@ -50,10 +51,10 @@ public class ElementGrid extends Element
             height = Ints.tryParse(t);
         }
 
-        attr = attributes.getNamedItem("width");
+        attr = attributes.getAttribute("width");
         if (attr != null)
         {
-            String t = attr.getTextContent();
+            String t = attr;
             if (t.endsWith("%"))
             {
                 widthPercent = true;
@@ -356,12 +357,18 @@ public class ElementGrid extends Element
         public Integer width;
         public int computedWidth;
 
+        @Deprecated(forRemoval = true)
         public void parse(NamedNodeMap attributes)
         {
-            var attr = attributes.getNamedItem("width");
+            parse(AttributeGetter.wrap(attributes));
+        }
+
+        public void parse(AttributeGetter attributes)
+        {
+            var attr = attributes.getAttribute("width");
             if (attr != null)
             {
-                String t = attr.getTextContent();
+                String t = attr;
                 if (t.endsWith("%"))
                 {
                     widthPercent = true;
@@ -379,12 +386,18 @@ public class ElementGrid extends Element
         @Nullable
         public Element content;
 
+        @Deprecated(forRemoval = true)
         public void parse(NamedNodeMap attributes)
         {
-            Node attr = attributes.getNamedItem("colspan");
+            parse(AttributeGetter.wrap(attributes));
+        }
+
+        public void parse(AttributeGetter attributes)
+        {
+            String attr = attributes.getAttribute("colspan");
             if (attr != null)
             {
-                String t = attr.getTextContent();
+                String t = attr;
                 colspan = Ints.tryParse(t);
             }
         }
@@ -397,12 +410,18 @@ public class ElementGrid extends Element
         public List<Cell> cells = new ArrayList<>();
         public int computedHeight;
 
+        @Deprecated(forRemoval = true)
         public void parse(NamedNodeMap attributes)
         {
-            Node attr = attributes.getNamedItem("height");
+            parse(AttributeGetter.wrap(attributes));
+        }
+
+        public void parse(AttributeGetter attributes)
+        {
+            String attr = attributes.getAttribute("height");
             if (attr != null)
             {
-                String t = attr.getTextContent();
+                String t = attr;
                 if (t.endsWith("%"))
                 {
                     heightPercent = true;

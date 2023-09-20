@@ -61,14 +61,14 @@ public class TemplateLibrary
         if (!templateItem.hasAttributes())
             return; // TODO: Throw error
 
-        TemplateDefinition page = new TemplateDefinition();
+        TemplateDefinition template = new TemplateDefinition();
 
         NamedNodeMap attributes = templateItem.getAttributes();
         Node n = attributes.getNamedItem("id");
         if (n == null)
             return;
 
-        templates.put(n.getTextContent(), page);
+        templates.put(n.getTextContent(), template);
 
         var context = new ParsingContext()
         {
@@ -91,14 +91,14 @@ public class TemplateLibrary
             }
         };
 
-        BookDocument.parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
+        BookDocument.parseChildElements(context, templateItem.getChildNodes(), template.elements, templates, true, TextStyle.DEFAULT);
 
         for(var i =0;i<attributes.getLength();i++)
         {
             var attr = attributes.item(i);
             var key = attr.getNodeName();
             if (!key.equals("id"))
-                page.attributes.put(key, attr);
+                template.attributes.put(key, attr.getTextContent());
         }
     }
 

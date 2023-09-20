@@ -274,21 +274,20 @@
     </section>
     <section>
       <title>Template Libraries</title>
-      <p>Templates can be defined inside template library files, and thosefiles can be included from books.</p>
+      <p>Templates can be defined inside template library files, and those files can be included from books.</p>
       <p>Browse this mod's source code on github for an example of use and declaration.</p>
     </section>
     <section>
       <p>Although the recipe panel system exists, another way to display recipes is to declare them using the template system. The result looks as follows:</p>
-      <p>For Items with multiple Id's (for example orange dye - 351:14) use the meta tag as below for bonemeal</p>
       <big_recipe>
         <space/>
         <space/>
         <space/>
-        <stack item="minecraft:dye" meta="15"/>
+        <stack item="minecraft:blue_dye"/>
         <stack item="minecraft:slime_ball"/>
-        <stack item="minecraft:dye" meta="15"/>
+        <stack item="minecraft:orange_dye"/>
         <stack item="minecraft:gold_nugget"/>
-        <stack item="minecraft:bucket"/>
+        <stack item="minecraft:empty_bucket"/>
         <stack item="minecraft:gold_nugget"/>
         <stack item="minecraft:glass_bottle"/>
       </big_recipe>
@@ -297,13 +296,13 @@
         <space/>
         <space/>
         <space/>
-        <stack item="minecraft:planks" meta="*" />
-        <stack item="minecraft:planks" meta="*" />
-        <stack item="minecraft:planks" meta="*" />
-        <stack ore="plankWood" />
-        <stack ore="plankWood" />
-        <stack ore="plankWood" />
-        <stack item="minecraft:trapdoor" />
+        <stack item="#minecraft:planks" />
+        <stack item="#minecraft:planks" />
+        <stack item="#minecraft:planks" />
+        <stack item="#minecraft:logs" />
+        <stack item="#minecraft:logs" />
+        <stack item="#minecraft:logs" />
+        <stack item="minecraft:oak_trapdoor" />
       </big_recipe>
     </section>
   </chapter>

@@ -6,6 +6,7 @@ import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.client.resources.model.Material;
@@ -142,21 +143,26 @@ public abstract class Element
         return other;
     }
 
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    @Deprecated(forRemoval = true)
+    public final void parse(ParsingContext context, NamedNodeMap attributes)
     {
-        x = getAttribute(attributes, "x", x);
-        y = getAttribute(attributes, "y", y);
-        z = getAttribute(attributes, "z", z);
-        w = getAttribute(attributes, "w", w);
-        h = getAttribute(attributes, "h", h);
+        parse(context, AttributeGetter.wrap(attributes));
+    }
 
-        baseline = getAttribute(attributes, "baseline", baseline);
+    public void parse(ParsingContext context, AttributeGetter attributes)
+    {
+        x = attributes.getAttribute("x", x);
+        y = attributes.getAttribute("y", y);
+        z = attributes.getAttribute("z", z);
+        w = attributes.getAttribute("w", w);
+        h = attributes.getAttribute("h", h);
 
-        Node attr = attributes.getNamedItem("align");
+        baseline = attributes.getAttribute("baseline", baseline);
+
+        String attr = attributes.getAttribute("align");
         if (attr != null)
         {
-            String a = attr.getTextContent();
-            switch (a)
+            switch (attr)
             {
                 case "relative":
                     position = 0;
@@ -170,11 +176,10 @@ public abstract class Element
             }
         }
 
-        attr = attributes.getNamedItem("vertical-align");
+        attr = attributes.getAttribute("vertical-align");
         if (attr != null)
         {
-            String a = attr.getTextContent();
-            switch (a)
+            switch (attr)
             {
                 case "top":
                     verticalAlignment = VA_TOP;
@@ -191,154 +196,15 @@ public abstract class Element
             }
         }
 
-        attr = attributes.getNamedItem("condition");
+        attr = attributes.getAttribute("condition");
         if (attr != null)
         {
-            condition = context.getCondition(attr.getTextContent());
+            condition = context.getCondition(attr);
         }
     }
 
     public void parseChildNodes(ParsingContext context, NodeList childNodes, Map<String, TemplateDefinition> templates, TextStyle defaultStyle)
     {
-    }
-
-    protected static String getAttribute(NamedNodeMap attributes, String name, String def)
-    {
-        Node attr = attributes.getNamedItem(name);
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if (text != null)
-                return text;
-        }
-        return def;
-    }
-
-    protected static ResourceLocation getAttribute(NamedNodeMap attributes, String name, ResourceLocation def)
-    {
-        Node attr = attributes.getNamedItem(name);
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if (text != null)
-                return new ResourceLocation(text);
-        }
-        return def;
-    }
-
-    protected static boolean getAttribute(NamedNodeMap attributes, String name, boolean def)
-    {
-        Node attr = attributes.getNamedItem(name);
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            if ("".equals(text) || "true".equals(text))
-                return true;
-            if ("false".equals(text))
-                return false;
-        }
-        return def;
-    }
-
-    protected static int getAttribute(NamedNodeMap attributes, String name, int def)
-    {
-        Node attr = attributes.getNamedItem(name);
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            try
-            {
-                return Integer.parseInt(text);
-            }
-            catch (NumberFormatException e)
-            {
-                // ignored
-            }
-        }
-        return def;
-    }
-
-    protected static float getAttribute(NamedNodeMap attributes, String name, float def)
-    {
-        Node attr = attributes.getNamedItem(name);
-        if (attr != null)
-        {
-            String text = attr.getTextContent();
-            try
-            {
-                return Float.parseFloat(text);
-            }
-            catch (NumberFormatException e)
-            {
-                // ignored
-            }
-        }
-        return def;
-    }
-
-    // For an exploded description of this regex, see: https://regex101.com/r/qXfiDc/1/
-    private static final Pattern COLOR_PARSE = Pattern.compile("^#?(?:(?<c3>[0-9a-f]{3})|(?<c6>[0-9a-f]{6})|(?<c8>[0-9a-f]{8})|(?<rgb>rgb\\((?<r>[0-9]{1,3}),(?<g>[0-9]{1,3}),(?<b>[0-9]{1,3})\\))|(?<rgba>rgba\\((?<r2>[0-9]{1,3}),(?<g2>[0-9]{1,3}),(?<b2>[0-9]{1,3}),(?<a2>[0-9]{1,3})\\)))$");
-
-    protected static int getColorAttribute(NamedNodeMap attributes, int def)
-    {
-        Node attr = attributes.getNamedItem("color");
-        if (attr != null)
-        {
-            String c = attr.getTextContent();
-
-            Matcher m = COLOR_PARSE.matcher(c);
-            if (m.matches())
-            {
-                try
-                {
-                    String value;
-                    if ((value = m.group("c3")) != null)
-                    {
-                        String s = new String(new char[]{value.charAt(0), value.charAt(0), value.charAt(1), value.charAt(1), value.charAt(2), value.charAt(2)});
-                        return 0xFF000000 | Integer.parseInt(s, 16);
-                    }
-                    else if ((value = m.group("c6")) != null)
-                    {
-                        return 0xFF000000 | Integer.parseInt(value, 16);
-                    }
-                    else if ((value = m.group("c8")) != null)
-                    {
-                        return Integer.parseUnsignedInt(value, 16);
-                    }
-                    else if (m.group("rgb") != null)
-                    {
-                        int r = Integer.parseUnsignedInt(m.group("r"));
-                        int g = Integer.parseUnsignedInt(m.group("g"));
-                        int b = Integer.parseUnsignedInt(m.group("b"));
-                        if (r > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        if (g > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        if (b > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        return 0xFF000000 | (r << 16) | (g << 8) | b;
-                    }
-                    else if (m.group("rgba") != null)
-                    {
-                        int r = Integer.parseUnsignedInt(m.group("r2"));
-                        int g = Integer.parseUnsignedInt(m.group("g2"));
-                        int b = Integer.parseUnsignedInt(m.group("b2"));
-                        int a = Integer.parseUnsignedInt(m.group("a2"));
-                        if (r > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        if (g > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        if (b > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        if (a > 255) throw new NumberFormatException("Number too big. Expected range: 0 to 255");
-                        return (a << 24) | (r << 16) | (g << 8) | b;
-                    }
-
-                    GuidebookMod.logger.warn("Unrecognized color value {}, ignored.", c);
-                }
-                catch (NumberFormatException e)
-                {
-                    GuidebookMod.logger.warn("Color value not valid {}", c, e);
-                    // ignored
-                }
-            }
-        }
-
-        return def;
     }
 
     @Override

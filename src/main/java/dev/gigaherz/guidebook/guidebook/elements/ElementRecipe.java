@@ -11,6 +11,7 @@ import dev.gigaherz.guidebook.guidebook.recipe.IRecipeLayoutProvider;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayout;
 import dev.gigaherz.guidebook.guidebook.recipe.RecipeLayoutProviders;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -132,33 +133,33 @@ public class ElementRecipe extends Element
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
-        Node attr = attributes.getNamedItem("type");
+        String attr = attributes.getAttribute("type");
         if (attr != null)
         {
-            String registryName = attr.getTextContent();
+            String registryName = attr;
             // If no domain is specified, insert Guidebook's modid (mostly needed for default recipe providers)
             recipeProviderKey = new ResourceLocation(registryName);
         }
 
-        attr = attributes.getNamedItem("key");
+        attr = attributes.getAttribute("key");
         if (attr != null)
         {
-            recipeKey = new ResourceLocation(attr.getTextContent());
+            recipeKey = new ResourceLocation(attr);
         }
 
-        attr = attributes.getNamedItem("indent");
+        attr = attributes.getAttribute("indent");
         if (attr != null)
         {
-            Integer indentObj = Ints.tryParse(attr.getTextContent());
+            Integer indentObj = Ints.tryParse(attr);
             if (indentObj != null) indent = indentObj;
         }
 
-        attr = attributes.getNamedItem("index");
+        attr = attributes.getAttribute("index");
         if (attr != null)
         {
-            Integer recipeIndexObj = Ints.tryParse(attr.getTextContent());
+            Integer recipeIndexObj = Ints.tryParse(attr);
             if (recipeIndexObj != null) recipeIndex = recipeIndexObj;
         }
     }

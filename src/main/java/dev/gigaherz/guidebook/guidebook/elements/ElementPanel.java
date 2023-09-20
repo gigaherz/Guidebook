@@ -9,6 +9,7 @@ import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -30,7 +31,7 @@ public class ElementPanel extends Element
     public Integer space;
     public PanelMode mode = PanelMode.DEFAULT;
 
-    enum PanelMode
+    public enum PanelMode
     {
         DEFAULT,
         FLOW;
@@ -47,14 +48,14 @@ public class ElementPanel extends Element
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
 
-        Node attr = attributes.getNamedItem("height");
+        String attr = attributes.getAttribute("height");
         if (attr != null)
         {
-            String t = attr.getTextContent();
+            String t = attr;
             if (t.endsWith("%"))
             {
                 asPercent = true;
@@ -64,10 +65,10 @@ public class ElementPanel extends Element
             space = Ints.tryParse(t);
         }
 
-        attr = attributes.getNamedItem("mode");
+        attr = attributes.getAttribute("mode");
         if (attr != null)
         {
-            String t = attr.getTextContent();
+            String t = attr;
             try
             {
                 mode = PanelMode.valueOf(t.toUpperCase());
@@ -142,13 +143,15 @@ public class ElementPanel extends Element
             }
         }
 
+        int height = 0;
         if (position != POS_RELATIVE)
         {
             top = bounds.position.y();
         }
         else if (space != null)
         {
-            top = adjustedPosition.y() + (asPercent ? (space * bounds.size.height() / 100) : space);
+            height = asPercent ? (space * bounds.size.height() / 100) : space;
+            top = adjustedPosition.y() + height;
         }
 
         if (visuals.size() > 0)
@@ -165,10 +168,19 @@ public class ElementPanel extends Element
                 y2 = Math.max(y2, e.position.y()+e.size.height());
             }
 
-            VisualPanel p = new VisualPanel(new Size(x2-x1,y2-y1), position, baseline, verticalAlignment);
+            VisualPanel p = new VisualPanel(new Size(x2-x1,Math.max(y2-y1, height)), position, baseline, verticalAlignment);
             p.position = new Point(x1,y1);
 
             p.children.addAll(visuals);
+
+            list.add(p);
+        }
+        else
+        {
+            // Just space
+
+            VisualPanel p = new VisualPanel(new Size(0,height), position, baseline, verticalAlignment);
+            p.position = adjustedPosition;
 
             list.add(p);
         }

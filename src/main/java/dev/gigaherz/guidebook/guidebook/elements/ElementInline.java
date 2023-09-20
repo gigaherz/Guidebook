@@ -3,6 +3,7 @@ package dev.gigaherz.guidebook.guidebook.elements;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import org.w3c.dom.NamedNodeMap;
 
@@ -35,7 +36,7 @@ public abstract class ElementInline extends Element
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
     }

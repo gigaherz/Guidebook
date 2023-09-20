@@ -4,6 +4,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualImage;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.resources.model.Material;
@@ -66,16 +67,16 @@ public class ElementImage extends ElementInline
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
 
-        tx = getAttribute(attributes, "tx", tx);
-        ty = getAttribute(attributes, "ty", ty);
-        tw = getAttribute(attributes, "tw", tw);
-        th = getAttribute(attributes, "th", th);
-        textureLocation = getAttribute(attributes, "src", textureLocation);
-        scale = getAttribute(attributes, "scale", scale);
+        tx = attributes.getAttribute("tx", tx);
+        ty = attributes.getAttribute("ty", ty);
+        tw = attributes.getAttribute("tw", tw);
+        th = attributes.getAttribute("th", th);
+        textureLocation = attributes.getAttribute("src", textureLocation);
+        scale = attributes.getAttribute("scale", scale);
     }
 
     @Override

@@ -7,6 +7,7 @@ import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.elements.ElementInline;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public class TemplateElement extends ElementInline
 {
     int index;
-    private NamedNodeMap attributes;
+    private AttributeGetter attributes;
 
     public TemplateElement(boolean isFirstElement, boolean isLastElement)
     {
@@ -30,18 +31,18 @@ public class TemplateElement extends ElementInline
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter originalAttributes)
     {
-        super.parse(context, attributes);
+        super.parse(context, originalAttributes);
 
-        this.attributes = attributes;
+        this.attributes = AttributeGetter.copyOf(originalAttributes);
 
-        Node attr = attributes.getNamedItem("index");
+        String attr = this.attributes.getAttribute("index");
         if (attr != null)
         {
-            index = Ints.tryParse(attr.getTextContent());
+            index = Ints.tryParse(attr);
 
-            attributes.removeNamedItem("index");
+            this.attributes.removeAttribute("index");
         }
     }
 

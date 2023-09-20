@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import org.w3c.dom.NamedNodeMap;
 
 import java.util.Collections;
@@ -33,7 +34,7 @@ public class ElementSpan extends ElementInline
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
     }

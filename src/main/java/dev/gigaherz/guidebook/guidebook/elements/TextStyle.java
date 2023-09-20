@@ -1,5 +1,6 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
@@ -31,16 +32,22 @@ public class TextStyle
         this.scale = scale;
     }
 
+    @Deprecated(forRemoval = true)
     public static TextStyle parse(NamedNodeMap attributes, TextStyle defaults)
     {
-        int color1 = Element.getColorAttribute(attributes, defaults != null ? defaults.color : DEFAULT.color);
-        boolean bold1 = Element.getAttribute(attributes, "bold", defaults != null ? defaults.bold : DEFAULT.bold);
-        boolean italics1 = Element.getAttribute(attributes, "italics", defaults != null ? defaults.italics : DEFAULT.italics);
-        boolean underline1 = Element.getAttribute(attributes, "underline", defaults != null ? defaults.underline : DEFAULT.underline);
-        boolean strikethrough1 = Element.getAttribute(attributes, "strikethrough", defaults != null ? defaults.strikethrough : DEFAULT.strikethrough);
-        boolean obfuscated1 = Element.getAttribute(attributes, "obfuscated", defaults != null ? defaults.obfuscated : DEFAULT.obfuscated);
-        ResourceLocation font1 = Element.getAttribute(attributes, "font", defaults != null ? defaults.font : DEFAULT.font);
-        float scale1 = Element.getAttribute(attributes, "scale", defaults != null ? defaults.scale : DEFAULT.scale);
+        return parse(AttributeGetter.wrap(attributes), defaults);
+    }
+
+    public static TextStyle parse(AttributeGetter attributes, TextStyle defaults)
+    {
+        int color1 = attributes.getColorAttribute(defaults != null ? defaults.color : DEFAULT.color);
+        boolean bold1 = attributes.getAttribute("bold", defaults != null ? defaults.bold : DEFAULT.bold);
+        boolean italics1 = attributes.getAttribute("italics", defaults != null ? defaults.italics : DEFAULT.italics);
+        boolean underline1 = attributes.getAttribute("underline", defaults != null ? defaults.underline : DEFAULT.underline);
+        boolean strikethrough1 = attributes.getAttribute("strikethrough", defaults != null ? defaults.strikethrough : DEFAULT.strikethrough);
+        boolean obfuscated1 = attributes.getAttribute("obfuscated", defaults != null ? defaults.obfuscated : DEFAULT.obfuscated);
+        ResourceLocation font1 = attributes.getAttribute("font", defaults != null ? defaults.font : DEFAULT.font);
+        float scale1 = attributes.getAttribute("scale", defaults != null ? defaults.scale : DEFAULT.scale);
 
         return new TextStyle(color1, bold1, italics1, underline1, strikethrough1, obfuscated1, font1, scale1);
     }

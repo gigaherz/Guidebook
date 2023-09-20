@@ -8,15 +8,18 @@ import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualStack;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import joptsimple.internal.Strings;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.Tags;
@@ -85,21 +88,21 @@ public class ElementStack extends ElementInline
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         int stackSize = 1;
         CompoundTag tag = new CompoundTag();
 
         super.parse(context, attributes);
 
-        scale = getAttribute(attributes, "scale", scale);
+        scale = attributes.getAttribute("scale", scale);
 
-        Node attr = attributes.getNamedItem("tag");
+        String attr = attributes.getAttribute("tag");
         if (attr != null)
         {
             try
             {
-                tag = TagParser.parseTag(attr.getTextContent());
+                tag = TagParser.parseTag(attr);
             }
             catch (CommandSyntaxException e)
             {
@@ -107,46 +110,65 @@ public class ElementStack extends ElementInline
             }
         }
 
-        attr = attributes.getNamedItem("count");
+        attr = attributes.getAttribute("count");
         if (attr != null)
         {
-            stackSize = Integer.parseInt(attr.getTextContent());
+            stackSize = Integer.parseInt(attr);
         }
 
         String name = null;
 
-        attr = attributes.getNamedItem("name");
+        attr = attributes.getAttribute("name");
         if (attr != null)
         {
-            name = attr.getTextContent();
+            name = attr;
         }
 
-        attr = attributes.getNamedItem("item");
+        attr = attributes.getAttribute("item");
         if (attr != null)
         {
-            String itemName = attr.getTextContent();
+            String itemName = attr;
 
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
-
-            if (item != null)
+            if (itemName.startsWith("#"))
             {
-                ItemStack stack = new ItemStack(item, stackSize);
-                stack.setTag(tag);
-                stacks.add(stack);
-                if (!Strings.isNullOrEmpty(name))
+                var count = stackSize;
+                var hoverName = name;
+                var nbt = tag;
+                var mcTag = ForgeRegistries.ITEMS.tags().getTag(TagKey.create(Registries.ITEM, new ResourceLocation(itemName.substring(1))));
+                mcTag.stream().forEachOrdered(item -> {
+                    ItemStack stack = new ItemStack(item, count);
+                    stack.setTag(nbt);
+                    stacks.add(stack);
+                    if (!Strings.isNullOrEmpty(hoverName))
+                    {
+                        stack.setHoverName(Component.literal(hoverName));
+                    }
+                });
+            }
+            else
+            {
+                Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+
+                if (item != null)
                 {
-                    stack.setHoverName(Component.literal(name));
+                    ItemStack stack = new ItemStack(item, stackSize);
+                    stack.setTag(tag);
+                    stacks.add(stack);
+                    if (!Strings.isNullOrEmpty(name))
+                    {
+                        stack.setHoverName(Component.literal(name));
+                    }
                 }
             }
         }
 
-        attr = attributes.getNamedItem("labelPosition");
+        attr = attributes.getAttribute("labelPosition");
         if (attr != null)
         {
             if (stacks.size() != 1)
                 throw new RuntimeException("stack labels cannot be used with multi-stack elements!");
 
-            labelPosition = Enum.valueOf(LabelPosition.class, attr.getTextContent().toUpperCase(Locale.ROOT));
+            labelPosition = Enum.valueOf(LabelPosition.class, attr.toUpperCase(Locale.ROOT));
         }
 
         // TODO: Tags
@@ -155,7 +177,7 @@ public class ElementStack extends ElementInline
         attr = attributes.getNamedItem("ore");
         if (attr != null)
         {
-            String oreName = attr.getTextContent();
+            String oreName = attr;
             //list of matching item stack; may contain wildcard meta data
             NonNullList<ItemStack> items = OreDictionary.getOres(oreName);
 

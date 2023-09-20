@@ -4,6 +4,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.SectionRef;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -35,34 +36,34 @@ public class ElementLink extends ElementSpan
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
 
-        Node attr = attributes.getNamedItem("ref");
+        String attr = attributes.getAttribute("ref");
         if (attr != null)
         {
-            String ref = attr.getTextContent();
+            String ref = attr;
             ctx.target = SectionRef.fromString(ref);
         }
 
-        attr = attributes.getNamedItem("href");
+        attr = attributes.getAttribute("href");
         if (attr != null)
         {
-            ctx.textTarget = attr.getTextContent();
+            ctx.textTarget = attr;
             ctx.textAction = "openUrl";
         }
 
-        attr = attributes.getNamedItem("text");
+        attr = attributes.getAttribute("text");
         if (attr != null)
         {
-            ctx.textTarget = attr.getTextContent();
+            ctx.textTarget = attr;
         }
 
-        attr = attributes.getNamedItem("action");
+        attr = attributes.getAttribute("action");
         if (attr != null)
         {
-            ctx.textAction = attr.getTextContent();
+            ctx.textAction = attr;
         }
     }
 

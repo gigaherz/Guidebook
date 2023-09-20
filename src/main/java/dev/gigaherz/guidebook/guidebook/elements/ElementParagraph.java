@@ -7,6 +7,7 @@ import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualDebugArea;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -216,14 +217,14 @@ public class ElementParagraph extends Element
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
 
-        Node attr = attributes.getNamedItem("align");
+        String attr = attributes.getAttribute("align");
         if (attr != null)
         {
-            String a = attr.getTextContent();
+            String a = attr;
             switch (a)
             {
                 case "left":
@@ -238,8 +239,8 @@ public class ElementParagraph extends Element
             }
         }
 
-        indent = getAttribute(attributes, "indent", indent);
-        space = getAttribute(attributes, "space", space);
+        indent = attributes.getAttribute("indent", indent);
+        space = attributes.getAttribute("space", space);
     }
 
     @Override

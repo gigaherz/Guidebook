@@ -12,6 +12,7 @@ import dev.gigaherz.guidebook.guidebook.elements.*;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateDefinition;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateElement;
 import dev.gigaherz.guidebook.guidebook.templates.TemplateLibrary;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
@@ -475,24 +476,23 @@ public class BookDocument
         if (!templateItem.hasAttributes())
             return; // TODO: Throw error
 
-        TemplateDefinition page = new TemplateDefinition();
+        TemplateDefinition template = new TemplateDefinition();
 
         NamedNodeMap attributes = templateItem.getAttributes();
         Node n = attributes.getNamedItem("id");
         if (n == null)
             return;
 
-        templates.put(n.getTextContent(), page);
+        templates.put(n.getTextContent(), template);
 
-        parseChildElements(context, templateItem.getChildNodes(), page.elements, templates, true, TextStyle.DEFAULT);
-
+        parseChildElements(context, templateItem.getChildNodes(), template.elements, templates, true, TextStyle.DEFAULT);
 
         for(var i =0;i<attributes.getLength();i++)
         {
             var attr = attributes.item(i);
             var key = attr.getNodeName();
             if (!key.equals("id"))
-                page.attributes.put(key, attr);
+                template.attributes.put(key, attr.getTextContent());
         }
     }
 
@@ -635,7 +635,7 @@ public class BookDocument
                 tagDefaults = new TextStyle(defaultStyle.color, true, false, true, false, false, null, 1.0f);
             }
 
-            TextStyle paragraphDefautls = TextStyle.parse(elementItem.getAttributes(), tagDefaults);
+            TextStyle paragraphDefautls = TextStyle.parse(AttributeGetter.of(elementItem), tagDefaults);
 
             NodeList childList = elementItem.getChildNodes();
             int l = childList.getLength();
@@ -646,7 +646,7 @@ public class BookDocument
 
                 if (parsedChild == null && childNode.getNodeType() != Node.TEXT_NODE)
                 {
-                    GuidebookMod.logger.warn("Unrecognized tag: {}", childNode.getNodeName());
+                    GuidebookMod.logger.warn("Unrecognized tag inside paragraph: {}", childNode.getNodeName());
                 }
                 else
                 {
@@ -656,7 +656,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                p.parse(context, elementItem.getAttributes());
+                p.parse(context, AttributeGetter.of(elementItem));
             }
 
             parsedElement = p;
@@ -670,7 +670,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                p.parse(context, elementItem.getAttributes());
+                p.parse(context, AttributeGetter.of(elementItem));
             }
 
             if (elementItem.hasChildNodes())
@@ -686,7 +686,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                g.parse(context, elementItem.getAttributes());
+                g.parse(context, AttributeGetter.of(elementItem));
             }
 
             if (elementItem.hasChildNodes())
@@ -704,7 +704,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                t.parse(context, elementItem.getAttributes());
+                t.parse(context, AttributeGetter.of(elementItem));
             }
 
             if (elementItem.hasChildNodes())
@@ -719,11 +719,12 @@ public class BookDocument
             TemplateDefinition tDef = templates.get(nodeName);
 
             ElementPanel t = new ElementPanel();
+            t.mode = ElementPanel.PanelMode.DEFAULT;
             t.parse(context, tDef);
 
             if (elementItem.hasAttributes())
             {
-                t.parse(context, elementItem.getAttributes());
+                t.parse(context, AttributeGetter.of(elementItem));
             }
 
             List<Element> elementList = Lists.newArrayList();
@@ -755,7 +756,7 @@ public class BookDocument
 
             if (parsedElement == null)
             {
-                GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
+                GuidebookMod.logger.warn("Unrecognized page-level tag: {}", nodeName);
             }
         }
 
@@ -767,8 +768,8 @@ public class BookDocument
 
                 if (elementItem.hasAttributes())
                 {
-                    p.parse(context, elementItem.getAttributes());
-                    parsedElement.parse(context, elementItem.getAttributes());
+                    p.parse(context, AttributeGetter.of(elementItem));
+                    parsedElement.parse(context, AttributeGetter.of(elementItem));
                 }
 
                 p.inlines.add((ElementInline) parsedElement);
@@ -791,12 +792,12 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                span.parse(context, elementItem.getAttributes());
+                span.parse(context, AttributeGetter.of(elementItem));
             }
 
             if (elementItem.hasChildNodes())
             {
-                TextStyle spanDefaults = TextStyle.parse(elementItem.getAttributes(), defaultStyle);
+                TextStyle spanDefaults = TextStyle.parse(AttributeGetter.of(elementItem), defaultStyle);
 
                 List<ElementInline> elementList = Lists.newArrayList();
 
@@ -813,12 +814,12 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                link.parse(context, elementItem.getAttributes());
+                link.parse(context, AttributeGetter.of(elementItem));
             }
 
             if (elementItem.hasChildNodes())
             {
-                TextStyle spanDefaults = TextStyle.parse(elementItem.getAttributes(), TextStyle.LINK);
+                TextStyle spanDefaults = TextStyle.parse(AttributeGetter.of(elementItem), TextStyle.LINK);
 
                 List<ElementInline> elementList = Lists.newArrayList();
 
@@ -835,7 +836,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                s.parse(context, elementItem.getAttributes());
+                s.parse(context, AttributeGetter.of(elementItem));
             }
 
             parsedElement = s;
@@ -846,7 +847,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                i.parse(context, elementItem.getAttributes());
+                i.parse(context, AttributeGetter.of(elementItem));
             }
 
             parsedElement = i;
@@ -857,7 +858,7 @@ public class BookDocument
 
             if (elementItem.hasAttributes())
             {
-                i.parse(context, elementItem.getAttributes());
+                i.parse(context, AttributeGetter.of(elementItem));
             }
 
             parsedElement = i;
@@ -898,7 +899,7 @@ public class BookDocument
                 {
                     if (elementItem.hasAttributes())
                     {
-                        t.parse(context, elementItem.getAttributes());
+                        t.parse(context, AttributeGetter.of(elementItem));
                     }
 
                     if (elementItem.hasChildNodes())
@@ -925,7 +926,7 @@ public class BookDocument
 
                 if (parsedElement == null)
                 {
-                    GuidebookMod.logger.warn("Unrecognized tag: {}", nodeName);
+                    GuidebookMod.logger.warn("Unrecognized inline tag: {}", nodeName);
                 }
             }
 

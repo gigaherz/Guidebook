@@ -4,6 +4,7 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
+import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
@@ -76,10 +77,10 @@ public class ElementText extends ElementInline
     }
 
     @Override
-    public void parse(ParsingContext context, NamedNodeMap attributes)
+    public void parse(ParsingContext context, AttributeGetter attributes)
     {
         super.parse(context, attributes);
-        scale = getAttribute(attributes, "scale", scale);
+        scale = attributes.getAttribute("scale", scale);
     }
 
     @Override
