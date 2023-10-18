@@ -1,0 +1,9 @@
+item.gbook_snapshot.guidebook.name=Справочник
+
+itemGroup.gbook_snapshot=Guidebook
+
+text.copyToClipboard.line1=Книга хочет положить текст в буфер обмена.
+text.copyToClipboard.line2=Ты уверен, что хочешь это позволить?
+text.copyToClipboard.success=Текст успешно скопирован.
+
+cmd.gbook_snapshot.guide.done=Перезагрузка завершена!
