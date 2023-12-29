@@ -3,7 +3,7 @@
   "loader": "gbook:book_model",
   "base_model": {
     "parent": "forge:item/default",
-    "loader": "forge:obj",
+    "loader": "neoforge:obj",
     "model": "gbook:models/item/book.obj",
     "gui_light": "side",
     "textures": {

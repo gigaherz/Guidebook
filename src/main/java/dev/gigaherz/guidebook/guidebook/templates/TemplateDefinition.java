@@ -5,9 +5,6 @@ import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import org.jetbrains.annotations.Nullable;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,7 +1,6 @@
 package dev.gigaherz.guidebook.guidebook.recipe;
 
 import com.google.common.collect.Maps;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;

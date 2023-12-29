@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 
 public class ElementTranslation extends ElementText
 {

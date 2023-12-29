@@ -17,14 +17,11 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraftforge.client.model.CompositeModel;
-import net.minecraftforge.client.model.data.ModelData;
-import org.joml.Quaternionf;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 public class AnimatedBookBackground implements IAnimatedBookBackground
 {

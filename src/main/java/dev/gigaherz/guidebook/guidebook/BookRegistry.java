@@ -7,7 +7,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.logging.LogUtils;
 import dev.gigaherz.guidebook.GuidebookMod;
-import dev.gigaherz.guidebook.guidebook.templates.TemplateLibrary;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
@@ -16,9 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.AbstractPackResources;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.PathPackResources;
+import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.*;
 import net.minecraft.world.item.ItemStack;
@@ -75,7 +73,7 @@ public class BookRegistry
     @Nullable
     public static BookDocument get(ItemStack stack)
     {
-        String loc = GuidebookMod.guidebook.getBookLocation(stack);
+        String loc = GuidebookMod.bookItem().getBookLocation(stack);
         return loc == null ? null : get(new ResourceLocation(loc));
     }
 
@@ -363,7 +361,7 @@ public class BookRegistry
         };
 
         Minecraft.getInstance().getResourcePackRepository().addPackFinder(infoConsumer -> infoConsumer.accept(
-                Pack.readMetaAndCreate(id, name, true, path1 -> pack, PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN)
+                Pack.readMetaAndCreate(id, name, true, BuiltInPackSource.fixedResources(pack), PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN)
         ));
     }
 

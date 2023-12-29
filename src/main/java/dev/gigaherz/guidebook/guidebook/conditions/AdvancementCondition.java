@@ -3,6 +3,7 @@ package dev.gigaherz.guidebook.guidebook.conditions;
 import com.google.common.base.Strings;
 import dev.gigaherz.guidebook.guidebook.BookParsingException;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientAdvancements;
@@ -23,8 +24,8 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return null;
         ClientAdvancements mgr = player.connection.getAdvancements();
-        Advancement adv = mgr.getAdvancements().get(advancement);
-        return mgr.progress.get(adv);
+        AdvancementHolder holder = mgr.get(advancement);
+        return holder != null ? mgr.progress.get(holder) : null;
     }
 
     protected AdvancementCondition(ResourceLocation advancement)

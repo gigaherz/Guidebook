@@ -6,7 +6,6 @@ import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
 import dev.gigaherz.guidebook.guidebook.elements.TextStyle;
-import io.netty.util.AttributeMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -26,16 +25,6 @@ import java.util.function.Predicate;
 public class TemplateLibrary
 {
     public final Map<String, TemplateDefinition> templates = Maps.newHashMap();
-
-    @Deprecated(forRemoval = true)
-    public void parseLibrary(ParsingContext context, InputStream stream) throws ParserConfigurationException, IOException, SAXException
-    {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(stream);
-
-        parseLibrary(context, doc);
-    }
 
     public void parseLibrary(ParsingContext context, Document doc) throws ParserConfigurationException, IOException, SAXException
     {
@@ -100,58 +89,6 @@ public class TemplateLibrary
             if (!key.equals("id"))
                 template.attributes.put(key, attr.getTextContent());
         }
-    }
-
-    @Deprecated(forRemoval = true)
-    public static TemplateLibrary get(ParsingContext context, String path, boolean useConfigFolder)
-    {
-        try
-        {
-            ResourceLocation loc = new ResourceLocation(path);
-
-            // Prevents loading libraries from config folder if the book was found in resource packs.
-            if (useConfigFolder && loc.getNamespace().equals("gbook"))
-            {
-                File booksFolder = BookRegistry.getBooksFolder();
-                File file = new File(booksFolder, loc.getPath());
-                if (file.exists() && file.isFile())
-                {
-                    try (InputStream stream = new FileInputStream(file))
-                    {
-                        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                        Document doc = dBuilder.parse(stream);
-
-                        return get(context, doc);
-                    }
-                    catch (FileNotFoundException e)
-                    {
-                        // WUT? continue and try to load from resource pack
-                    }
-                }
-            }
-
-            Resource res = Minecraft.getInstance().getResourceManager().getResourceOrThrow(loc);
-            try (InputStream stream = res.open())
-            {
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(stream);
-
-                return get(context, doc);
-            }
-        }
-        catch (IOException | ParserConfigurationException | SAXException e)
-        {
-            // TODO: Fail
-            return new TemplateLibrary();
-        }
-    }
-
-    @Deprecated(forRemoval = true)
-    public static TemplateLibrary get(ParsingContext context, ResourceLocation path, Document doc)
-    {
-        return get(context, doc);
     }
 
     public static TemplateLibrary get(ParsingContext context, Document doc)

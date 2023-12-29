@@ -1,6 +1,5 @@
 package dev.gigaherz.guidebook.guidebook.drawing;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.guidebook.HoverContext;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.elements.LinkContext;

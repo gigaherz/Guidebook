@@ -6,10 +6,8 @@ import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.elements.Element;
 import dev.gigaherz.guidebook.guidebook.elements.ElementInline;
-import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+import dev.gigaherz.guidebook.guidebook.util.Rect;
 
 import javax.annotation.Nullable;
 import java.util.List;

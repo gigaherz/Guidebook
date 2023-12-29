@@ -9,7 +9,6 @@ import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
-import org.w3c.dom.NamedNodeMap;
 
 import java.util.Collections;
 import java.util.List;

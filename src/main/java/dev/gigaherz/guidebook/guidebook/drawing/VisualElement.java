@@ -11,8 +11,8 @@ import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 
 import java.util.concurrent.ThreadLocalRandom;
 

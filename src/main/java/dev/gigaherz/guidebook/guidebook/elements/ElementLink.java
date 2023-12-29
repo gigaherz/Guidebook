@@ -6,8 +6,6 @@ import dev.gigaherz.guidebook.guidebook.SectionRef;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.LinkHelper;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.util.List;
 import java.util.stream.Collectors;

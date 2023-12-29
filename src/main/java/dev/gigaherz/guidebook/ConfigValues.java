@@ -1,7 +1,7 @@
 package dev.gigaherz.guidebook;
 
 import com.google.common.collect.Lists;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -9,21 +9,21 @@ import java.util.List;
 public class ConfigValues
 {
     public static final ServerConfig SERVER;
-    public static final ForgeConfigSpec SERVER_SPEC;
+    public static final ModConfigSpec SERVER_SPEC;
 
     static
     {
-        final Pair<ServerConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ServerConfig::new);
+        final Pair<ServerConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(ServerConfig::new);
         SERVER_SPEC = specPair.getRight();
         SERVER = specPair.getLeft();
     }
 
     public static final ClientConfig CLIENT;
-    public static final ForgeConfigSpec CLIENT_SPEC;
+    public static final ModConfigSpec CLIENT_SPEC;
 
     static
     {
-        final Pair<ClientConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+        final Pair<ClientConfig, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(ClientConfig::new);
         CLIENT_SPEC = specPair.getRight();
         CLIENT = specPair.getLeft();
     }
@@ -36,9 +36,9 @@ public class ConfigValues
 
     public static class ServerConfig
     {
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> giveOnFirstJoin;
+        public final ModConfigSpec.ConfigValue<List<? extends String>> giveOnFirstJoin;
 
-        ServerConfig(ForgeConfigSpec.Builder builder)
+        ServerConfig(ModConfigSpec.Builder builder)
         {
             builder.push("general");
             giveOnFirstJoin = builder
@@ -51,12 +51,12 @@ public class ConfigValues
 
     public static class ClientConfig
     {
-        public final ForgeConfigSpec.IntValue bookGUIScale;
-        public final ForgeConfigSpec.BooleanValue flexibleScale;
-        public final ForgeConfigSpec.BooleanValue flipScrollDirection;
-        public final ForgeConfigSpec.BooleanValue useNaturalArrows;
+        public final ModConfigSpec.IntValue bookGUIScale;
+        public final ModConfigSpec.BooleanValue flexibleScale;
+        public final ModConfigSpec.BooleanValue flipScrollDirection;
+        public final ModConfigSpec.BooleanValue useNaturalArrows;
 
-        ClientConfig(ForgeConfigSpec.Builder builder)
+        ClientConfig(ModConfigSpec.Builder builder)
         {
             builder.comment("Options for customizing the display of tools on the player")
                     .push("display");

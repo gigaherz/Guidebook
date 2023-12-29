@@ -3,13 +3,11 @@ package dev.gigaherz.guidebook.guidebook.elements;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
-import dev.gigaherz.guidebook.guidebook.drawing.VisualText;
 import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
-import org.w3c.dom.NamedNodeMap;
 
 import java.util.List;
 

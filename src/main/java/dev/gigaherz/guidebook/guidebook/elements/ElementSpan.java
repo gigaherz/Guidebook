@@ -5,7 +5,6 @@ import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
-import org.w3c.dom.NamedNodeMap;
 
 import java.util.Collections;
 import java.util.List;

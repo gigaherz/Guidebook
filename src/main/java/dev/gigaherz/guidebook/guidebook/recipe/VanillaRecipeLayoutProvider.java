@@ -13,8 +13,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.crafting.IShapedRecipe;
+import net.neoforged.neoforge.common.crafting.IShapedRecipe;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -45,8 +46,8 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
     @Override
     public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ItemStack targetOutput, int recipeIndex)
     {
-        Recipe<?> recipe = world.getRecipeManager().getRecipes().stream()
-                .filter(r -> !r.isSpecial() && ItemStack.isSameItem(targetOutput, r.getResultItem(world.registryAccess())))
+        RecipeHolder<?> recipe = world.getRecipeManager().getRecipes().stream()
+                .filter(r -> !r.value().isSpecial() && ItemStack.isSameItem(targetOutput, r.value().getResultItem(world.registryAccess())))
                 .skip(recipeIndex)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for provided output item: %s", targetOutput)));
@@ -57,13 +58,14 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
     @Override
     public RecipeLayout getRecipeLayout(@Nonnull Level world, @Nonnull ResourceLocation recipeKey)
     {
-        Recipe<?> recipe = world.getRecipeManager().byKey(recipeKey)
+        RecipeHolder<?> recipe = world.getRecipeManager().byKey(recipeKey)
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Recipe not found for registry name: %s", recipeKey)));
         return getRecipeLayout(recipe);
     }
 
-    private RecipeLayout getRecipeLayout(@Nonnull Recipe<?> recipe)
+    private RecipeLayout getRecipeLayout(@Nonnull RecipeHolder<?> recipeHolder)
     {
+        var recipe = recipeHolder.value();
         int gridWidth;
         int recipeGraphic;
         if (recipe instanceof AbstractCookingRecipe)

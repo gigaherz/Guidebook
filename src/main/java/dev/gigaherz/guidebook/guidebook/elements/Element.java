@@ -1,6 +1,5 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
-import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.conditions.ConditionContext;
@@ -10,19 +9,16 @@ import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
 import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class Element
@@ -141,12 +137,6 @@ public abstract class Element
         other.w = w;
         other.h = h;
         return other;
-    }
-
-    @Deprecated(forRemoval = true)
-    public final void parse(ParsingContext context, NamedNodeMap attributes)
-    {
-        parse(context, AttributeGetter.wrap(attributes));
     }
 
     public void parse(ParsingContext context, AttributeGetter attributes)

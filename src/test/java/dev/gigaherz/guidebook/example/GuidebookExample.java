@@ -6,16 +6,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.registries.DeferredItem;
 
 public class GuidebookExample
 {
-    public static final RegistryObject<GuidebookItem> GUIDEBOOK_ITEM = RegistryObject.create(new ResourceLocation("gbook","guidebook"), ForgeRegistries.ITEMS);
-    public static final Lazy<ItemStack> MY_BOOK = Lazy.of(() -> GUIDEBOOK_ITEM.map(item -> {
+    public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = DeferredItem.createItem(new ResourceLocation("gbook","guidebook"));
+    public static final Lazy<ItemStack> MY_BOOK = Lazy.of(() -> GUIDEBOOK_ITEM.asOptional().map(item -> {
         ItemStack stack = new ItemStack(item);
         CompoundTag tag = stack.getOrCreateTag();
         tag.putString("Book", "my:book.xml");

@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -17,14 +16,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.ForgeRenderTypes;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class BookItemRenderer extends BlockEntityWithoutLevelRenderer
 {
@@ -53,10 +51,10 @@ public class BookItemRenderer extends BlockEntityWithoutLevelRenderer
 
         matrixStack.pushPose();
         matrixStack.translate(0.5D, 0.5D, 0.5D);
-        bookModel = ForgeHooksClient.handleCameraTransforms(matrixStack, bookModel, transformType, leftHand);
+        bookModel = ClientHooks.handleCameraTransforms(matrixStack, bookModel, transformType, leftHand);
         matrixStack.translate(-0.5D, -0.5D, -0.5D);
 
-        VertexConsumer buffer = buffers.getBuffer(ForgeRenderTypes.ITEM_UNSORTED_TRANSLUCENT.get());
+        VertexConsumer buffer = buffers.getBuffer(NeoForgeRenderTypes.ITEM_UNSORTED_TRANSLUCENT.get());
         RandomSource rnd = RandomSource.create();
         for (Direction side : sides)
         {

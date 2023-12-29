@@ -32,12 +32,6 @@ public class TextStyle
         this.scale = scale;
     }
 
-    @Deprecated(forRemoval = true)
-    public static TextStyle parse(NamedNodeMap attributes, TextStyle defaults)
-    {
-        return parse(AttributeGetter.wrap(attributes), defaults);
-    }
-
     public static TextStyle parse(AttributeGetter attributes, TextStyle defaults)
     {
         int color1 = attributes.getColorAttribute(defaults != null ? defaults.color : DEFAULT.color);

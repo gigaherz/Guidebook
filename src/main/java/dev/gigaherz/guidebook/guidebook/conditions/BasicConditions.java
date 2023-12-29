@@ -2,9 +2,9 @@ package dev.gigaherz.guidebook.guidebook.conditions;
 
 import com.google.common.base.Strings;
 import dev.gigaherz.guidebook.guidebook.BookParsingException;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.ModList;
 import org.w3c.dom.Node;
 
 import java.util.function.Predicate;
@@ -85,7 +85,7 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         @Override
         public boolean test(ConditionContext conditionContext)
         {
-            return ForgeRegistries.ITEMS.containsKey(item);
+            return BuiltInRegistries.ITEM.containsKey(item);
         }
     }
 

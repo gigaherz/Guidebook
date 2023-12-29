@@ -1,19 +1,17 @@
 package dev.gigaherz.guidebook.guidebook.elements;
 
-import com.google.common.primitives.Ints;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.IBookGraphics;
 import dev.gigaherz.guidebook.guidebook.ParsingContext;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
-import dev.gigaherz.guidebook.guidebook.drawing.VisualPanel;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualStack;
 import dev.gigaherz.guidebook.guidebook.util.AttributeGetter;
-import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import joptsimple.internal.Strings;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -22,10 +20,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import java.util.List;
 import java.util.Locale;
@@ -134,8 +128,8 @@ public class ElementStack extends ElementInline
                 var count = stackSize;
                 var hoverName = name;
                 var nbt = tag;
-                var mcTag = ForgeRegistries.ITEMS.tags().getTag(TagKey.create(Registries.ITEM, new ResourceLocation(itemName.substring(1))));
-                mcTag.stream().forEachOrdered(item -> {
+                var mcTag = BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, new ResourceLocation(itemName.substring(1))));
+                mcTag.ifPresent(tag1 -> tag1.stream().forEachOrdered(item -> {
                     ItemStack stack = new ItemStack(item, count);
                     stack.setTag(nbt);
                     stacks.add(stack);
@@ -143,11 +137,11 @@ public class ElementStack extends ElementInline
                     {
                         stack.setHoverName(Component.literal(hoverName));
                     }
-                });
+                }));
             }
             else
             {
-                Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+                Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemName));
 
                 if (item != null)
                 {

@@ -9,17 +9,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.registries.ObjectHolder;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,23 +29,37 @@ public class GuidebookMod
 {
     public static final String MODID = "gbook";
 
-    public static GuidebookMod instance;
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
+    private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
-    // Items
-    @ObjectHolder(value = "gbook:guidebook", registryName = "item")
-    public static GuidebookItem guidebook;
+    public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = ITEMS.register("guidebook", () -> new GuidebookItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> GUIDEBOOKS = TABS
+            .register("guidebook_books", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
+                    .icon(() -> new ItemStack(bookItem()))
+                    .title(Component.translatable("itemGroup.gbook"))
+                    .displayItems((featureFlags, output) -> {
+                        for (ResourceLocation resourceLocation : BookRegistry.getBooksList())
+                        {
+                            output.accept(bookItem() .of(resourceLocation));
+                        }
+                    }).build());
 
     public static final Logger logger = LogManager.getLogger(MODID);
 
+    public static GuidebookItem bookItem()
+    {
+        return GUIDEBOOK_ITEM.get();
+    }
+
     public GuidebookMod()
     {
-        instance = this;
-
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::register);
         modEventBus.addListener(this::modConfig);
+        ITEMS.register(modEventBus);
+        TABS.register(modEventBus);
 
-        MinecraftForge.EVENT_BUS.addListener(this::playerLogIn);
+        NeoForge.EVENT_BUS.addListener(this::playerLogIn);
 
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
         modLoadingContext.registerConfig(ModConfig.Type.SERVER, ConfigValues.SERVER_SPEC);
@@ -60,23 +75,6 @@ public class GuidebookMod
             ConfigValues.refreshServer();
     }
 
-    private void register(RegisterEvent event)
-    {
-        event.register(Registries.ITEM, helper ->
-                helper.register("guidebook", new GuidebookItem(new Item.Properties().stacksTo(1)))
-        );
-        event.register(Registries.CREATIVE_MODE_TAB, helper ->
-                helper.register("guidebook_books", new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
-                .icon(() -> new ItemStack(guidebook))
-                .title(Component.translatable("itemGroup.gbook"))
-                .displayItems((featureFlags, output) -> {
-                    for (ResourceLocation resourceLocation : BookRegistry.getBooksList())
-                    {
-                        output.accept(guidebook.of(resourceLocation));
-                    }
-                }).build()
-        ));
-    }
 
     private void playerLogIn(PlayerEvent.PlayerLoggedInEvent event)
     {
@@ -88,7 +86,7 @@ public class GuidebookMod
                 String tag = String.format("%s:givenBook:%s", MODID, g);
                 if (!e.getTags().contains(tag))
                 {
-                    ItemHandlerHelper.giveItemToPlayer(e, guidebook.of(new ResourceLocation(g)));
+                    ItemHandlerHelper.giveItemToPlayer(e, bookItem().of(new ResourceLocation(g)));
                     e.addTag(tag);
                 }
             }

@@ -1,5 +1,5 @@
 {
-  "loader": "forge:obj",
+  "loader": "neoforge:obj",
   "model": "gbook:models/gui/book.obj",
   "automatic_culling": false
 }

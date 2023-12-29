@@ -1,7 +1,6 @@
 package dev.gigaherz.guidebook.guidebook.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.gigaherz.guidebook.ConfigValues;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookDocument;
@@ -11,9 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
@@ -158,12 +157,12 @@ public class GuidebookScreen extends Screen
     private double deltaAcc = 0;
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double hdelta, double ydelta)
     {
-        if (super.mouseScrolled(mouseX, mouseY, delta))
+        if (super.mouseScrolled(mouseX, mouseY, hdelta, ydelta))
             return true;
 
-        deltaAcc += delta * (ConfigValues.flipScrollDirection ? -1 : 1);
+        deltaAcc += ydelta * (ConfigValues.flipScrollDirection ? -1 : 1);
         while (deltaAcc >= 1.0)
         {
             deltaAcc -= 1.0;
@@ -220,7 +219,7 @@ public class GuidebookScreen extends Screen
         double backgroundScale = rendering.getScalingFactor() / rendering.getBook().getFontSize();
         double bookHeight = BookRendering.DEFAULT_BOOK_HEIGHT * backgroundScale;
 
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTicks);
 
         background.draw(graphics, partialTicks, (int) bookHeight, (float) backgroundScale);
 
@@ -229,7 +228,10 @@ public class GuidebookScreen extends Screen
             rendering.drawCurrentPages(graphics);
         }
 
-        super.render(graphics, mouseX, mouseY, partialTicks);
+        //super.render(graphics, mouseX, mouseY, partialTicks);
+        for(Renderable renderable : this.renderables) {
+            renderable.render(graphics, mouseX, mouseY, partialTicks);
+        }
 
         if (background.isFullyOpen())
         {

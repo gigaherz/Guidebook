@@ -20,8 +20,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ElementGrid extends Element
 {
@@ -81,7 +83,7 @@ public class ElementGrid extends Element
                     var row = new Row();
                     var rowColumns = 0;
                     if (rowNode.hasAttributes())
-                        row.parse(rowNode.getAttributes());
+                        row.parse(AttributeGetter.wrap(rowNode.getAttributes()));
 
                     var colNodes = rowNode.getChildNodes();
                     for (int j = 0; j < colNodes.getLength(); ++j)
@@ -90,17 +92,18 @@ public class ElementGrid extends Element
                         String colNodeName = colNode.getNodeName();
                         if (colNodeName.equals("col"))
                         {
+
                             if (numColumns < 0)
                             {
                                 var col = new Column();
                                 if (colNode.hasAttributes())
-                                    col.parse(colNode.getAttributes());
+                                    col.parse(AttributeGetter.wrap(colNode.getAttributes()));
                                 cols.add(col);
                             }
 
                             var cell = new Cell();
                             if (colNode.hasAttributes())
-                                cell.parse(colNode.getAttributes());
+                                cell.parse(AttributeGetter.wrap(colNode.getAttributes()));
 
                             if (colNode.hasChildNodes())
                             {
@@ -357,12 +360,6 @@ public class ElementGrid extends Element
         public Integer width;
         public int computedWidth;
 
-        @Deprecated(forRemoval = true)
-        public void parse(NamedNodeMap attributes)
-        {
-            parse(AttributeGetter.wrap(attributes));
-        }
-
         public void parse(AttributeGetter attributes)
         {
             var attr = attributes.getAttribute("width");
@@ -386,12 +383,6 @@ public class ElementGrid extends Element
         @Nullable
         public Element content;
 
-        @Deprecated(forRemoval = true)
-        public void parse(NamedNodeMap attributes)
-        {
-            parse(AttributeGetter.wrap(attributes));
-        }
-
         public void parse(AttributeGetter attributes)
         {
             String attr = attributes.getAttribute("colspan");
@@ -409,12 +400,6 @@ public class ElementGrid extends Element
         public Integer height;
         public List<Cell> cells = new ArrayList<>();
         public int computedHeight;
-
-        @Deprecated(forRemoval = true)
-        public void parse(NamedNodeMap attributes)
-        {
-            parse(AttributeGetter.wrap(attributes));
-        }
 
         public void parse(AttributeGetter attributes)
         {

@@ -20,12 +20,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.Items;
+import net.neoforged.fml.ModList;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -952,8 +953,8 @@ public class BookDocument
                     Node item_node = refItem.getAttributes().getNamedItem("item"); //get item
                     if (item_node != null)
                     {
-                        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(item_node.getTextContent()));
-                        if (item != null)
+                        Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(item_node.getTextContent()));
+                        if (item != Items.AIR)
                         {
                             String ref = refItem.getTextContent();
                             stackLinks.put(item, SectionRef.fromString(ref));

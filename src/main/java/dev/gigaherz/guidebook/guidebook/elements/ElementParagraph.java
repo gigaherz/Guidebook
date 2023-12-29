@@ -12,8 +12,6 @@ import dev.gigaherz.guidebook.guidebook.util.Point;
 import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.network.chat.Component;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
