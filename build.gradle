@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.72'
+    id 'net.neoforged.gradle.userdev' version '7.0.76'
 }
 
 version = "3.9.0"
@@ -65,10 +65,17 @@ runs {
     }
 }
 
+subsystems {
+    parchment {
+        minecraftVersion="1.20.3"
+        mappingsVersion="2023.12.31"
+    }
+}
+
 minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
 
 dependencies {
-    implementation 'net.neoforged:neoforge:20.4.60-beta'
+    implementation 'net.neoforged:neoforge:20.4.72-beta'
 
     //compileOnly ("mezz.jei:jei-1.20-common-api:14.0.0.4")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.20-common:14.0.0.4")
