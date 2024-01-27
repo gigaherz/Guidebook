@@ -276,8 +276,8 @@ public abstract class Element
         return def;
     }
 
-    // For an exploded description of this regex, see: https://regex101.com/r/qXfiDc/1/
-    private static final Pattern COLOR_PARSE = Pattern.compile("^#?(?:(?<c3>[0-9a-f]{3})|(?<c6>[0-9a-f]{6})|(?<c8>[0-9a-f]{8})|(?<rgb>rgb\\((?<r>[0-9]{1,3}),(?<g>[0-9]{1,3}),(?<b>[0-9]{1,3})\\))|(?<rgba>rgba\\((?<r2>[0-9]{1,3}),(?<g2>[0-9]{1,3}),(?<b2>[0-9]{1,3}),(?<a2>[0-9]{1,3})\\)))$");
+    // For an exploded description of this regex, see: https://regex101.com/r/qXfiDc/3
+    private static final Pattern COLOR_PARSE = Pattern.compile("^#?(?:(?<c3>[0-9a-fA-F]{3})|(?<c6>[0-9a-f]{6})|(?<c8>[0-9a-fA-F]{8})|(?<rgb>rgb\\((?<r>[0-9]{1,3}),(?<g>[0-9]{1,3}),(?<b>[0-9]{1,3})\\))|(?<rgba>rgba\\((?<r2>[0-9]{1,3}),(?<g2>[0-9]{1,3}),(?<b2>[0-9]{1,3}),(?<a2>[0-9]{1,3})\\)))$");
 
     protected static int getColorAttribute(NamedNodeMap attributes, int def)
     {

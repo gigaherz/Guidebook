@@ -123,8 +123,8 @@
       <p indent="12" space="8">&lt;p&gt;Text&lt;/p&gt;</p>
       <p space="12">Text</p>
       <p space="8">There's many reasons to want different colors and alignments. This can be accomplished with the 'color' and 'align' attributes.</p>
-      <p indent="8" space="8">&lt;p color=&quot;#606060&quot; align=&quot;center&quot;&gt; Centered Gray Text&lt;/p&gt;</p>
-      <p color="#606060" align="center" space="12">Centered Gray Text</p>
+      <p indent="8" space="8">&lt;p color=&quot;#abc123&quot; align=&quot;center&quot;&gt;Colored Text&lt;/p&gt;</p>
+      <p color="#abc123" align="center" space="12">Colored Text</p>
       <p space="8">You can also customize the text appearance, using the 'bold', 'italics', and 'underline' attributes.</p>
       <p indent="8" space="8">&lt;p bold=&quot;true&quot; italics=&quot;true&quot;&gt;Formatted text&lt;/p&gt;</p>
       <p bold="true" italics="true">Formatted text</p>
@@ -233,7 +233,7 @@
       <space height="12"/>
       <divider/>
       <space height="6"/>
-      <p color="#8C3321">Warning: This feature will NOT work with recipe systems that have recipes without a registry key. This may be the case with custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
+      <p color="#8c3321">Warning: This feature will NOT work with recipe systems that have recipes without a registry key. This may be the case with custom recipe systems, so take care when using this feature and verify that the recipe system you are using supports it.</p>
     </section>
     <section id="recipe_indices">
       <page_title>
