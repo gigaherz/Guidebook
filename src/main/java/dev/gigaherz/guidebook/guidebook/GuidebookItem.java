@@ -1,6 +1,8 @@
 package dev.gigaherz.guidebook.guidebook;
 
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
+import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.client.BookItemRenderer;
 import dev.gigaherz.guidebook.client.ClientAPI;
 import net.minecraft.ChatFormatting;
@@ -28,6 +30,7 @@ import net.neoforged.neoforge.common.util.NonNullLazy;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class GuidebookItem extends Item
 {
@@ -54,12 +57,12 @@ public class GuidebookItem extends Item
         if (!worldIn.isClientSide)
             return InteractionResultHolder.success(stack);
 
-        CompoundTag nbt = stack.getTag();
-        if (nbt == null || !nbt.contains("Book", Tag.TAG_STRING))
+        var book = stack.get(GuidebookMod.BOOK_ID);
+        if (book == null)
             return InteractionResultHolder.fail(stack);
 
         if (FMLEnvironment.dist == Dist.CLIENT)
-            ClientAPI.displayBook(nbt.getString("Book"));
+            ClientAPI.displayBook(book);
 
         return InteractionResultHolder.success(stack);
     }
@@ -67,35 +70,28 @@ public class GuidebookItem extends Item
     public ItemStack of(ResourceLocation book)
     {
         ItemStack stack = new ItemStack(this);
-        CompoundTag tag = new CompoundTag();
-        tag.putString("Book", book.toString());
-        stack.setTag(tag);
+        stack.set(GuidebookMod.BOOK_ID, book);
         return stack;
     }
 
     @Nullable
-    public String getBookLocation(ItemStack stack)
+    public static ResourceLocation getBookLocation(ItemStack stack)
     {
-        CompoundTag tag = stack.getTag();
-        if (tag != null)
-        {
-            return tag.getString("Book");
-        }
-        return null;
+        return stack.get(GuidebookMod.BOOK_ID);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn)
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flagIn)
     {
-        super.appendHoverText(stack, worldIn, tooltip, flagIn);
+        super.appendHoverText(stack, context, tooltip, flagIn);
 
         if (flagIn == TooltipFlag.Default.ADVANCED)
         {
-            String book = getBookLocation(stack);
-            if (!Strings.isNullOrEmpty(book))
+            var book = getBookLocation(stack);
+            if (book != null)
             {
                 tooltip.add(Component.translatable("text.gbook.tooltip.book",
-                        Component.literal(book).withStyle(ChatFormatting.ITALIC)
+                        Component.literal(book.toString()).withStyle(ChatFormatting.ITALIC)
                 ).withStyle(ChatFormatting.GRAY));
             }
         }
@@ -104,8 +100,8 @@ public class GuidebookItem extends Item
     @Override
     public Component getName(ItemStack stack)
     {
-        String book = getBookLocation(stack);
-        if (!Strings.isNullOrEmpty(book))
+        var book = getBookLocation(stack);
+        if (book != null)
         {
             if (FMLEnvironment.dist == Dist.CLIENT && EffectiveSide.get().isClient())
                 return Component.literal(ClientAPI.getBookName(book));
@@ -114,22 +110,13 @@ public class GuidebookItem extends Item
         return super.getName(stack);
     }
 
-    public static String getSubtype(ItemStack stack)
-    {
-        if (stack.getItem() instanceof GuidebookItem)
-        {
-            String bookLocation = ((GuidebookItem) stack.getItem()).getBookLocation(stack);
-            return bookLocation == null ? "" : bookLocation;
-        }
-        return "";
-    }
-
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer)
     {
         consumer.accept(new IClientItemExtensions()
         {
-            private final NonNullLazy<BlockEntityWithoutLevelRenderer> ister = NonNullLazy.of(() -> new BookItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
+            private final Supplier<BlockEntityWithoutLevelRenderer> ister
+                    = Suppliers.memoize(() -> new BookItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer()

@@ -8,17 +8,16 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ClientAPI
 {
-    public static void displayBook(String book)
+    public static void displayBook(ResourceLocation book)
     {
-        ResourceLocation loc = new ResourceLocation(book);
-        BookDocument br = BookRegistry.get(loc);
+        BookDocument br = BookRegistry.get(book);
         if (br != null && br.chapterCount() > 0)
-            Minecraft.getInstance().setScreen(new GuidebookScreen(loc));
+            Minecraft.getInstance().setScreen(new GuidebookScreen(book));
     }
 
-    public static String getBookName(String book)
+    public static String getBookName(ResourceLocation book)
     {
-        BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
+        BookDocument bookDocument = BookRegistry.get(book);
         if (bookDocument != null)
         {
             String name = bookDocument.getName();

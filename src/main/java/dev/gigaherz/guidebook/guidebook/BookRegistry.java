@@ -12,10 +12,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.AbstractPackResources;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.*;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.*;
@@ -73,8 +72,8 @@ public class BookRegistry
     @Nullable
     public static BookDocument get(ItemStack stack)
     {
-        String loc = GuidebookMod.bookItem().getBookLocation(stack);
-        return loc == null ? null : get(new ResourceLocation(loc));
+        var loc = GuidebookItem.getBookLocation(stack);
+        return loc == null ? null : get(loc);
     }
 
     public static void parseAllBooks(ResourceManager manager)
@@ -282,10 +281,8 @@ public class BookRegistry
         final String id = "guidebook_config_folder_resources";
         final Component name = Component.literal("Guidebook Config Folder Resources");
         final String description = "For config/books/resources folder";
-        final PackResources pack = new AbstractPackResources("special:guidebook_config_folder", true)
+        try(final PackResources pack = new AbstractPackResources(new PackLocationInfo("special:guidebook_config_folder", name, PackSource.FEATURE, Optional.empty()))
         {
-            String prefix = "assets/" + GuidebookMod.MODID + "/";
-
             final Path root = resourcesFolder;
 
             @org.jetbrains.annotations.Nullable
@@ -358,11 +355,13 @@ public class BookRegistry
             public void close()
             {
             }
-        };
-
-        Minecraft.getInstance().getResourcePackRepository().addPackFinder(infoConsumer -> infoConsumer.accept(
-                Pack.readMetaAndCreate(id, name, true, BuiltInPackSource.fixedResources(pack), PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN)
-        ));
+        })
+        {
+            Minecraft.getInstance().getResourcePackRepository().addPackFinder(infoConsumer -> infoConsumer.accept(
+                    Pack.readMetaAndCreate(new PackLocationInfo(id, name, PackSource.BUILT_IN, Optional.empty()),
+                            BuiltInPackSource.fixedResources(pack), PackType.CLIENT_RESOURCES, new PackSelectionConfig(true, Pack.Position.BOTTOM, true))
+            ));
+        }
     }
 
     public static ResourceLocation[] gatherBookModels()

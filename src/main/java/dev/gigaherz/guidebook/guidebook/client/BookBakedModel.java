@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
+import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -53,11 +54,10 @@ public class BookBakedModel implements BakedModel
             @Override
             public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel worldIn, @Nullable LivingEntity entityIn, int p_173469_)
             {
-                CompoundTag tag = stack.getTag();
-                if (tag != null)
+                ResourceLocation book = stack.get(GuidebookMod.BOOK_ID);
+                if (book != null)
                 {
-                    String book = tag.getString("Book");
-                    BookDocument bookDocument = BookRegistry.get(new ResourceLocation(book));
+                    BookDocument bookDocument = BookRegistry.get(book);
                     if (bookDocument != null)
                     {
                         ResourceLocation modelLocation = bookDocument.getModel();

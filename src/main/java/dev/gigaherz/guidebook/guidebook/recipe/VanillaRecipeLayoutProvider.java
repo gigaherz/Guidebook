@@ -79,8 +79,8 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
             if (recipe instanceof IShapedRecipe)
             {
                 IShapedRecipe<?> shapedRecipe = (IShapedRecipe<?>) recipe;
-                gridWidth = shapedRecipe.getRecipeWidth();
-                gridHeight = shapedRecipe.getRecipeHeight();
+                gridWidth = shapedRecipe.getWidth();
+                gridHeight = shapedRecipe.getHeight();
             }
             else
             {

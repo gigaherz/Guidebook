@@ -61,7 +61,7 @@ public class BookItemRenderer extends BlockEntityWithoutLevelRenderer
             rnd.setSeed(42);
             for (BakedQuad quad : bookModel.getQuads(null, side, rnd, ModelData.EMPTY, null))
             {
-                buffer.putBulkData(matrixStack.last(), quad, 1.0f, 1.0f, 1.0f, combinedLight, combinedOverlay);
+                buffer.putBulkData(matrixStack.last(), quad, 1.0f, 1.0f, 1.0f, 1.0f, combinedLight, combinedOverlay);
             }
         }
 

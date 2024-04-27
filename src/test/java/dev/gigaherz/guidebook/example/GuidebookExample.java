@@ -15,10 +15,7 @@ public class GuidebookExample
 {
     public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = DeferredItem.createItem(new ResourceLocation("gbook","guidebook"));
     public static final Lazy<ItemStack> MY_BOOK = Lazy.of(() -> GUIDEBOOK_ITEM.asOptional().map(item -> {
-        ItemStack stack = new ItemStack(item);
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putString("Book", "my:book.xml");
-        return stack;
+        return item.of(new ResourceLocation("my:book.xml"));
     }).orElse(ItemStack.EMPTY));
 
     public void test()

@@ -11,6 +11,7 @@ import dev.gigaherz.guidebook.guidebook.util.Rect;
 import dev.gigaherz.guidebook.guidebook.util.Size;
 import joptsimple.internal.Strings;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
 import java.util.Locale;
@@ -91,18 +93,19 @@ public class ElementStack extends ElementInline
 
         scale = attributes.getAttribute("scale", scale);
 
-        String attr = attributes.getAttribute("tag");
-        if (attr != null)
-        {
-            try
-            {
-                tag = TagParser.parseTag(attr);
-            }
-            catch (CommandSyntaxException e)
-            {
-                GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
-            }
-        }
+        String attr;
+        //String attr = attributes.getAttribute("tag");
+        //if (attr != null)
+        //{
+        //    try
+        //    {
+        //        tag = TagParser.parseTag(attr);
+        //    }
+        //    catch (CommandSyntaxException e)
+        //    {
+        //        GuidebookMod.logger.warn("Invalid tag format: " + e.getMessage());
+        //    }
+        //}
 
         attr = attributes.getAttribute("count");
         if (attr != null)
@@ -127,15 +130,15 @@ public class ElementStack extends ElementInline
             {
                 var count = stackSize;
                 var hoverName = name;
-                var nbt = tag;
+                //var nbt = tag;
                 var mcTag = BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, new ResourceLocation(itemName.substring(1))));
                 mcTag.ifPresent(tag1 -> tag1.stream().forEachOrdered(item -> {
                     ItemStack stack = new ItemStack(item, count);
-                    stack.setTag(nbt);
+                    //stack.setTag(nbt);
                     stacks.add(stack);
                     if (!Strings.isNullOrEmpty(hoverName))
                     {
-                        stack.setHoverName(Component.literal(hoverName));
+                        stack.set(DataComponents.CUSTOM_NAME, Component.literal(hoverName));
                     }
                 }));
             }
@@ -146,11 +149,11 @@ public class ElementStack extends ElementInline
                 if (item != null)
                 {
                     ItemStack stack = new ItemStack(item, stackSize);
-                    stack.setTag(tag);
+                    //stack.setTag(tag);
                     stacks.add(stack);
                     if (!Strings.isNullOrEmpty(name))
                     {
-                        stack.setHoverName(Component.literal(name));
+                        stack.set(DataComponents.CUSTOM_NAME, Component.literal(name));
                     }
                 }
             }
