@@ -40,7 +40,7 @@ repositories {
     mavenLocal()
 }
 
-version = "3.8.2"
+version = "3.8.3"
 group = "dev.gigaherz.guidebook"
 archivesBaseName = "Guidebook-UNKNOWN"
 

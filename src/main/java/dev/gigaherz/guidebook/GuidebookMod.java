@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.util.thread.EffectiveSide;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ObjectHolder;
 import net.minecraftforge.registries.RegisterEvent;
@@ -70,6 +71,7 @@ public class GuidebookMod
                 .icon(() -> new ItemStack(guidebook))
                 .title(Component.translatable("itemGroup.gbook"))
                 .displayItems((featureFlags, output) -> {
+                    if (EffectiveSide.get().isServer()) return;
                     for (ResourceLocation resourceLocation : BookRegistry.getBooksList())
                     {
                         output.accept(guidebook.of(resourceLocation));
