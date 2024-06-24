@@ -34,8 +34,8 @@ public class RecipeLayoutProviders
         register(RecipeType.SMOKING, VANILLA);
         register(RecipeType.STONECUTTING, VANILLA);
         // backward compatibility
-        registerAlias(new ResourceLocation("minecraft:shaped"), VANILLA);
-        registerAlias(new ResourceLocation("minecraft:shapeless"), VANILLA);
+        registerAlias(ResourceLocation.withDefaultNamespace("shaped"), VANILLA);
+        registerAlias(ResourceLocation.withDefaultNamespace("shapeless"), VANILLA);
     }
 
     @Nonnull

@@ -10,6 +10,7 @@ import dev.gigaherz.guidebook.GuidebookMod;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.*;
@@ -60,7 +61,7 @@ public class BookRegistry
 
     static
     {
-        registerBook(new ResourceLocation("gbook:xml/guidebook.xml"));
+        registerBook(ResourceLocation.fromNamespaceAndPath("gbook","xml/guidebook.xml"));
     }
 
     @Nullable
@@ -88,7 +89,7 @@ public class BookRegistry
         {
             try
             {
-                List<Resource> resources = manager.getResourceStack(new ResourceLocation(domain, "books.json"));
+                List<Resource> resources = manager.getResourceStack(ResourceLocation.fromNamespaceAndPath(domain, "books.json"));
 
                 for (Resource res : resources)
                 {
@@ -129,7 +130,7 @@ public class BookRegistry
         try (InputStream stream = resource.open())
         {
             List<String> yourList = new Gson().fromJson(new InputStreamReader(stream), listType);
-            toLoad.addAll(yourList.stream().map(ResourceLocation::new).collect(Collectors.toList()));
+            toLoad.addAll(yourList.stream().map(ResourceLocation::parse).collect(Collectors.toList()));
         }
     }
 
@@ -152,7 +153,7 @@ public class BookRegistry
             }
 
             String localizedPath = pathWithoutExtension + "." + lang + extension;
-            ResourceLocation localizedLoc = new ResourceLocation(domain, localizedPath);
+            ResourceLocation localizedLoc = ResourceLocation.fromNamespaceAndPath(domain, localizedPath);
 
             Resource bookResource;
             try
@@ -210,7 +211,7 @@ public class BookRegistry
         {
             if (f.isFile())
             {
-                ResourceLocation loc = new ResourceLocation(GuidebookMod.MODID, relativePath(booksFolder, f));
+                ResourceLocation loc = GuidebookMod.location(relativePath(booksFolder, f));
 
                 if (!LOADED_BOOKS.containsKey(loc))
                 {
@@ -364,9 +365,9 @@ public class BookRegistry
         }
     }
 
-    public static ResourceLocation[] gatherBookModels()
+    public static ModelResourceLocation[] gatherBookModels()
     {
-        return getLoadedBooks().values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+        return getLoadedBooks().values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ModelResourceLocation[]::new);
     }
 
     public static ResourceLocation[] gatherBookCovers()

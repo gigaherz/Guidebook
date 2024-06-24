@@ -13,9 +13,9 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 public class GuidebookExample
 {
-    public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = DeferredItem.createItem(new ResourceLocation("gbook","guidebook"));
+    public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = DeferredItem.createItem(ResourceLocation.fromNamespaceAndPath("gbook","guidebook"));
     public static final Lazy<ItemStack> MY_BOOK = Lazy.of(() -> GUIDEBOOK_ITEM.asOptional().map(item -> {
-        return item.of(new ResourceLocation("my:book.xml"));
+        return item.of(ResourceLocation.fromNamespaceAndPath("my","book.xml"));
     }).orElse(ItemStack.EMPTY));
 
     public void test()

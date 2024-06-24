@@ -8,6 +8,7 @@ import com.mojang.datafixers.util.Either;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
+import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModel;
@@ -43,7 +44,8 @@ public class BookBakedModel implements BakedModel
 
     public BookBakedModel(BakedModel baseModel, ModelBaker bakery, Function<ResourceLocation, UnbakedModel> modelGetter,
                           Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemTransforms cameraTransforms,
-                          Map<ResourceLocation, BakedModel> bookModels, Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle, ItemOverrides originalOverrides)
+                          Map<ModelResourceLocation, BakedModel> bookModels,
+                          Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle, ItemOverrides originalOverrides)
     {
         this.particle = particle;
         this.isSideLit = isSideLit;
@@ -60,7 +62,7 @@ public class BookBakedModel implements BakedModel
                     BookDocument bookDocument = BookRegistry.get(book);
                     if (bookDocument != null)
                     {
-                        ResourceLocation modelLocation = bookDocument.getModel();
+                        var modelLocation = bookDocument.getModel();
                         if (modelLocation != null)
                         {
                             BakedModel bakedModel = bookModels.get(modelLocation);
@@ -139,7 +141,7 @@ public class BookBakedModel implements BakedModel
     public static class Model implements IUnbakedGeometry<Model>
     {
         private final BlockModel baseModel;
-        private final Map<ResourceLocation, UnbakedModel> bookModels = Maps.newHashMap();
+        private final Map<ModelResourceLocation, UnbakedModel> bookModels = Maps.newHashMap();
         private final Map<ResourceLocation, UnbakedModel> coverModels = Maps.newHashMap();
 
         public Model(BlockModel baseModel)
@@ -148,32 +150,38 @@ public class BookBakedModel implements BakedModel
         }
 
         @Override
-        public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation)
+        public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter,
+                               ModelState modelTransform, ItemOverrides overrides)
         {
             Material particleLocation = context.getMaterial("particle");
             TextureAtlasSprite part = spriteGetter.apply(particleLocation);
 
-            Map<ResourceLocation, BakedModel> bakedBookModels = ImmutableMap.copyOf(Maps.transformEntries(bookModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k)));
-            Map<ResourceLocation, BakedModel> bakedCoverModels = ImmutableMap.copyOf(Maps.transformEntries(coverModels, (k, v) -> v.bake(bakery, spriteGetter, modelTransform, k)));
+            Map<ModelResourceLocation, BakedModel> bakedBookModels = ImmutableMap.copyOf(Maps.transformValues(bookModels,
+                    v -> v.bake(bakery, spriteGetter, modelTransform)));
+            Map<ResourceLocation, BakedModel> bakedCoverModels = ImmutableMap.copyOf(Maps.transformValues(coverModels,
+                    v -> v.bake(bakery, spriteGetter, modelTransform)));
 
             return new BookBakedModel(
-                    baseModel.bake(bakery, baseModel, spriteGetter, modelTransform, modelLocation, true),
+                    baseModel.bake(bakery, baseModel, spriteGetter, modelTransform, true),
                     bakery, bakery::getModel, spriteGetter, context.useBlockLight(), context.getTransforms(), bakedBookModels, bakedCoverModels, part, overrides);
         }
 
         @Override
         public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context)
         {
-            for (ResourceLocation bookModel : BookRegistry.gatherBookModels())
+            for (ModelResourceLocation bookModel : BookRegistry.gatherBookModels())
             {
-                bookModels.computeIfAbsent(bookModel, modelGetter);
+                bookModels.computeIfAbsent(bookModel, mrl -> {
+                    assert mrl.variant().equals("standalone");
+                    return modelGetter.apply(mrl.id());
+                });
             }
 
             for (ResourceLocation bookCover : BookRegistry.gatherBookCovers())
             {
                 coverModels.computeIfAbsent(bookCover, (loc) -> {
                     BlockModel mdl = new BlockModel(
-                            new ResourceLocation(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
+                            ResourceLocation.fromNamespaceAndPath(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
                             Collections.emptyList(),
                             ImmutableMap.of("cover", Either.left(new Material(TextureAtlas.LOCATION_BLOCKS, bookCover))),
                             true, context.useBlockLight() ? BlockModel.GuiLight.SIDE : BlockModel.GuiLight.FRONT, ItemTransforms.NO_TRANSFORMS, Collections.emptyList());

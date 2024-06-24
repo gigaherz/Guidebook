@@ -78,6 +78,6 @@ public abstract class AdvancementCondition implements Predicate<ConditionContext
         String stageName = attr.getTextContent();
         if (Strings.isNullOrEmpty(stageName))
             throw new BookParsingException("Missing required XML attribute 'advancement'.");
-        return new ResourceLocation(stageName);
+        return ResourceLocation.parse(stageName);
     }
 }

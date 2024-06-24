@@ -34,7 +34,7 @@ public class GuidebookScreen extends Screen
     private Button buttonHome;
 
     private ItemModelShaper mesher = Minecraft.getInstance().getItemRenderer().getItemModelShaper();
-    private TextureManager renderEngine = Minecraft.getInstance().textureManager;
+    private TextureManager renderEngine = Minecraft.getInstance().getTextureManager();
 
     private BookRendering rendering;
     private IAnimatedBookBackground background;

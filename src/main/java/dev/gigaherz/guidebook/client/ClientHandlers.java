@@ -19,7 +19,6 @@ import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
@@ -44,6 +43,9 @@ public class ClientHandlers
     @EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus = EventBusSubscriber.Bus.MOD)
     public static class ModClientEvents
     {
+
+        public static final ResourceLocation BRIGHT_SOLID_SHADER_LOCATION = ResourceLocation.fromNamespaceAndPath("gbook", "rendertype_bright_solid");
+
         @SubscribeEvent
         public static void construct(FMLConstructModEvent event)
         {
@@ -76,7 +78,7 @@ public class ClientHandlers
         @SubscribeEvent
         public static void shaderRegistry(RegisterShadersEvent event) throws IOException
         {
-            event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation("gbook:rendertype_bright_solid"), DefaultVertexFormat.NEW_ENTITY), shaderInstance -> {
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), BRIGHT_SOLID_SHADER_LOCATION, DefaultVertexFormat.NEW_ENTITY), shaderInstance -> {
                 CustomRenderTypes.brightSolidShader = shaderInstance;
             });
         }

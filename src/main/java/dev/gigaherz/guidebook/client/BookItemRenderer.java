@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class BookItemRenderer extends BlockEntityWithoutLevelRenderer
 {
-    static final ResourceLocation MODEL_HELPER = GuidebookMod.location("item/guidebook_helper");
+    static final ModelResourceLocation MODEL_HELPER = ModelResourceLocation.standalone(GuidebookMod.location("item/guidebook_helper"));
 
     private final List<Direction> sides = Util.make(new ArrayList<>(), c -> {
         Collections.addAll(c, Direction.values());

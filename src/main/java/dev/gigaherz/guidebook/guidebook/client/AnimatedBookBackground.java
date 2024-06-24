@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -25,10 +26,10 @@ import java.util.List;
 
 public class AnimatedBookBackground implements IAnimatedBookBackground
 {
-    public static final ResourceLocation BOOK_BACKGROUND0 = GuidebookMod.location("gui/animated_book0");
-    public static final ResourceLocation BOOK_BACKGROUND30 = GuidebookMod.location("gui/animated_book30");
-    public static final ResourceLocation BOOK_BACKGROUND60 = GuidebookMod.location("gui/animated_book60");
-    public static final ResourceLocation BOOK_BACKGROUND90 = GuidebookMod.location("gui/animated_book90");
+    public static final ModelResourceLocation BOOK_BACKGROUND0 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book0"));
+    public static final ModelResourceLocation BOOK_BACKGROUND30 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book30"));
+    public static final ModelResourceLocation BOOK_BACKGROUND60 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book60"));
+    public static final ModelResourceLocation BOOK_BACKGROUND90 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book90"));
 
     public static final RandomSource RANDOM = RandomSource.create();
 

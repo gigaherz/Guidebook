@@ -33,7 +33,7 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
     private static final int[] OUTPUT_SLOT_X = {80, 70, 64, 64};
     private static final int[] OUTPUT_SLOT_Y = {22, 13, 14, 13};
 
-    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(GuidebookMod.MODID, "gui/recipe_backgrounds");
+    private static final ResourceLocation BACKGROUND_TEXTURE = GuidebookMod.location("gui/recipe_backgrounds");
     private static final int[] BACKGROUND_U = {0, 0, 0, 0};
     private static final int[] BACKGROUND_V = {0, 60, 101, 142};
     private static final int[] BACKGROUND_W = {100, 100, 100, 100};

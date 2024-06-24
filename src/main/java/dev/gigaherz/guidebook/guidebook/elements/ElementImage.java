@@ -90,7 +90,7 @@ public class ElementImage extends ElementInline
     {
         ElementImage img = super.copy(new ElementImage(isFirstElement, isLastElement));
 
-        img.textureLocation = new ResourceLocation(textureLocation.toString());
+        img.textureLocation = ResourceLocation.parse(textureLocation.toString());
         img.tx = tx;
         img.ty = ty;
         img.tw = tw;

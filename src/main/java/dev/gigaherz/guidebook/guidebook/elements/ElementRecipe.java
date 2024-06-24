@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class ElementRecipe extends Element
 {
-    private ResourceLocation recipeProviderKey = new ResourceLocation("crafting");
+    private ResourceLocation recipeProviderKey = ResourceLocation.parse("crafting");
     private ResourceLocation recipeKey;
     private Element recipeOutput;
     private int recipeIndex = 0; // An index to use to specify a certain recipe when multiple ones exist for the target output item
@@ -139,13 +139,13 @@ public class ElementRecipe extends Element
         {
             String registryName = attr;
             // If no domain is specified, insert Guidebook's modid (mostly needed for default recipe providers)
-            recipeProviderKey = new ResourceLocation(registryName);
+            recipeProviderKey = ResourceLocation.parse(registryName);
         }
 
         attr = attributes.getAttribute("key");
         if (attr != null)
         {
-            recipeKey = new ResourceLocation(attr);
+            recipeKey = ResourceLocation.parse(attr);
         }
 
         attr = attributes.getAttribute("indent");
@@ -213,7 +213,7 @@ public class ElementRecipe extends Element
         elementRecipe.recipeIndex = recipeIndex;
         if (recipeKey != null)
         {
-            elementRecipe.recipeKey = new ResourceLocation(recipeKey.toString());
+            elementRecipe.recipeKey = recipeKey;
         }
         elementRecipe.indent = indent;
         return elementRecipe;
@@ -230,7 +230,7 @@ public class ElementRecipe extends Element
         elementRecipe.recipeIndex = recipeIndex;
         if (recipeKey != null)
         {
-            elementRecipe.recipeKey = new ResourceLocation(recipeKey.toString());
+            elementRecipe.recipeKey = recipeKey;
         }
         elementRecipe.indent = indent;
         return elementRecipe;

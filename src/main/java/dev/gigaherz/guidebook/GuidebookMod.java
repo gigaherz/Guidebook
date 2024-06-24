@@ -94,7 +94,7 @@ public class GuidebookMod
                 String tag = String.format("%s:givenBook:%s", MODID, g);
                 if (!e.getTags().contains(tag))
                 {
-                    ItemHandlerHelper.giveItemToPlayer(e, bookItem().of(new ResourceLocation(g)));
+                    ItemHandlerHelper.giveItemToPlayer(e, bookItem().of(ResourceLocation.parse(g)));
                     e.addTag(tag);
                 }
             }
@@ -103,7 +103,7 @@ public class GuidebookMod
 
     public static ResourceLocation location(String location)
     {
-        return new ResourceLocation(MODID, location);
+        return ResourceLocation.fromNamespaceAndPath(MODID, location);
     }
 }
 

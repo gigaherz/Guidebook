@@ -726,7 +726,7 @@ public class BookRendering implements IBookGraphics
         if (w == 0) w = sw;
         if (h == 0) h = sh;
 
-        ResourceLocation locExpanded = new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
+        ResourceLocation locExpanded = ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -751,30 +751,24 @@ public class BookRendering implements IBookGraphics
 
     private static void drawFlexible(Matrix4f matrix, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
     {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuilder();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         float hs = h * scale;
         float ws = w * scale;
         float tsw = 1.0f / tw;
         float tsh = 1.0f / th;
         bufferbuilder
-                .vertex(matrix, x, y + hs, 0.0f)
-                .uv(tx * tsw, (ty + h) * tsh)
-                .endVertex();
+                .addVertex(matrix, x, y + hs, 0.0f)
+                .setUv(tx * tsw, (ty + h) * tsh);
         bufferbuilder
-                .vertex(matrix, x + ws, y + hs, 0.0f)
-                .uv((tx + w) * tsw, (ty + h) * tsh)
-                .endVertex();
+                .addVertex(matrix, x + ws, y + hs, 0.0f)
+                .setUv((tx + w) * tsw, (ty + h) * tsh);
         bufferbuilder
-                .vertex(matrix, x + ws, y, 0.0f)
-                .uv((tx + w) * tsw, ty * tsh)
-                .endVertex();
+                .addVertex(matrix, x + ws, y, 0.0f)
+                .setUv((tx + w) * tsw, ty * tsh);
         bufferbuilder
-                .vertex(matrix, x, y, 0.0f)
-                .uv(tx * tsw, ty * tsh)
-                .endVertex();
-        tessellator.end();
+                .addVertex(matrix, x, y, 0.0f)
+                .setUv(tx * tsw, ty * tsh);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
     }
 
     @Override

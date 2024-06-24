@@ -40,22 +40,6 @@ public abstract class VisualElement extends Rect
                 debugColor);*/
     }
 
-    private static void line(GuiGraphics graphics, int x0, int y0, int x1, int y1, int color)
-    {
-        var pose = graphics.pose().last();
-        var matrix = pose.pose();
-        BufferBuilder builder = Tesselator.getInstance().getBuilder();
-        RenderSystem.enableBlend();
-        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
-        RenderSystem.lineWidth((float) Minecraft.getInstance().getWindow().getGuiScale());
-        builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-        builder.vertex(matrix, x0, y0, 0).color(color).normal(pose, 0,0,-1).endVertex();
-        builder.vertex(matrix, x1, y1, 0).color(color).normal(pose, 0,0,-1).endVertex();
-        BufferUploader.drawWithShader(builder.end());
-        RenderSystem.disableBlend();
-        RenderSystem.lineWidth(1);
-    }
-
     public VisualElement(Size size, int positionMode, float baseline, int verticalAlign)
     {
         this.size = size;

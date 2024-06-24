@@ -53,7 +53,7 @@ public class BookDocument
     private final ResourceLocation bookLocation;
     private String bookName;
     private ResourceLocation bookCover;
-    private ResourceLocation bookModel;
+    private ModelResourceLocation bookModel;
 
     final List<ChapterData> chapters = Lists.newArrayList();
     private Map<Item, SectionRef> stackLinks = Maps.newHashMap();
@@ -79,7 +79,7 @@ public class BookDocument
 
     static
     {
-        registerCustomElement(new ResourceLocation("minecraft:recipe"), ElementRecipe::new);
+        registerCustomElement(ResourceLocation.withDefaultNamespace("recipe"), ElementRecipe::new);
     }
 
     public BookDocument(ResourceLocation bookLocation)
@@ -105,7 +105,7 @@ public class BookDocument
     }
 
     @Nullable
-    public ResourceLocation getModel()
+    public ModelResourceLocation getModel()
     {
         return bookModel;
     }
@@ -229,7 +229,7 @@ public class BookDocument
                 n = attributes.getNamedItem("cover");
                 if (n != null)
                 {
-                    bookCover = new ResourceLocation(n.getTextContent());
+                    bookCover = ResourceLocation.parse(n.getTextContent());
                 }
                 n = attributes.getNamedItem("model");
                 if (n != null)
@@ -238,19 +238,19 @@ public class BookDocument
                     if (text.contains("#"))
                     {
                         var parts = text.split("#");
-                        var loc = new ResourceLocation(parts[0]);
+                        var loc = ResourceLocation.parse(parts[0]);
                         var variant = parts[1];
                         bookModel = new ModelResourceLocation(loc, variant);
                     }
                     else
                     {
-                        bookModel = new ResourceLocation(text);
+                        bookModel = ModelResourceLocation.standalone(ResourceLocation.parse(text));
                     }
                 }
                 n = attributes.getNamedItem("background");
                 if (n != null)
                 {
-                    background = new ResourceLocation(n.getTextContent());
+                    background = ResourceLocation.parse(n.getTextContent());
                 }
                 n = attributes.getNamedItem("fontSize");
                 if (n != null)
@@ -345,7 +345,7 @@ public class BookDocument
         NamedNodeMap attributes = firstLevelNode.getAttributes();
         Node n = attributes.getNamedItem("ref");
 
-        ResourceLocation id = new ResourceLocation(n.getTextContent());
+        ResourceLocation id = ResourceLocation.parse(n.getTextContent());
         Document include = context.loadedFromConfigFolder() ? parseIncludeFromConfig(context, id) : parseIncludeFromResources(context, id);;
 
         includeAction.accept(id, include);
@@ -612,7 +612,7 @@ public class BookDocument
         String nodeName = elementItem.getNodeName();
         ResourceLocation nodeLoc =
                 elementItem.getNodeType() == Node.ELEMENT_NODE ?
-                        new ResourceLocation(nodeName) : new ResourceLocation("_");
+                        ResourceLocation.parse(nodeName) : ResourceLocation.parse("_");
 
         if (nodeName.equals("section-break"))
         {
@@ -888,7 +888,7 @@ public class BookDocument
             String nodeName = elementItem.getNodeName();
             ResourceLocation nodeLoc =
                     elementItem.getNodeType() == Node.ELEMENT_NODE ?
-                            new ResourceLocation(nodeName) : new ResourceLocation("_");
+                            ResourceLocation.parse(nodeName) : ResourceLocation.parse("_");
 
             if (customElements.containsKey(nodeLoc))
             {
@@ -953,7 +953,7 @@ public class BookDocument
                     Node item_node = refItem.getAttributes().getNamedItem("item"); //get item
                     if (item_node != null)
                     {
-                        Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(item_node.getTextContent()));
+                        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(item_node.getTextContent()));
                         if (item != Items.AIR)
                         {
                             String ref = refItem.getTextContent();

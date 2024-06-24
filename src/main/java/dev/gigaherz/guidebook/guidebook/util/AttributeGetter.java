@@ -40,7 +40,7 @@ public interface AttributeGetter
         {
             String text = getAttribute(name);
             if (text != null)
-                return new ResourceLocation(text);
+                return ResourceLocation.parse(text);
         }
         return def;
     }

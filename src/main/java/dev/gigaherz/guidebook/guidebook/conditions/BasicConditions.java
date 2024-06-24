@@ -122,6 +122,6 @@ public abstract class BasicConditions implements Predicate<ConditionContext>
         String name = attr.getTextContent();
         if (Strings.isNullOrEmpty(name))
             throw new BookParsingException("Missing required XML attribute 'registry-name'.");
-        return new ResourceLocation(name);
+        return ResourceLocation.parse(name);
     }
 }
