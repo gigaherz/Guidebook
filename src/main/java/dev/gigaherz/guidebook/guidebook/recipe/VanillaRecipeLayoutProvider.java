@@ -10,12 +10,8 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.crafting.IShapedRecipe;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -76,11 +72,10 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         else
         {
             int gridHeight;
-            if (recipe instanceof IShapedRecipe)
+            if (recipe instanceof ShapedRecipe sr)
             {
-                IShapedRecipe<?> shapedRecipe = (IShapedRecipe<?>) recipe;
-                gridWidth = shapedRecipe.getWidth();
-                gridHeight = shapedRecipe.getHeight();
+                gridWidth = sr.getWidth();
+                gridHeight = sr.getHeight();
             }
             else
             {

@@ -63,7 +63,8 @@ public class GuidebookMod
 
     public GuidebookMod(ModContainer container, IEventBus modEventBus)
     {
-        modEventBus.addListener(this::modConfig);
+        modEventBus.addListener(this::modConfigLoad);
+        modEventBus.addListener(this::modConfigReload);
         ITEMS.register(modEventBus);
         TABS.register(modEventBus);
         DATA_COMPONENTS.register(modEventBus);
@@ -74,7 +75,17 @@ public class GuidebookMod
         container.registerConfig(ModConfig.Type.CLIENT, ConfigValues.CLIENT_SPEC);
     }
 
-    private void modConfig(ModConfigEvent event)
+    public void modConfigLoad(ModConfigEvent.Loading event)
+    {
+        refreshConfig(event);
+    }
+
+    public void modConfigReload(ModConfigEvent.Reloading event)
+    {
+        refreshConfig(event);
+    }
+
+    private static void refreshConfig(ModConfigEvent event)
     {
         ModConfig config = event.getConfig();
         if (config.getSpec() == ConfigValues.CLIENT_SPEC)
