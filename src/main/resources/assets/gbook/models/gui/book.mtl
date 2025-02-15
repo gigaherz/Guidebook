@@ -1,10 +1,10 @@
 # Rhino
 newmtl Cover
-map_Kd gbook:cover
+map_Kd cover
 
 newmtl New_material_002
 Kd 0.9843 0.8000 0.2510
-map_Kd gbook:paper
+map_Kd paper
 
 newmtl Default
-map_Kd gbook:paper
+map_Kd paper

@@ -53,7 +53,7 @@ public class BookDocument
     private final ResourceLocation bookLocation;
     private String bookName;
     private ResourceLocation bookCover;
-    private ModelResourceLocation bookModel;
+    private ResourceLocation bookModelStandalone;
 
     final List<ChapterData> chapters = Lists.newArrayList();
     private Map<Item, SectionRef> stackLinks = Maps.newHashMap();
@@ -105,9 +105,9 @@ public class BookDocument
     }
 
     @Nullable
-    public ModelResourceLocation getModel()
+    public ResourceLocation getModelStandalone()
     {
-        return bookModel;
+        return bookModelStandalone;
     }
 
     @Nullable
@@ -240,11 +240,13 @@ public class BookDocument
                         var parts = text.split("#");
                         var loc = ResourceLocation.parse(parts[0]);
                         var variant = parts[1];
-                        bookModel = new ModelResourceLocation(loc, variant);
+                        if (!Objects.equals(variant, "inventory"))
+                            throw new RuntimeException("Not supported");
+                        bookModelStandalone = loc;
                     }
                     else
                     {
-                        bookModel = ModelResourceLocation.standalone(ResourceLocation.parse(text));
+                        bookModelStandalone = ResourceLocation.parse(text);
                     }
                 }
                 n = attributes.getNamedItem("background");
@@ -953,7 +955,7 @@ public class BookDocument
                     Node item_node = refItem.getAttributes().getNamedItem("item"); //get item
                     if (item_node != null)
                     {
-                        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(item_node.getTextContent()));
+                        Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(item_node.getTextContent())).orElseThrow();
                         if (item != Items.AIR)
                         {
                             String ref = refItem.getTextContent();

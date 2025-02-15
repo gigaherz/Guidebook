@@ -3,90 +3,76 @@ package dev.gigaherz.guidebook.guidebook.client;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Either;
-import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookDocument;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
-import net.minecraft.Util;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.UnbakedModelLoader;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public class BookBakedModel implements BakedModel
 {
     private final boolean isSideLit;
     private final ItemTransforms cameraTransforms;
+    private final BakedModel baseModel;
+    private final Map<ResourceLocation, BakedModel> bookModels;
+    private final Map<ResourceLocation, BakedModel> coverModels;
     private final TextureAtlasSprite particle;
-    private final ItemOverrides overrideList;
 
-    public BookBakedModel(BakedModel baseModel, ModelBaker bakery, Function<ResourceLocation, UnbakedModel> modelGetter,
-                          Function<Material, TextureAtlasSprite> spriteGetter, boolean isSideLit, ItemTransforms cameraTransforms,
-                          Map<ModelResourceLocation, BakedModel> bookModels,
-                          Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle, ItemOverrides originalOverrides)
+    public BakedModel getActualModel(@Nullable ResourceLocation book)
     {
+        if (book != null)
+        {
+            BookDocument bookDocument = BookRegistry.get(book);
+            if (bookDocument != null)
+            {
+                var standaloneModel = bookDocument.getModelStandalone();
+                var cover = bookDocument.getCover();
+                if (standaloneModel != null)
+                {
+                    BakedModel bakedModel = bookModels.get(standaloneModel);
+                    if (bakedModel != null)
+                        return bakedModel;
+                }
+                else if (cover != null)
+                {
+                    BakedModel bakedModel = coverModels.get(cover);
+                    if (bakedModel != null)
+                        return bakedModel;
+                }
+            }
+        }
+        return baseModel;
+    }
+
+    public BookBakedModel(BakedModel baseModel,
+                          boolean isSideLit, ItemTransforms cameraTransforms,
+                          Map<ResourceLocation, BakedModel> standaloneModels,
+                          Map<ResourceLocation, BakedModel> coverModels, @Nullable TextureAtlasSprite particle)
+    {
+        this.baseModel = baseModel;
+        this.bookModels = standaloneModels;
+        this.coverModels = coverModels;
         this.particle = particle;
         this.isSideLit = isSideLit;
         this.cameraTransforms = cameraTransforms;
-        this.overrideList = new ItemOverrides()
-        {
-            @Nullable
-            @Override
-            public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel worldIn, @Nullable LivingEntity entityIn, int p_173469_)
-            {
-                ResourceLocation book = stack.get(GuidebookMod.BOOK_ID);
-                if (book != null)
-                {
-                    BookDocument bookDocument = BookRegistry.get(book);
-                    if (bookDocument != null)
-                    {
-                        var modelLocation = bookDocument.getModel();
-                        if (modelLocation != null)
-                        {
-                            BakedModel bakedModel = bookModels.get(modelLocation);
-                            if (bakedModel != null)
-                                return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
-                        }
-                        else
-                        {
-                            ResourceLocation cover = bookDocument.getCover();
-
-                            if (cover != null)
-                            {
-                                BakedModel bakedModel = coverModels.get(cover);
-                                if (bakedModel != null)
-                                    return bakedModel.getOverrides().resolve(bakedModel, stack, worldIn, entityIn, p_173469_);
-                            }
-                        }
-                    }
-                }
-
-                var fallbackModel =  baseModel.getOverrides().resolve(baseModel, stack, worldIn, entityIn, p_173469_);
-                return originalOverrides.resolve(fallbackModel, stack, worldIn, entityIn, p_173469_);
-            }
-        };
     }
 
     @Override
@@ -114,12 +100,6 @@ public class BookBakedModel implements BakedModel
     }
 
     @Override
-    public boolean isCustomRenderer()
-    {
-        return false;
-    }
-
-    @Override
     public TextureAtlasSprite getParticleIcon()
     {
         return particle;
@@ -132,49 +112,48 @@ public class BookBakedModel implements BakedModel
         return cameraTransforms;
     }
 
-    @Override
-    public ItemOverrides getOverrides()
+    public static class Model implements UnbakedModel
     {
-        return overrideList;
-    }
-
-    public static class Model implements IUnbakedGeometry<Model>
-    {
-        private final BlockModel baseModel;
-        private final Map<ModelResourceLocation, UnbakedModel> bookModels = Maps.newHashMap();
+        private final UnbakedModel baseModel;
+        private final Map<ResourceLocation, UnbakedModel> bookModels = Maps.newHashMap();
         private final Map<ResourceLocation, UnbakedModel> coverModels = Maps.newHashMap();
 
-        public Model(BlockModel baseModel)
+        public Model(UnbakedModel baseModel)
         {
             this.baseModel = baseModel;
         }
 
         @Override
-        public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter,
-                               ModelState modelTransform, ItemOverrides overrides)
+        public BakedModel bake(TextureSlots textureSlots, ModelBaker baker, ModelState modelState, boolean useAmbientOcclusion, boolean usesBlockLight, ItemTransforms itemTransforms, ContextMap additionalProperties)
         {
-            Material particleLocation = context.getMaterial("particle");
-            TextureAtlasSprite part = spriteGetter.apply(particleLocation);
+            var part = baker.findSprite(textureSlots, TextureSlot.PARTICLE.getId());
 
-            Map<ModelResourceLocation, BakedModel> bakedBookModels = ImmutableMap.copyOf(Maps.transformValues(bookModels,
-                    v -> v.bake(bakery, spriteGetter, modelTransform)));
+            Map<ResourceLocation, BakedModel> bakedBookModels = ImmutableMap.copyOf(Maps.transformValues(bookModels,
+                    v -> UnbakedModel.bakeWithTopModelValues(v, baker, modelState)));
             Map<ResourceLocation, BakedModel> bakedCoverModels = ImmutableMap.copyOf(Maps.transformValues(coverModels,
-                    v -> v.bake(bakery, spriteGetter, modelTransform)));
+                    v -> UnbakedModel.bakeWithTopModelValues(v, baker, modelState)));
+
+            var baseModel = UnbakedModel.bakeWithTopModelValues(this.baseModel, baker, modelState);
 
             return new BookBakedModel(
-                    baseModel.bake(bakery, baseModel, spriteGetter, modelTransform, true),
-                    bakery, bakery::getModel, spriteGetter, context.useBlockLight(), context.getTransforms(), bakedBookModels, bakedCoverModels, part, overrides);
+                    baseModel,
+                    usesBlockLight, itemTransforms, bakedBookModels, bakedCoverModels, part);
         }
 
         @Override
-        public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context)
+        public BakedModel bake(TextureSlots textureSlots, ModelBaker baker, ModelState modelState, boolean useAmbientOcclusion, boolean usesBlockLight, ItemTransforms itemTransforms)
         {
-            for (ModelResourceLocation bookModel : BookRegistry.gatherBookModels())
+            return this.bake(textureSlots, baker, modelState, useAmbientOcclusion, usesBlockLight, itemTransforms, ContextMap.EMPTY);
+        }
+
+        @Override
+        public void resolveDependencies(Resolver resolver)
+        {
+            baseModel.resolveDependencies(resolver);
+
+            for (ResourceLocation bookModel : BookRegistry.gatherStandaloneBookModels())
             {
-                bookModels.computeIfAbsent(bookModel, mrl -> {
-                    assert mrl.variant().equals("standalone");
-                    return modelGetter.apply(mrl.id());
-                });
+                bookModels.computeIfAbsent(bookModel, resolver::resolve);
             }
 
             for (ResourceLocation bookCover : BookRegistry.gatherBookCovers())
@@ -182,24 +161,31 @@ public class BookBakedModel implements BakedModel
                 coverModels.computeIfAbsent(bookCover, (loc) -> {
                     BlockModel mdl = new BlockModel(
                             ResourceLocation.fromNamespaceAndPath(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
-                            Collections.emptyList(),
-                            ImmutableMap.of("cover", Either.left(new Material(TextureAtlas.LOCATION_BLOCKS, bookCover))),
-                            true, context.useBlockLight() ? BlockModel.GuiLight.SIDE : BlockModel.GuiLight.FRONT, ItemTransforms.NO_TRANSFORMS, Collections.emptyList());
+                            List.of(),
+                            new TextureSlots.Data.Builder().addTexture("cover", new Material(TextureAtlas.LOCATION_BLOCKS, bookCover)).build(),
+                            null, null, null);
+                    //mdl.parentLocation = null;
                     mdl.parent = baseModel;
-                    mdl.resolveParents(modelGetter);
+                    //mdl.resolveDependencies(resolver);
                     return mdl;
                 });
             }
         }
     }
 
-    public static class ModelLoader implements IGeometryLoader<Model>
+    public static class ModelLoader implements UnbakedModelLoader<Model>
     {
         @Override
         public Model read(JsonObject modelContents, JsonDeserializationContext deserializationContext)
         {
-            BlockModel baseModel = deserializationContext.deserialize(GsonHelper.getAsJsonObject(modelContents, "base_model"), BlockModel.class);
+            var baseModel = readBaseModel(GsonHelper.getAsJsonObject(modelContents,"base_model"), deserializationContext);
             return new Model(baseModel);
+        }
+
+        private static UnbakedModel readBaseModel(
+                JsonObject childrenJsonObject,
+                JsonDeserializationContext context) {
+            return context.deserialize(childrenJsonObject, UnbakedModel.class);
         }
     }
 }

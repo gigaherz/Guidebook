@@ -11,12 +11,14 @@ import dev.gigaherz.guidebook.client.ClientHandlers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.lwjgl.opengl.GL11;
@@ -26,10 +28,10 @@ import java.util.List;
 
 public class AnimatedBookBackground implements IAnimatedBookBackground
 {
-    public static final ModelResourceLocation BOOK_BACKGROUND0 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book0"));
-    public static final ModelResourceLocation BOOK_BACKGROUND30 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book30"));
-    public static final ModelResourceLocation BOOK_BACKGROUND60 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book60"));
-    public static final ModelResourceLocation BOOK_BACKGROUND90 = ModelResourceLocation.standalone(GuidebookMod.location("gui/animated_book90"));
+    public static final ResourceLocation BOOK_BACKGROUND0 = GuidebookMod.location("gui/animated_book0");
+    public static final ResourceLocation BOOK_BACKGROUND30 = GuidebookMod.location("gui/animated_book30");
+    public static final ResourceLocation BOOK_BACKGROUND60 = GuidebookMod.location("gui/animated_book60");
+    public static final ResourceLocation BOOK_BACKGROUND90 = GuidebookMod.location("gui/animated_book90");
 
     public static final RandomSource RANDOM = RandomSource.create();
 
@@ -85,10 +87,10 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
         float angleX = progress * ANGLE_PER_TICK;
 
-        BakedModel book00 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND0);
-        BakedModel book30 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND30);
-        BakedModel book60 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND60);
-        BakedModel book90 = Minecraft.getInstance().getModelManager().getModel(BOOK_BACKGROUND90);
+        BakedModel book00 = Minecraft.getInstance().getModelManager().getStandaloneModel(BOOK_BACKGROUND0);
+        BakedModel book30 = Minecraft.getInstance().getModelManager().getStandaloneModel(BOOK_BACKGROUND30);
+        BakedModel book60 = Minecraft.getInstance().getModelManager().getStandaloneModel(BOOK_BACKGROUND60);
+        BakedModel book90 = Minecraft.getInstance().getModelManager().getStandaloneModel(BOOK_BACKGROUND90);
 
         float blend;
         if (angleX <= 0)
@@ -124,8 +126,10 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
             blend = 0;
         }
 
+        graphics.flush();
+
         RenderSystem.clearDepth(1.0);
-        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
 
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
@@ -144,14 +148,17 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
 
             pose.mulPose(Axis.ZP.rotationDegrees(angleX * 1.1f));
 
+            MultiBufferSource.BufferSource src = Minecraft.getInstance().renderBuffers().bufferSource();
             if (blend > 0 && modelBookB != null)
             {
-                renderModelInterpolate(pose, modelBookA, modelBookB, blend);
+                renderModelInterpolate(src, pose, modelBookA, modelBookB, blend);
             }
             else
             {
-                renderModel(pose, modelBookA);
+                renderModel(src, pose, modelBookA);
             }
+
+            src.endBatch();
         }
         pose.popPose();
 
@@ -162,26 +169,22 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
         RenderSystem.disableDepthTest();
     }
 
-    private static void renderModel(PoseStack matrixStack, BakedModel model)
+    private static void renderModel(MultiBufferSource.BufferSource src, PoseStack poseStack, BakedModel model)
     {
-        MultiBufferSource.BufferSource src = Minecraft.getInstance().renderBuffers().bufferSource();
-        VertexConsumer worldrenderer = src.getBuffer(ClientHandlers.brightSolid(TextureAtlas.LOCATION_BLOCKS));
-        Lighting.setupForEntityInInventory();
+        RenderType renderType = ClientHandlers.brightSolid(TextureAtlas.LOCATION_BLOCKS);
+        VertexConsumer worldrenderer = src.getBuffer(renderType);
 
         List<BakedQuad> quads = model.getQuads(null, null, RANDOM, ModelData.EMPTY, null);
         for (BakedQuad quad : quads)
         {
-            worldrenderer.putBulkData(matrixStack.last(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0x00F000F0, OverlayTexture.NO_OVERLAY, true);
+            worldrenderer.putBulkData(poseStack.last(), quad, 1.0f, 1.0f, 1.0f, 1.0f, 0x00F000F0, OverlayTexture.NO_OVERLAY, true);
         }
-
-        src.endBatch();
     }
 
-    private static void renderModelInterpolate(PoseStack matrixStack, BakedModel modelA, BakedModel modelB, float blend)
+    private static void renderModelInterpolate(MultiBufferSource.BufferSource src, PoseStack poseStack, BakedModel modelA, BakedModel modelB, float blend)
     {
-        MultiBufferSource.BufferSource src = Minecraft.getInstance().renderBuffers().bufferSource();
-        VertexConsumer worldrenderer = src.getBuffer(ClientHandlers.brightSolid(TextureAtlas.LOCATION_BLOCKS));
-        Lighting.setupForEntityInInventory();
+        RenderType renderType = ClientHandlers.brightSolid(TextureAtlas.LOCATION_BLOCKS);
+        VertexConsumer worldrenderer = src.getBuffer(renderType);
 
         List<BakedQuad> generalQuadsA = modelA.getQuads(null, null, RANDOM, ModelData.EMPTY, null);
         List<BakedQuad> generalQuadsB = modelB.getQuads(null, null, RANDOM, ModelData.EMPTY, null);
@@ -211,10 +214,10 @@ public class AnimatedBookBackground implements IAnimatedBookBackground
                 }
             }
 
-            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getDirection(), quadA.getSprite(), quadA.isShade());
-            worldrenderer.putBulkData(matrixStack.last(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0x00F000F0, OverlayTexture.NO_OVERLAY, true);
-        }
+            int lightEmission = Mth.lerpInt(blend, quadA.getLightEmission(), quadB.getLightEmission());
 
-        src.endBatch();
+            BakedQuad bq = new BakedQuad(blended, quadA.getTintIndex(), quadA.getDirection(), quadA.getSprite(), quadA.isShade(), lightEmission);
+            worldrenderer.putBulkData(poseStack.last(), bq, 1.0f, 1.0f, 1.0f, 1.0f, 0x00F000F0, OverlayTexture.NO_OVERLAY, true);
+        }
     }
 }

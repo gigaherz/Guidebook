@@ -13,8 +13,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.ItemModelShaper;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
@@ -33,8 +32,8 @@ public class GuidebookScreen extends Screen
     private Button buttonBack;
     private Button buttonHome;
 
-    private ItemModelShaper mesher = Minecraft.getInstance().getItemRenderer().getItemModelShaper();
-    private TextureManager renderEngine = Minecraft.getInstance().getTextureManager();
+    //private ItemModelShaper mesher = Minecraft.getInstance().getItemRenderer().getItemModelShaper();
+    //private TextureManager renderEngine = Minecraft.getInstance().getTextureManager();
 
     private BookRendering rendering;
     private IAnimatedBookBackground background;
@@ -259,16 +258,6 @@ public class GuidebookScreen extends Screen
         return this.font;
     }
 
-    public ItemModelShaper getMesher()
-    {
-        return mesher;
-    }
-
-    public TextureManager getRenderEngine()
-    {
-        return renderEngine;
-    }
-
     private static final int[] xPixel = {5, 5, 4, 4, 4, 4, 4, 29};
     private static final int[] yPixel = {2, 16, 30, 64, 79, 93, 107, 107};
     private static final int[] xSize = {17, 17, 18, 13, 21, 21, 15, 15};
@@ -344,8 +333,7 @@ public class GuidebookScreen extends Screen
                 x += 25;
             }
 
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            graphics.blit(BOOK_GUI_TEXTURES, this.getX(), this.getY(), x, y, w, h);
+            graphics.blit(RenderType::guiTextured, BOOK_GUI_TEXTURES, this.getX(), this.getY(), x, y, w, h, 256, 256);
         }
     }
 }

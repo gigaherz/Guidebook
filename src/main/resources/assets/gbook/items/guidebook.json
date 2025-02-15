@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:special",
+
+    "base": "gbook:item/guidebook",
+    "model": {
+      "type": "gbook:book_item"
+    }
+  }
+}

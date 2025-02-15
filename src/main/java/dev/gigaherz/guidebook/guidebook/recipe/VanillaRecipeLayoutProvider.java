@@ -1,5 +1,5 @@
 package dev.gigaherz.guidebook.guidebook.recipe;
-
+/*
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.drawing.VisualElement;
 import dev.gigaherz.guidebook.guidebook.elements.ElementImage;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 /**
  * @author joazlazer
  * A class designed to provide both shaped and shapeless crafting recipes for display in Guidebooks
- */
+ * /
 public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
 {
     private static final int[] INPUT_SLOT_BASE_X = {4, 13, 19, 19};
@@ -158,3 +158,4 @@ public class VanillaRecipeLayoutProvider implements IRecipeLayoutProvider
         return base;
     }
 }
+*/

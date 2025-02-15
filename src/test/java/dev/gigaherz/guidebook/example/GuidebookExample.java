@@ -1,5 +1,5 @@
 package dev.gigaherz.guidebook.example;
-
+/*
 import dev.gigaherz.guidebook.guidebook.GuidebookItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -37,3 +37,4 @@ public class GuidebookExample
         }
     }
 }
+*/

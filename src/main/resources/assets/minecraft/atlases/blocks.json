@@ -1,3 +1,4 @@
+
 {
   "sources": [
     {
@@ -5,9 +6,10 @@
       "source": "covers",
       "prefix": "covers/"
     },
-    {"type": "single", "resource": "gbook:cover" },
-    {"type": "single", "resource": "gbook:cover_gray" },
-    {"type": "single", "resource": "gbook:paper" },
-    {"type": "single", "resource": "gbook:transparent" }
+    {
+      "type": "directory",
+      "source": "misc",
+      "prefix": "misc/"
+    }
   ]
 }

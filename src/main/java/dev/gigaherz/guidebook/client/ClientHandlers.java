@@ -2,6 +2,7 @@ package dev.gigaherz.guidebook.client;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.logging.LogUtils;
 import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import dev.gigaherz.guidebook.guidebook.client.AnimatedBookBackground;
@@ -11,11 +12,10 @@ import dev.gigaherz.guidebook.guidebook.conditions.BasicConditions;
 import dev.gigaherz.guidebook.guidebook.conditions.CompositeCondition;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.util.TriState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -23,6 +23,8 @@ import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -43,9 +45,6 @@ public class ClientHandlers
     @EventBusSubscriber(value = Dist.CLIENT, modid = GuidebookMod.MODID, bus = EventBusSubscriber.Bus.MOD)
     public static class ModClientEvents
     {
-
-        public static final ResourceLocation BRIGHT_SOLID_SHADER_LOCATION = ResourceLocation.fromNamespaceAndPath("gbook", "rendertype_bright_solid");
-
         @SubscribeEvent
         public static void construct(FMLConstructModEvent event)
         {
@@ -59,13 +58,13 @@ public class ClientHandlers
         }
 
         @SubscribeEvent
-        public static void modelRegistry(ModelEvent.RegisterGeometryLoaders event)
+        public static void modelRegistry(ModelEvent.RegisterLoaders event)
         {
             event.register(GuidebookMod.location("book_model"), new BookBakedModel.ModelLoader());
         }
 
         @SubscribeEvent
-        public static void specialModels(ModelEvent.RegisterAdditional event)
+        public static void additionalModels(ModelEvent.RegisterAdditional event)
         {
             // Ensures that the OBJ models used by the book GUI background, and all referenced textures, are loaded
             event.register(AnimatedBookBackground.BOOK_BACKGROUND0);
@@ -76,11 +75,15 @@ public class ClientHandlers
         }
 
         @SubscribeEvent
+        public static void specialModels(RegisterSpecialModelRendererEvent event)
+        {
+            event.register(GuidebookMod.location("book_item"), BookItemRenderer.Unbaked.CODEC);
+        }
+
+        @SubscribeEvent
         public static void shaderRegistry(RegisterShadersEvent event) throws IOException
         {
-            event.registerShader(new ShaderInstance(event.getResourceProvider(), BRIGHT_SOLID_SHADER_LOCATION, DefaultVertexFormat.NEW_ENTITY), shaderInstance -> {
-                CustomRenderTypes.brightSolidShader = shaderInstance;
-            });
+            event.registerShader(CustomRenderTypes.BRIGHT_SOLID_SHADER);
         }
     }
 
@@ -91,9 +94,11 @@ public class ClientHandlers
 
     private static class CustomRenderTypes extends RenderType
     {
-        private static ShaderInstance brightSolidShader;
+        public static final ResourceLocation BRIGHT_SOLID_SHADER_LOCATION = ResourceLocation.fromNamespaceAndPath("gbook", "core/rendertype_bright_solid");
 
-        private static final ShaderStateShard RENDERTYPE_BRIGHT_SOLID_SHADER = new ShaderStateShard(() -> brightSolidShader);
+        public static final ShaderProgram BRIGHT_SOLID_SHADER = new ShaderProgram(BRIGHT_SOLID_SHADER_LOCATION, DefaultVertexFormat.NEW_ENTITY, ShaderDefines.EMPTY);
+
+        private static final ShaderStateShard RENDERTYPE_BRIGHT_SOLID_SHADER = new ShaderStateShard(BRIGHT_SOLID_SHADER);
 
         private CustomRenderTypes(String s, VertexFormat v, VertexFormat.Mode m, int i, boolean b, boolean b2, Runnable r, Runnable r2)
         {
@@ -107,7 +112,7 @@ public class ClientHandlers
         {
             RenderType.CompositeState rendertype$state = RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_BRIGHT_SOLID_SHADER)
-                    .setTextureState(new RenderStateShard.TextureStateShard(locationIn, false, false))
+                    .setTextureState(new RenderStateShard.TextureStateShard(locationIn, TriState.FALSE, false))
                     .setTransparencyState(NO_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)

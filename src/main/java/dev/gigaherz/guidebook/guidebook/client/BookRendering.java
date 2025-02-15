@@ -18,7 +18,7 @@ import dev.gigaherz.guidebook.guidebook.util.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
@@ -206,7 +206,6 @@ public class BookRendering implements IBookGraphics
         }
         else
         {
-            this.hasScale = false;
             this.scalingFactor = 1.0f;
             this.scaledWidth = gui.width;
             this.scaledHeight = gui.height;
@@ -492,6 +491,18 @@ public class BookRendering implements IBookGraphics
                 pose.translate(left0, top0, 0);
                 pose.scale(scale, scale, 1f);
                 graphics.drawString(font, text, 0, 0, color, false);
+
+                if ((hasScale && ConfigValues.flexibleScale) || !Mth.equal(Mth.frac(scale),0))
+                {
+                    var offset = 0.5f/(Minecraft.getInstance().getWindow().getGuiScale() * scalingFactor);
+
+                    pose.translate(offset, 0, 0);
+                    graphics.drawString(font, text, 0, 0, color, false);
+                    pose.translate(0, offset, 0);
+                    graphics.drawString(font, text, 0, 0, color, false);
+                    pose.translate(-offset, 0, 0);
+                    graphics.drawString(font, text, 0, 0, color, false);
+                }
             }
             pose.popPose();
         }
@@ -728,14 +739,13 @@ public class BookRendering implements IBookGraphics
 
         ResourceLocation locExpanded = ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, locExpanded);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        drawFlexible(graphics.pose(), x, y, tx, ty, w, h, sw, sh, scale);
+        drawFlexible(locExpanded, graphics.pose(), x, y, tx, ty, w, h, sw, sh, scale);
     }
 
     @Override
@@ -744,31 +754,27 @@ public class BookRendering implements IBookGraphics
         return gui.getFontRenderer();
     }
 
-    private static void drawFlexible(PoseStack matrixStack, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
+    private static void drawFlexible(ResourceLocation locExpanded, PoseStack matrixStack, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
     {
-        drawFlexible(matrixStack.last().pose(), x, y, tx, ty, w, h, tw, th, scale);
+        drawFlexible(locExpanded, matrixStack.last().pose(), x, y, tx, ty, w, h, tw, th, scale);
     }
 
-    private static void drawFlexible(Matrix4f matrix, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
+    private static void drawFlexible(ResourceLocation locExpanded, Matrix4f matrix, int x, int y, float tx, float ty, int w, int h, int tw, int th, float scale)
     {
-        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        RenderType rendertype = RenderType.guiTextured(locExpanded);
+        VertexConsumer consumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(rendertype);
         float hs = h * scale;
         float ws = w * scale;
         float tsw = 1.0f / tw;
         float tsh = 1.0f / th;
-        bufferbuilder
-                .addVertex(matrix, x, y + hs, 0.0f)
-                .setUv(tx * tsw, (ty + h) * tsh);
-        bufferbuilder
-                .addVertex(matrix, x + ws, y + hs, 0.0f)
-                .setUv((tx + w) * tsw, (ty + h) * tsh);
-        bufferbuilder
-                .addVertex(matrix, x + ws, y, 0.0f)
-                .setUv((tx + w) * tsw, ty * tsh);
-        bufferbuilder
-                .addVertex(matrix, x, y, 0.0f)
-                .setUv(tx * tsw, ty * tsh);
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+        consumer.addVertex(matrix, x, y + hs, 0.0f)
+                .setUv(tx * tsw, (ty + h) * tsh).setColor(-1);
+        consumer.addVertex(matrix, x + ws, y + hs, 0.0f)
+                .setUv((tx + w) * tsw, (ty + h) * tsh).setColor(-1);
+        consumer.addVertex(matrix, x + ws, y, 0.0f)
+                .setUv((tx + w) * tsw, ty * tsh).setColor(-1);
+        consumer.addVertex(matrix, x, y, 0.0f)
+                .setUv(tx * tsw, ty * tsh).setColor(-1);
     }
 
     @Override

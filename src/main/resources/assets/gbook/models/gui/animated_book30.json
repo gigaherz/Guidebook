@@ -1,5 +1,10 @@
 {
   "loader": "neoforge:obj",
   "model": "gbook:models/gui/book30.obj",
-  "automatic_culling": false
+  "automatic_culling": false,
+  "textures": {
+    "cover": "gbook:misc/cover",
+    "paper": "gbook:misc/paper",
+    "particle": "#cover"
+  }
 }

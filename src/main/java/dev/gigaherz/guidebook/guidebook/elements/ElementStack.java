@@ -131,23 +131,23 @@ public class ElementStack extends ElementInline
                 var count = stackSize;
                 var hoverName = name;
                 //var nbt = tag;
-                var mcTag = BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, ResourceLocation.parse(itemName.substring(1))));
-                mcTag.ifPresent(tag1 -> tag1.stream().forEachOrdered(item -> {
-                    ItemStack stack = new ItemStack(item, count);
-                    //stack.setTag(nbt);
+                var mcTag = BuiltInRegistries.ITEM.getTagOrEmpty(TagKey.create(Registries.ITEM, ResourceLocation.parse(itemName.substring(1))));
+                for(var itemHolder : mcTag)
+                {
+                    ItemStack stack = new ItemStack(itemHolder, count);
                     stacks.add(stack);
                     if (!Strings.isNullOrEmpty(hoverName))
                     {
                         stack.set(DataComponents.CUSTOM_NAME, Component.literal(hoverName));
                     }
-                }));
+                }
             }
             else
             {
-                Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemName));
-
-                if (item != null)
+                var itemOpt = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(itemName));
+                if (itemOpt.isPresent())
                 {
+                    var item = itemOpt.get();
                     ItemStack stack = new ItemStack(item, stackSize);
                     //stack.setTag(tag);
                     stacks.add(stack);

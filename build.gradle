@@ -3,21 +3,20 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.153'
+    id 'net.neoforged.moddev' version '2.0.63-beta'
 }
 
 version = "3.10.1"
 group = "dev.gigaherz.guidebook"
 
-Provider<String> minecraftVersion(Transformer<String, String> mapper) {
-    return project.userDevRuntime.runtimes.map(r -> r.values().first().specification.minecraftVersion).map(mapper)
-}
-
+var minecraftVersionResolver = project.neoForge.version.map { "1." + (it =~ /^(\d+(?:\.[1-9]\d*|))\./)[0][1] }
 base {
-    archivesName = minecraftVersion { "Guidebook-${it}" }
+    archivesName = minecraftVersionResolver.map { "Guidebook-${it}" }
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+java.withSourcesJar()
 
 repositories {
     maven {
@@ -43,40 +42,38 @@ repositories {
     mavenLocal()
 }
 
-runs {
-    // applies to all the run configs below
-    configureEach {
-        systemProperty 'forge.logging.markers', '' // 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
+neoForge {
+    version = "21.4.77-beta"
 
-        //ideaModule "${project.name}.main"
+    runs {
+        // applies to all the run configs below
+        configureEach {
+            gameDirectory = project.file('run')
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
 
-        workingDirectory project.file('run')
+        client {
+            client()
+        }
 
-        //programArguments.addAll "--mixin=jsonthings.mixins.json"
-
-        modSource project.sourceSets.main
+        server {
+            server()
+        }
     }
 
-    client {
+    mods {
+        thismod {
+            sourceSet(sourceSets.main)
+        }
     }
 
-    server {
-    }
-}
-
-minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
-
-subsystems {
     parchment {
-        minecraftVersion="1.20.6"
-        mappingsVersion="2024.06.16"
+        minecraftVersion = "1.21.4"
+        mappingsVersion = "2025.01.19"
     }
 }
 
 dependencies {
-    implementation 'net.neoforged:neoforge:21.0.86-beta'
-
     //compileOnly ("mezz.jei:jei-1.20-common-api:14.0.0.4")
     //runtimeOnly fg.deobf("mezz.jei:jei-1.20-common:14.0.0.4")
     //compileOnly ("mezz.jei:jei-1.20-forge-api:14.0.0.4")
@@ -88,27 +85,25 @@ dependencies {
      */
 }
 
-jar {
-    from('/') {
-        include 'LICENSE.txt'
-    }
+tasks.named("jar") {
+    from(files('LICENSE.txt'))
 
     manifest {
         attributes([
                 "Specification-Title": "guidebook",
                 "Specification-Vendor": "gigaherz",
                 "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": archiveVersion,
+                "Implementation-Title": "guidebook",
+                "Implementation-Version": project.version,
                 "Implementation-Vendor" :"gigaherz",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "Maven-Artifact":"${project.group}:${project.archivesBaseName}:${project.version}"
+                "Maven-Artifact":"${project.group}:${project.base.archivesName}:${project.version}"
         ])
     }
 }
 
-tasks.withType(GenerateModuleMetadata) {
-    enabled = false
+tasks.named('sourcesJar') {
+    from(files('LICENSE.txt'))
 }
 
 project.afterEvaluate {
@@ -139,5 +134,17 @@ project.afterEvaluate {
                 }
             }
         }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
 }

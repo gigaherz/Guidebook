@@ -365,9 +365,9 @@ public class BookRegistry
         }
     }
 
-    public static ModelResourceLocation[] gatherBookModels()
+    public static ResourceLocation[] gatherStandaloneBookModels()
     {
-        return getLoadedBooks().values().stream().map(BookDocument::getModel).filter(Objects::nonNull).distinct().toArray(ModelResourceLocation[]::new);
+        return getLoadedBooks().values().stream().map(BookDocument::getModelStandalone).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
     }
 
     public static ResourceLocation[] gatherBookCovers()

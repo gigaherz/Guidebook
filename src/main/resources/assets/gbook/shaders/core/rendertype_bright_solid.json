@@ -1,21 +1,10 @@
 {
-    "blend": {
-        "func": "add",
-        "srcrgb": "srcalpha",
-        "dstrgb": "1-srcalpha"
-    },
-    "vertex": "gbook:rendertype_bright_solid",
-    "fragment": "gbook:rendertype_bright_solid",
-    "attributes": [
-        "Position",
-        "Color",
-        "UV0",
-        "UV1",
-        "UV2",
-        "Normal"
-    ],
+    "vertex": "gbook:core/rendertype_bright_solid",
+    "fragment": "gbook:core/rendertype_bright_solid",
     "samplers": [
-        { "name": "Sampler0" }
+        { "name": "Sampler0" },
+        { "name": "Sampler1" },
+        { "name": "Sampler2" }
     ],
     "uniforms": [
         { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },

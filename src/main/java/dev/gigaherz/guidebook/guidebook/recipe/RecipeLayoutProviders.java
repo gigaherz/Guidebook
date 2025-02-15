@@ -10,32 +10,32 @@ import java.util.Map;
 
 public class RecipeLayoutProviders
 {
-    public static final VanillaRecipeLayoutProvider VANILLA = new VanillaRecipeLayoutProvider();
+    //public static final VanillaRecipeLayoutProvider VANILLA = new VanillaRecipeLayoutProvider();
 
     private static final Map<ResourceLocation, IRecipeLayoutProvider> registry = Maps.newHashMap();
 
-    public static void register(RecipeType<?> type, VanillaRecipeLayoutProvider provider)
+    public static void register(RecipeType<?> type, IRecipeLayoutProvider provider)
     {
         ResourceLocation id = BuiltInRegistries.RECIPE_TYPE.getKey(type);
         registry.put(id, provider);
     }
 
-    public static void registerAlias(ResourceLocation id, VanillaRecipeLayoutProvider provider)
+    public static void registerAlias(ResourceLocation id, IRecipeLayoutProvider provider)
     {
         registry.put(id, provider);
     }
 
     static
     {
-        register(RecipeType.CRAFTING, VANILLA);
-        register(RecipeType.SMELTING, VANILLA);
-        register(RecipeType.CAMPFIRE_COOKING, VANILLA);
-        register(RecipeType.BLASTING, VANILLA);
-        register(RecipeType.SMOKING, VANILLA);
-        register(RecipeType.STONECUTTING, VANILLA);
+        //register(RecipeType.CRAFTING, VANILLA);
+        //register(RecipeType.SMELTING, VANILLA);
+        //register(RecipeType.CAMPFIRE_COOKING, VANILLA);
+        //register(RecipeType.BLASTING, VANILLA);
+        //register(RecipeType.SMOKING, VANILLA);
+        //register(RecipeType.STONECUTTING, VANILLA);
         // backward compatibility
-        registerAlias(ResourceLocation.withDefaultNamespace("shaped"), VANILLA);
-        registerAlias(ResourceLocation.withDefaultNamespace("shapeless"), VANILLA);
+        //registerAlias(ResourceLocation.withDefaultNamespace("shaped"), VANILLA);
+        //registerAlias(ResourceLocation.withDefaultNamespace("shapeless"), VANILLA);
     }
 
     @Nonnull

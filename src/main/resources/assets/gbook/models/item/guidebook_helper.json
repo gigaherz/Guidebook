@@ -1,13 +1,22 @@
 {
-  "parent": "forge:item/default",
+  "parent": "neoforge:item/default",
   "loader": "gbook:book_model",
+  "textures": {
+    "cover_base": "gbook:misc/cover",
+    "paper": "gbook:misc/paper",
+    "cover": "gbook:covers/default",
+    "particle": "#cover_base"
+  },
   "base_model": {
-    "parent": "forge:item/default",
+    "parent": "neoforge:item/default",
     "loader": "neoforge:obj",
     "model": "gbook:models/item/book.obj",
     "gui_light": "side",
     "textures": {
-      "cover": "gbook:covers/default"
+      "cover_base": "gbook:misc/cover",
+      "paper": "gbook:misc/paper",
+      "cover": "gbook:covers/default",
+      "particle": "#cover_base"
     },
     "display": {
       "gui": {

@@ -33,9 +33,9 @@ public class GuidebookMod
 
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-    private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(MODID);
+    private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
 
-    public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = ITEMS.register("guidebook", () -> new GuidebookItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<GuidebookItem> GUIDEBOOK_ITEM = ITEMS.registerItem("guidebook", props -> new GuidebookItem(props.stacksTo(1)));
 
     public static final Supplier<DataComponentType<ResourceLocation>>
             BOOK_ID = DATA_COMPONENTS.register("book_id", () -> DataComponentType.<ResourceLocation>builder()
