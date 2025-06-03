@@ -7,9 +7,12 @@
       "prefix": "covers/"
     },
     {
-      "type": "directory",
-      "source": "misc",
-      "prefix": "misc/"
+      "type": "single",
+      "resource": "gbook:misc/cover"
+    },
+    {
+      "type": "single",
+      "resource": "gbook:misc/paper"
     }
   ]
 }
