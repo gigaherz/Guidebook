@@ -32,6 +32,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BookRegistry
 {
@@ -365,14 +366,14 @@ public class BookRegistry
         }
     }
 
-    public static ResourceLocation[] gatherStandaloneBookModels()
+    public static Stream<ResourceLocation> gatherStandaloneBookModels()
     {
-        return getLoadedBooks().values().stream().map(BookDocument::getModelStandalone).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+        return getLoadedBooks().values().stream().map(BookDocument::getModelStandalone).filter(Objects::nonNull).distinct();
     }
 
-    public static ResourceLocation[] gatherBookCovers()
+    public static Stream<ResourceLocation> gatherBookCovers()
     {
-        return getLoadedBooks().values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct().toArray(ResourceLocation[]::new);
+        return getLoadedBooks().values().stream().map(BookDocument::getCover).filter(Objects::nonNull).distinct();
     }
 
     public static void initClientResourceListener(ReloadableResourceManager clientResourceManager)
