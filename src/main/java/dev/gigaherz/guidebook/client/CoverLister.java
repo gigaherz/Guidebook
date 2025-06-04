@@ -7,7 +7,6 @@ import dev.gigaherz.guidebook.GuidebookMod;
 import dev.gigaherz.guidebook.guidebook.BookRegistry;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -26,10 +25,9 @@ public record CoverLister(Optional<String> idPrefix) implements SpriteSource {
 
     @Override
     public void run(ResourceManager resourceManager, Output output) {
-        FileToIdConverter converter = new FileToIdConverter("textures", ".png");
         BookRegistry.gatherBookCovers().forEach((cover) -> {
             ResourceLocation id = this.idPrefix.isPresent() ? cover.withPrefix(this.idPrefix.get()) : cover;
-            Optional<Resource> resource = resourceManager.getResource(converter.idToFile(cover));
+            Optional<Resource> resource = resourceManager.getResource(TEXTURE_ID_CONVERTER.idToFile(cover));
             if (resource.isPresent())
                 output.add(id, resource.get());
         });
