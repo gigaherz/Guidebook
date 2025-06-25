@@ -2,9 +2,7 @@
 {
   "sources": [
     {
-      "type": "directory",
-      "source": "covers",
-      "prefix": "covers/"
+      "type": "gbook:covers"
     },
     {
       "type": "single",

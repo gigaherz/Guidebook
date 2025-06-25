@@ -23,6 +23,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
+import net.neoforged.neoforge.client.event.RegisterSpriteSourceTypesEvent;
 
 import java.io.IOException;
 import java.util.function.Function;
@@ -82,6 +83,11 @@ public class ClientHandlers
         public static void shaderRegistry(RegisterShadersEvent event) throws IOException
         {
             event.registerShader(CustomRenderTypes.BRIGHT_SOLID_SHADER);
+        }
+
+        @SubscribeEvent
+        static void onRegisterSpriteSourceTypes(RegisterSpriteSourceTypesEvent event) {
+            event.register(CoverLister.ID, CoverLister.TYPE);
         }
     }
 

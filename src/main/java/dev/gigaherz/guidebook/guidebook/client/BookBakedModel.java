@@ -151,13 +151,11 @@ public class BookBakedModel implements BakedModel
         {
             baseModel.resolveDependencies(resolver);
 
-            for (ResourceLocation bookModel : BookRegistry.gatherStandaloneBookModels())
-            {
+            BookRegistry.gatherStandaloneBookModels().forEach((bookModel) -> {
                 bookModels.computeIfAbsent(bookModel, resolver::resolve);
-            }
+            });
 
-            for (ResourceLocation bookCover : BookRegistry.gatherBookCovers())
-            {
+            BookRegistry.gatherBookCovers().forEach((bookCover) -> {
                 coverModels.computeIfAbsent(bookCover, (loc) -> {
                     BlockModel mdl = new BlockModel(
                             ResourceLocation.fromNamespaceAndPath(bookCover.getNamespace(), "generated/cover_models/" + bookCover.getPath()),
@@ -169,7 +167,7 @@ public class BookBakedModel implements BakedModel
                     //mdl.resolveDependencies(resolver);
                     return mdl;
                 });
-            }
+            });
         }
     }
 
